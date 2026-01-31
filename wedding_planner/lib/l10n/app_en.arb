@@ -1,0 +1,123 @@
+{
+  "@@locale": "en",
+  "appTitle": "Wedding Planner",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+
+  "welcomeTitle": "Plan your dream wedding with ease",
+  "getStarted": "Get Started",
+  "login": "Login",
+  "register": "Register",
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "forgotPassword": "Forgot Password?",
+  "orContinueWith": "Or continue with",
+
+  "onboardingDateTitle": "When's the big day?",
+  "onboardingDateHint": "We haven't set a date yet",
+  "onboardingBudgetTitle": "What's your budget range?",
+  "onboardingBudgetHint": "I'll set this later",
+  "onboardingGuestTitle": "How many guests?",
+  "onboardingGuestHintWestern": "Average wedding: 100-150 guests",
+  "onboardingGuestHintMiddleEast": "Average wedding: 300-500 guests",
+  "onboardingGuestHintSouthAsian": "Average wedding: 200-400 guests",
+  "onboardingStyleTitle": "What's your wedding vibe?",
+  "onboardingCultureTitle": "Any cultural traditions?",
+  "continueButton": "Continue",
+  "finishSetup": "Finish Setup",
+
+  "celebrationTitle": "Your wedding journey begins!",
+  "createChecklist": "Create your first checklist",
+  "exploreVendors": "Explore vendors",
+  "skipForNow": "Skip for now",
+
+  "home": "Home",
+  "tasks": "Tasks",
+  "vendors": "Vendors",
+  "chat": "Chat",
+  "profile": "Profile",
+
+  "daysToGo": "{count} Days to Go",
+  "@daysToGo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "percentPlanned": "{percent}% planned",
+  "@percentPlanned": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+
+  "quickActions": "Quick Actions",
+  "budget": "Budget",
+  "guests": "Guests",
+  "budgetOverview": "Budget Overview",
+  "viewAll": "View All",
+  "upcomingTasks": "Upcoming Tasks",
+  "seeAll": "See All",
+  "vendorStatus": "Vendor Status",
+
+  "findVendors": "Find Vendors",
+  "searchVendors": "Search vendors...",
+  "browseByCategory": "Browse by Category",
+  "featuredVendors": "Featured Vendors",
+  "photography": "Photography",
+  "catering": "Catering",
+  "cake": "Cake",
+  "music": "Music",
+  "flowers": "Flowers",
+  "decor": "Decor",
+
+  "packages": "Packages",
+  "reviews": "Reviews",
+  "about": "About",
+  "portfolio": "Portfolio",
+  "bookNow": "Book Now",
+  "selectPackage": "Select Package",
+  "checkAvailability": "Check Availability",
+  "sendRequest": "Send Request",
+  "availableOnYourDate": "Available on your date",
+
+  "invitations": "Invitations",
+  "createInvitation": "Create Invitation",
+  "rsvpDashboard": "RSVP Dashboard",
+  "accepted": "Accepted",
+  "declined": "Declined",
+  "pending": "Pending",
+  "responseRate": "Response Rate",
+  "sendReminder": "Send Reminder",
+
+  "seatingChart": "Seating Chart",
+  "autoGenerate": "Auto-Generate",
+  "guestList": "Guest List",
+  "unassigned": "Unassigned",
+
+  "settings": "Settings",
+  "logout": "Logout",
+  "editProfile": "Edit Profile",
+  "notifications": "Notifications",
+  "language": "Language",
+  "currency": "Currency",
+
+  "error": "Error",
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "share": "Share",
+
+  "connectionLost": "Connection lost",
+  "checkInternetAndRetry": "Check your internet and try again",
+  "somethingWentWrong": "Something went wrong",
+  "tryAgainLater": "Please try again later"
+}
