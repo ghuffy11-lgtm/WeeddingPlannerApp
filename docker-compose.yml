@@ -70,7 +70,7 @@ services:
   api:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: wedding_planner_api
     restart: unless-stopped
     ports:
@@ -102,6 +102,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
 
   # Admin Panel (uncomment when admin panel is built)
   # admin:
