@@ -2,8 +2,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies for native modules
-RUN apk add --no-cache python3 make g++
+# Install dependencies for native modules and OpenSSL
+RUN apk add --no-cache python3 make g++ openssl openssl-dev
 
 # Copy package files
 COPY package*.json ./
@@ -12,11 +12,13 @@ COPY prisma ./prisma/
 # Install all dependencies (including dev)
 RUN npm install
 
-# Generate Prisma client
-RUN npx prisma generate
-
 # Expose port
 EXPOSE 3000
 
-# Run development server with hot reload
-CMD ["npm", "run", "dev"]
+# Create startup script that regenerates Prisma client and starts dev server
+RUN echo '#!/bin/sh' > /start.sh && \
+    echo 'npx prisma generate' >> /start.sh && \
+    echo 'npm run dev' >> /start.sh && \
+    chmod +x /start.sh
+
+CMD ["/start.sh"]
