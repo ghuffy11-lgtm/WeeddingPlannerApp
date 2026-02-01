@@ -44,13 +44,13 @@ export const sendError = (
   code?: string,
   details?: unknown
 ): Response => {
+  const error: ErrorResponse['error'] = { message };
+  if (code) error.code = code;
+  if (details !== undefined) error.details = details;
+
   const response: ErrorResponse = {
     success: false,
-    error: {
-      ...(code && { code }),
-      message,
-      ...(details && { details }),
-    },
+    error,
   };
   return res.status(statusCode).json(response);
 };

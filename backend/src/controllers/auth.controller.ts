@@ -11,13 +11,13 @@ import { AuthPayload } from '../middleware/auth';
 
 const generateTokens = (payload: AuthPayload) => {
   const accessToken = jwt.sign(payload, jwtConfig.accessToken.secret, {
-    expiresIn: jwtConfig.accessToken.expiresIn,
-  });
+    expiresIn: jwtConfig.accessToken.expiresIn as string,
+  } as jwt.SignOptions);
 
   const refreshToken = jwt.sign(
     { ...payload, tokenId: uuidv4() },
     jwtConfig.refreshToken.secret,
-    { expiresIn: jwtConfig.refreshToken.expiresIn }
+    { expiresIn: jwtConfig.refreshToken.expiresIn as string } as jwt.SignOptions
   );
 
   return { accessToken, refreshToken };
