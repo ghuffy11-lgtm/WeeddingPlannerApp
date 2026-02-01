@@ -1,7 +1,7 @@
 # Task Tracker
 
 > Track all development tasks by phase and component
-> **Last Updated:** January 30, 2026
+> **Last Updated:** February 1, 2026
 
 ---
 
@@ -23,8 +23,10 @@
 | P0-001 | Create UI/UX design document | Claude | [x] | Completed |
 | P0-002 | Create technical architecture | Claude | [x] | Completed |
 | P0-003 | Design database schema | Claude | [x] | Completed |
-| P0-004 | Create project management docs | Claude | [~] | In Progress |
-| P0-005 | Create feature specifications | Claude | [~] | In Progress |
+| P0-004 | Create project management docs | Claude | [x] | Completed |
+| P0-005 | Create feature specifications | Claude | [x] | Completed |
+| P0-006 | Create development setup guide | Claude | [x] | DEVELOPMENT_SETUP.md |
+| P0-007 | Create README for GitHub | Claude | [x] | Completed |
 
 ### Flutter Setup
 | ID | Task | Assigned To | Status | Notes |
@@ -44,11 +46,14 @@
 ### Backend Setup
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P0-030 | Setup Node.js project | - | [ ] | - |
-| P0-031 | Setup PostgreSQL database | - | [ ] | - |
-| P0-032 | Setup Firebase project | - | [ ] | - |
-| P0-033 | Create base API structure | - | [ ] | - |
-| P0-034 | Setup authentication (JWT) | - | [ ] | - |
+| P0-030 | Setup Node.js project | Claude | [x] | Completed Feb 1 |
+| P0-031 | Setup PostgreSQL database | Claude | [x] | Docker + init.sql |
+| P0-032 | Setup Firebase project | - | [ ] | For chat/notifications |
+| P0-033 | Create base API structure | Claude | [x] | Express + TypeScript |
+| P0-034 | Setup authentication (JWT) | Claude | [x] | Access + Refresh tokens |
+| P0-035 | Setup Docker environment | Claude | [x] | All services running |
+| P0-036 | Setup Redis cache | Claude | [x] | Running in Docker |
+| P0-037 | Setup GitHub repository | Claude | [x] | github.com/ghuffy11-lgtm/WeeddingPlannerApp |
 
 ---
 
@@ -200,16 +205,16 @@
 ### Backend API (Phase 1)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-140 | Auth endpoints | - | [ ] | - |
-| P1-141 | User endpoints | - | [ ] | - |
-| P1-142 | Wedding endpoints | - | [ ] | - |
-| P1-143 | Vendor endpoints | - | [ ] | - |
-| P1-144 | Booking endpoints | - | [ ] | - |
-| P1-145 | Guest endpoints | - | [ ] | - |
-| P1-146 | Budget endpoints | - | [ ] | - |
+| P1-140 | Auth endpoints | Claude | [x] | register, login, refresh, reset |
+| P1-141 | User endpoints | Claude | [x] | profile CRUD, password change |
+| P1-142 | Wedding endpoints | Claude | [x] | CRUD + guests, budget, tasks |
+| P1-143 | Vendor endpoints | Claude | [x] | list, search, dashboard, packages |
+| P1-144 | Booking endpoints | Claude | [x] | create, accept, decline, complete |
+| P1-145 | Guest endpoints | Claude | [x] | Part of wedding endpoints |
+| P1-146 | Budget endpoints | Claude | [x] | Part of wedding endpoints |
 | P1-147 | Invitation endpoints | - | [ ] | - |
 | P1-148 | Admin endpoints | - | [ ] | - |
-| P1-149 | Category endpoints | - | [ ] | - |
+| P1-149 | Category endpoints | Claude | [x] | list, get, get vendors |
 
 ---
 
@@ -259,8 +264,22 @@
 
 | Phase | Total Tasks | Completed | Progress |
 |-------|-------------|-----------|----------|
-| Phase 0 | 25 | 17 | 68% |
-| Phase 1 | 80+ | 0 | 0% |
+| Phase 0 | 30 | 30 | 100% |
+| Phase 1 | 80+ | 8 | 10% |
 | Phase 2 | 9 | 0 | 0% |
 | Phase 2.5 | 6 | 0 | 0% |
 | Phase 3 | 6 | 0 | 0% |
+
+---
+
+## Next Priority Tasks
+
+| ID | Task | Component |
+|----|------|-----------|
+| P1-001 | Splash screen | Flutter |
+| P1-002 | Welcome screen | Flutter |
+| P1-003 | Login screen | Flutter |
+| P1-004 | Register screen | Flutter |
+| P1-008 | Auth BLoC | Flutter |
+| P1-020 | Wedding date picker | Flutter |
+| P1-035 | Home screen layout | Flutter |
