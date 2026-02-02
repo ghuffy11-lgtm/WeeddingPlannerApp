@@ -1,0 +1,20 @@
+# Flutter Development Container
+FROM ghcr.io/cirruslabs/flutter:stable
+
+# Set working directory
+WORKDIR /app
+
+# Copy pubspec files first for better caching
+COPY pubspec.yaml pubspec.lock* ./
+
+# Get dependencies
+RUN flutter pub get
+
+# Copy the rest of the app
+COPY . .
+
+# Run flutter doctor to verify setup
+RUN flutter doctor
+
+# Default command - keep container running
+CMD ["tail", "-f", "/dev/null"]
