@@ -55,7 +55,7 @@ class AppTheme {
       ),
 
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.cardBackground,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -165,7 +165,7 @@ class AppTheme {
       ),
 
       // Dialog Theme
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.white,
         shape: RoundedRectangleBorder(
           borderRadius: AppSpacing.borderRadiusLarge,
@@ -197,7 +197,7 @@ class AppTheme {
       ),
 
       // Tab Bar Theme
-      tabBarTheme: const TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelColor: AppColors.roseGold,
         unselectedLabelColor: AppColors.warmGray,
         labelStyle: AppTypography.labelLarge,

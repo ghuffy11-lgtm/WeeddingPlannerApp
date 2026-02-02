@@ -1,7 +1,7 @@
 # Task Tracker
 
 > Track all development tasks by phase and component
-> **Last Updated:** February 1, 2026
+> **Last Updated:** February 2, 2026
 
 ---
 
@@ -62,50 +62,50 @@
 ### Authentication (Mobile)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-001 | Splash screen | - | [ ] | - |
-| P1-002 | Welcome screen | - | [ ] | - |
-| P1-003 | Login screen (email/password) | - | [ ] | - |
-| P1-004 | Register screen | - | [ ] | - |
-| P1-005 | Social login (Google) | - | [ ] | - |
-| P1-006 | Social login (Apple) | - | [ ] | - |
-| P1-007 | Forgot password flow | - | [ ] | - |
-| P1-008 | Auth BLoC | - | [ ] | - |
-| P1-009 | Auth API integration | - | [ ] | - |
+| P1-001 | Splash screen | Claude | [x] | Completed Feb 2 |
+| P1-002 | Welcome screen | Claude | [x] | Completed Feb 2 |
+| P1-003 | Login screen (email/password) | Claude | [x] | Completed Feb 2 |
+| P1-004 | Register screen | Claude | [x] | Completed Feb 2 |
+| P1-005 | Social login (Google) | - | [ ] | UI ready, needs Firebase |
+| P1-006 | Social login (Apple) | - | [ ] | UI ready, needs Firebase |
+| P1-007 | Forgot password flow | Claude | [x] | Dialog in login screen |
+| P1-008 | Auth BLoC | Claude | [x] | Completed Feb 2 |
+| P1-009 | Auth API integration | Claude | [x] | Completed Feb 2 |
 
 ### Couple Onboarding (Mobile)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-020 | Wedding date picker screen | - | [ ] | - |
-| P1-021 | Budget setup screen | - | [ ] | - |
-| P1-022 | Guest count screen | - | [ ] | Region-adaptive defaults |
-| P1-023 | Style preferences screen | - | [ ] | - |
-| P1-024 | Cultural traditions screen | - | [ ] | - |
-| P1-025 | Celebration/completion screen | - | [ ] | - |
-| P1-026 | Onboarding BLoC | - | [ ] | - |
+| P1-020 | Wedding date picker screen | Claude | [x] | Completed Feb 2 |
+| P1-021 | Budget setup screen | Claude | [x] | Completed Feb 2 |
+| P1-022 | Guest count screen | Claude | [x] | Region-adaptive defaults |
+| P1-023 | Style preferences screen | Claude | [x] | Completed Feb 2 |
+| P1-024 | Cultural traditions screen | Claude | [x] | Completed Feb 2 |
+| P1-025 | Celebration/completion screen | Claude | [x] | Completed Feb 2 |
+| P1-026 | Onboarding BLoC | Claude | [x] | Completed Feb 2 |
 
 ### Home Dashboard (Mobile - Couple)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-030 | Countdown card widget | - | [ ] | - |
-| P1-031 | Quick actions widget | - | [ ] | - |
-| P1-032 | Budget overview widget | - | [ ] | - |
-| P1-033 | Upcoming tasks widget | - | [ ] | - |
-| P1-034 | Vendor status widget | - | [ ] | - |
-| P1-035 | Home screen layout | - | [ ] | - |
-| P1-036 | Home BLoC | - | [ ] | - |
+| P1-030 | Countdown card widget | Claude | [x] | Completed Feb 2 |
+| P1-031 | Quick actions widget | Claude | [x] | Completed Feb 2 |
+| P1-032 | Budget overview widget | Claude | [x] | Completed Feb 2 |
+| P1-033 | Upcoming tasks widget | Claude | [x] | Completed Feb 2 |
+| P1-034 | Vendor status widget | Claude | [x] | Completed Feb 2 |
+| P1-035 | Home screen layout | Claude | [x] | Completed Feb 2 |
+| P1-036 | Home BLoC | Claude | [x] | Completed Feb 2 |
 
 ### Vendor Marketplace (Mobile)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-040 | Category grid screen | - | [ ] | - |
-| P1-041 | Vendor list screen | - | [ ] | - |
-| P1-042 | Vendor filter modal | - | [ ] | - |
-| P1-043 | Vendor profile screen | - | [ ] | - |
-| P1-044 | Portfolio tab | - | [ ] | - |
-| P1-045 | Packages tab | - | [ ] | - |
-| P1-046 | Reviews tab | - | [ ] | - |
-| P1-047 | Vendor BLoC | - | [ ] | - |
-| P1-048 | Favorites functionality | - | [ ] | - |
+| P1-040 | Category grid screen | Claude | [x] | Completed Feb 2 |
+| P1-041 | Vendor list screen | Claude | [x] | Completed Feb 2 |
+| P1-042 | Vendor filter modal | Claude | [x] | Completed Feb 2 |
+| P1-043 | Vendor profile screen | Claude | [x] | Completed Feb 2 |
+| P1-044 | Portfolio tab | Claude | [x] | Completed Feb 2 |
+| P1-045 | Packages tab | Claude | [x] | Completed Feb 2 |
+| P1-046 | Reviews tab | Claude | [x] | Completed Feb 2 |
+| P1-047 | Vendor BLoC | Claude | [x] | Completed Feb 2 |
+| P1-048 | Favorites functionality | Claude | [x] | Local storage |
 
 ### Booking System (Mobile)
 | ID | Task | Assigned To | Status | Notes |
@@ -265,7 +265,7 @@
 | Phase | Total Tasks | Completed | Progress |
 |-------|-------------|-----------|----------|
 | Phase 0 | 30 | 30 | 100% |
-| Phase 1 | 80+ | 8 | 10% |
+| Phase 1 | 80+ | 37 | 46% |
 | Phase 2 | 9 | 0 | 0% |
 | Phase 2.5 | 6 | 0 | 0% |
 | Phase 3 | 6 | 0 | 0% |
@@ -276,10 +276,8 @@
 
 | ID | Task | Component |
 |----|------|-----------|
-| P1-001 | Splash screen | Flutter |
-| P1-002 | Welcome screen | Flutter |
-| P1-003 | Login screen | Flutter |
-| P1-004 | Register screen | Flutter |
-| P1-008 | Auth BLoC | Flutter |
-| P1-020 | Wedding date picker | Flutter |
-| P1-035 | Home screen layout | Flutter |
+| P0-032 | Setup Firebase project | Backend |
+| P1-050 | Package selection screen | Flutter |
+| P1-051 | Date selection calendar | Flutter |
+| P1-052 | Booking request form | Flutter |
+| P1-070 | Conversations list | Flutter |

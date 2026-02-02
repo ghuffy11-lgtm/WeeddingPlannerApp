@@ -14,9 +14,12 @@ abstract class AppException implements Exception {
 
 /// Server Exception
 class ServerException extends AppException {
+  final int? statusCode;
+
   const ServerException({
     super.message = 'Server error occurred',
     super.code,
+    this.statusCode,
   });
 }
 
@@ -46,11 +49,19 @@ class AuthException extends AppException {
 
 /// Validation Exception
 class ValidationException extends AppException {
-  final Map<String, String>? fieldErrors;
+  final Map<String, dynamic>? errors;
 
   const ValidationException({
     super.message = 'Validation error',
-    this.fieldErrors,
+    this.errors,
+  });
+}
+
+/// Conflict Exception (e.g., email already exists)
+class ConflictException extends AppException {
+  const ConflictException({
+    super.message = 'Resource conflict',
+    super.code = 409,
   });
 }
 

@@ -1,7 +1,7 @@
 # Project Status
 
-> **Current Status:** Phase 0 Complete - Ready for Phase 1
-> **Last Updated:** February 1, 2026
+> **Current Status:** Phase 1 In Progress - Auth, Onboarding, Home & Vendors Complete
+> **Last Updated:** February 2, 2026
 
 ---
 
@@ -10,7 +10,7 @@
 ```
 Planning & Design    [##########] 100%
 Project Setup        [##########] 100%
-Phase 1 Development  [#---------]  10%
+Phase 1 Development  [#####-----]  46%
 Phase 2 Development  [----------]   0%
 Phase 2.5 Development[----------]   0%
 Phase 3 Development  [----------]   0%
@@ -38,11 +38,18 @@ Phase 3 Development  [----------]   0%
 - [x] API tested and working (health check, auth, categories)
 - [x] GitHub repository setup
 
+### Completed This Session
+- [x] Build Flutter authentication screens (splash, welcome, login, register)
+- [x] Build couple onboarding flow (6 steps)
+- [x] Auth BLoC and API integration
+- [x] Build home dashboard (all widgets)
+- [x] Build vendor marketplace (categories, vendor list, vendor detail with tabs)
+- [x] Vendor BLoC with filtering, pagination, and favorites
+
 ### Ready for Next Session
-- [ ] Build Flutter authentication screens
-- [ ] Build couple onboarding flow
-- [ ] Build vendor registration flow
-- [ ] Build home dashboard
+- [ ] Setup Firebase for chat/notifications
+- [ ] Build booking system screens
+- [ ] Build chat system screens
 
 ---
 
@@ -50,7 +57,7 @@ Phase 3 Development  [----------]   0%
 
 | Component | Status | Progress |
 |-----------|--------|----------|
-| Couple App (Flutter) | Scaffolded | 15% |
+| Couple App (Flutter) | Auth, Onboarding, Home & Vendors Done | 50% |
 | Vendor App (Flutter) | Not Started | 0% |
 | Admin Panel (Web) | Not Started | 0% |
 | Support Panel (Web) | Not Started | 0% |
@@ -97,12 +104,12 @@ Phase 3 Development  [----------]   0%
 | Feature | Component | Status |
 |---------|-----------|--------|
 | User Authentication | API | **Done** |
-| User Authentication | Mobile | Not Started |
-| Couple Onboarding | Mobile | Not Started |
+| User Authentication | Mobile | **Done** |
+| Couple Onboarding | Mobile | **Done** |
 | Vendor Onboarding | Mobile | Not Started |
-| Home Dashboard | Mobile | Not Started |
-| Vendor Browsing | Mobile | Not Started |
-| Vendor Profiles | Mobile | Not Started |
+| Home Dashboard | Mobile | **Done** |
+| Vendor Browsing | Mobile | **Done** |
+| Vendor Profiles | Mobile | **Done** |
 | Booking System | API | **Done** |
 | Booking System | Mobile | Not Started |
 | Chat (Couple-Vendor) | Mobile + Firebase | Not Started |

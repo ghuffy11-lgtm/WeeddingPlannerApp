@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-// Import pages (to be created)
-// import '../features/auth/presentation/pages/splash_page.dart';
-// import '../features/auth/presentation/pages/welcome_page.dart';
-// import '../features/auth/presentation/pages/login_page.dart';
-// import '../features/auth/presentation/pages/register_page.dart';
-// import '../features/onboarding/presentation/pages/onboarding_page.dart';
-// import '../features/home/presentation/pages/home_page.dart';
-// import '../features/vendors/presentation/pages/vendors_page.dart';
-// import '../features/tasks/presentation/pages/tasks_page.dart';
-// import '../features/chat/presentation/pages/chat_page.dart';
-// import '../features/profile/presentation/pages/profile_page.dart';
-
+import '../features/auth/presentation/pages/login_page.dart';
+import '../features/auth/presentation/pages/register_page.dart';
+import '../features/auth/presentation/pages/splash_page.dart';
+import '../features/auth/presentation/pages/welcome_page.dart';
+import '../features/home/presentation/bloc/home_bloc.dart';
+import '../features/home/presentation/pages/home_page.dart';
+import '../features/onboarding/presentation/pages/onboarding_page.dart';
+import '../features/vendors/presentation/bloc/vendor_bloc.dart';
+import '../features/vendors/presentation/pages/vendors_page.dart';
+import '../features/vendors/presentation/pages/vendor_list_page.dart';
+import '../features/vendors/presentation/pages/vendor_detail_page.dart';
 import '../shared/widgets/layout/main_scaffold.dart';
+import 'injection.dart';
 
 /// App Route Names
 class AppRoutes {
@@ -76,23 +77,23 @@ final GoRouter appRouter = GoRouter(
     // Splash Screen
     GoRoute(
       path: AppRoutes.splash,
-      builder: (context, state) => const _PlaceholderPage(title: 'Splash'),
+      builder: (context, state) => const SplashPage(),
     ),
 
     // Welcome Screen
     GoRoute(
       path: AppRoutes.welcome,
-      builder: (context, state) => const _PlaceholderPage(title: 'Welcome'),
+      builder: (context, state) => const WelcomePage(),
     ),
 
     // Auth Routes
     GoRoute(
       path: AppRoutes.login,
-      builder: (context, state) => const _PlaceholderPage(title: 'Login'),
+      builder: (context, state) => const LoginPage(),
     ),
     GoRoute(
       path: AppRoutes.register,
-      builder: (context, state) => const _PlaceholderPage(title: 'Register'),
+      builder: (context, state) => const RegisterPage(),
     ),
     GoRoute(
       path: AppRoutes.forgotPassword,
@@ -103,7 +104,7 @@ final GoRouter appRouter = GoRouter(
     // Onboarding
     GoRoute(
       path: AppRoutes.onboarding,
-      builder: (context, state) => const _PlaceholderPage(title: 'Onboarding'),
+      builder: (context, state) => const OnboardingPage(),
     ),
 
     // Main App Shell with Bottom Navigation
@@ -113,8 +114,11 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: AppRoutes.home,
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: _PlaceholderPage(title: 'Home'),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: BlocProvider(
+              create: (_) => getIt<HomeBloc>(),
+              child: const HomePage(),
+            ),
           ),
         ),
         GoRoute(
@@ -125,8 +129,11 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: AppRoutes.vendors,
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: _PlaceholderPage(title: 'Vendors'),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: BlocProvider(
+              create: (_) => getIt<VendorBloc>(),
+              child: const VendorsPage(),
+            ),
           ),
         ),
         GoRoute(
@@ -149,7 +156,38 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.vendorDetail,
       builder: (context, state) {
         final vendorId = state.pathParameters['id']!;
-        return _PlaceholderPage(title: 'Vendor: $vendorId');
+        return BlocProvider(
+          create: (_) => getIt<VendorBloc>(),
+          child: VendorDetailPage(vendorId: vendorId),
+        );
+      },
+    ),
+
+    // Vendor List by Category
+    GoRoute(
+      path: '/vendors/category/:categoryId',
+      builder: (context, state) {
+        final categoryId = state.pathParameters['categoryId']!;
+        final categoryName = state.extra as String?;
+        return BlocProvider(
+          create: (_) => getIt<VendorBloc>(),
+          child: VendorListPage(
+            categoryId: categoryId,
+            categoryName: categoryName,
+          ),
+        );
+      },
+    ),
+
+    // Vendor Search
+    GoRoute(
+      path: '/vendors/search',
+      builder: (context, state) {
+        final searchQuery = state.extra as String?;
+        return BlocProvider(
+          create: (_) => getIt<VendorBloc>(),
+          child: VendorListPage(searchQuery: searchQuery),
+        );
       },
     ),
 

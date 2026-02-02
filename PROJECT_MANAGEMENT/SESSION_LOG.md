@@ -302,10 +302,367 @@
 - **Server:** /mnt/repo/WeeddingPlannerApp
 
 ### Next Session Tasks
-- [ ] Build Flutter authentication screens (P1-001 to P1-009)
-- [ ] Build couple onboarding flow (P1-020 to P1-026)
+- [x] Build Flutter authentication screens (P1-001 to P1-009)
+- [x] Build couple onboarding flow (P1-020 to P1-026)
 - [ ] Build home dashboard (P1-030 to P1-036)
 - [ ] Setup Firebase for chat/notifications
+
+---
+
+## Session 3 - February 2, 2026
+
+### Participants
+- User (Project Owner)
+- Claude (AI Project Manager)
+
+### Duration
+~2 hours
+
+### Topics Discussed
+1. Flutter authentication feature implementation
+2. Couple onboarding flow implementation
+3. BLoC pattern for state management
+4. API integration with backend
+
+### Work Completed
+
+1. **Authentication Feature**
+   - Created Auth BLoC with login, register, logout events
+   - Implemented AuthRepository with remote/local data sources
+   - Built secure token storage with flutter_secure_storage
+   - Created UserModel and AuthTokens for serialization
+   - Added AuthInterceptor for automatic token injection
+
+2. **Auth Screens**
+   - Splash page with animated logo and auth check
+   - Welcome page with feature highlights
+   - Login page with email/password and social buttons
+   - Register page with Couple/Vendor account type selection
+
+3. **Onboarding Feature**
+   - Created OnboardingBloc for step navigation
+   - Built 6-step flow with progress indicator
+   - Wedding date picker with "no date yet" option
+   - Budget slider (5K-100K+) with multi-currency support
+   - Guest count with region-adaptive suggestions
+   - Style preferences (6 options with emoji cards)
+   - Cultural traditions selection (8 options)
+   - Celebration completion screen
+
+4. **Configuration Updates**
+   - Updated dependency injection with auth dependencies
+   - Connected routes to actual pages
+   - Added flutter_secure_storage dependency
+   - Updated exceptions with new error types
+
+### Files Created
+- `lib/features/auth/data/models/user_model.dart`
+- `lib/features/auth/data/models/auth_tokens.dart`
+- `lib/features/auth/data/datasources/auth_remote_datasource.dart`
+- `lib/features/auth/data/datasources/auth_local_datasource.dart`
+- `lib/features/auth/data/repositories/auth_repository_impl.dart`
+- `lib/features/auth/presentation/bloc/auth_bloc.dart`
+- `lib/features/auth/presentation/bloc/auth_event.dart`
+- `lib/features/auth/presentation/bloc/auth_state.dart`
+- `lib/features/auth/presentation/pages/splash_page.dart`
+- `lib/features/auth/presentation/pages/welcome_page.dart`
+- `lib/features/auth/presentation/pages/login_page.dart`
+- `lib/features/auth/presentation/pages/register_page.dart`
+- `lib/features/onboarding/domain/entities/onboarding_data.dart`
+- `lib/features/onboarding/presentation/bloc/onboarding_bloc.dart`
+- `lib/features/onboarding/presentation/bloc/onboarding_event.dart`
+- `lib/features/onboarding/presentation/bloc/onboarding_state.dart`
+- `lib/features/onboarding/presentation/pages/onboarding_page.dart`
+- `lib/features/onboarding/presentation/widgets/wedding_date_step.dart`
+- `lib/features/onboarding/presentation/widgets/budget_step.dart`
+- `lib/features/onboarding/presentation/widgets/guest_count_step.dart`
+- `lib/features/onboarding/presentation/widgets/styles_step.dart`
+- `lib/features/onboarding/presentation/widgets/traditions_step.dart`
+- `lib/features/onboarding/presentation/widgets/celebration_step.dart`
+
+### Files Modified
+- `lib/config/injection.dart`
+- `lib/config/routes.dart`
+- `lib/app.dart`
+- `lib/core/errors/exceptions.dart`
+- `pubspec.yaml`
+
+### Decisions Made
+| Decision | Choice | Reason |
+|----------|--------|--------|
+| Token Storage | flutter_secure_storage | Secure encrypted storage |
+| Auth State | Global singleton BLoC | Auth should be app-wide |
+| Onboarding BLoC | Local per-page | Only needed during onboarding |
+| Region suggestions | 3 presets | Western, Middle East, South Asian |
+
+### Action Items for Next Session
+- [ ] Build home dashboard (P1-030 to P1-036)
+- [ ] Setup Firebase for chat/notifications (P0-032)
+- [ ] Test auth flow end-to-end with backend
+- [ ] Build vendor browsing screens (P1-040 to P1-048)
+
+### Open Questions
+1. Firebase project setup - user needs to create Firebase project and add config files
+2. Social login (Google/Apple) requires Firebase Auth configuration
+
+### Notes
+- All auth screens follow the design system (colors, typography, spacing)
+- Onboarding data is not yet persisted to API (TODO in bloc)
+- API base URL defaults to Android emulator localhost
+
+---
+
+## Session 3 (Continued) - February 2, 2026
+
+### Participants
+- User (Project Owner)
+- Claude (AI Project Manager)
+
+### Duration
+~1 hour
+
+### Topics Discussed
+1. Testing Flutter app in Docker environment
+2. Fixing compilation errors
+3. Flutter SDK compatibility fixes
+
+### Work Completed
+
+1. **Docker Flutter Setup**
+   - Added Flutter service to docker-compose.yml
+   - Started Flutter container with Cirrus Labs image
+   - Ran `flutter pub get` successfully
+
+2. **Bug Fixes**
+   - Fixed `intl` version conflict (^0.19.0 → ^0.20.2) for flutter_localizations compatibility
+   - Fixed theme type names for newer Flutter SDK (`CardTheme` → `CardThemeData`, `DialogTheme` → `DialogThemeData`, `TabBarTheme` → `TabBarThemeData`)
+   - Fixed default test file that referenced non-existent `MyApp` class
+   - Commented out Firebase initialization in main.dart (requires Firebase config)
+   - Commented out custom fonts in pubspec.yaml (font files not yet added)
+
+3. **Testing Results**
+   - `flutter analyze` passes with only info-level warnings (style suggestions)
+   - `flutter test` passes (1 test passed)
+   - No compilation errors
+
+### Files Modified
+- `pubspec.yaml` - Fixed intl version, commented out fonts
+- `lib/core/theme/app_theme.dart` - Fixed theme type names
+- `lib/main.dart` - Commented out Firebase init
+- `test/widget_test.dart` - Fixed broken test
+- `docker-compose.yml` - Added Flutter service
+
+### Issues Resolved
+| Issue | Solution |
+|-------|----------|
+| intl version conflict | Updated to ^0.20.2 |
+| CardTheme type error | Changed to CardThemeData |
+| DialogTheme type error | Changed to DialogThemeData |
+| TabBarTheme type error | Changed to TabBarThemeData |
+| MyApp class not found in test | Created placeholder test |
+| Firebase crash on startup | Commented out Firebase.initializeApp() |
+| Missing font files | Commented out fonts section |
+
+### Action Items for Next Session
+- [ ] Build home dashboard (P1-030 to P1-036)
+- [ ] Setup Firebase project and add config files
+- [ ] Add custom font files to assets/fonts/
+- [ ] Build vendor browsing screens (P1-040 to P1-048)
+
+### Notes
+- Flutter is now set up in Docker for development
+- The app compiles successfully but requires Firebase config to run
+- Custom fonts need to be added to complete the design system
+
+---
+
+## Session 3 (Home Dashboard) - February 2, 2026
+
+### Participants
+- User (Project Owner)
+- Claude (AI Project Manager)
+
+### Duration
+~1.5 hours
+
+### Topics Discussed
+1. Building home dashboard for couples
+2. Data layer architecture for home feature
+3. Widget design for dashboard cards
+
+### Work Completed
+
+1. **Home Feature Domain Layer**
+   - Created Wedding entity with countdown calculation
+   - Created WeddingTask entity with priority and status
+   - Created BudgetItem and BudgetCategorySummary entities
+   - Created Booking entity with status handling
+   - Defined HomeRepository interface
+
+2. **Home Feature Data Layer**
+   - Created WeddingModel, WeddingTaskModel, BookingModel
+   - Implemented HomeRemoteDataSource with Dio
+   - Implemented HomeRepositoryImpl with error handling
+
+3. **Home BLoC**
+   - HomeLoadRequested - loads all dashboard data in parallel
+   - HomeRefreshRequested - pull-to-refresh functionality
+   - HomeTaskCompleted - marks task as done and updates stats
+
+4. **Dashboard Widgets**
+   - CountdownCard - shows days until wedding with gradient background
+   - QuickActionsWidget - 8 quick action buttons in a grid
+   - BudgetOverviewCard - progress bar, spent/remaining, category breakdown
+   - UpcomingTasksCard - task list with completion checkbox, priority badges
+   - VendorStatusCard - booking list with vendor images and status badges
+
+5. **HomePage**
+   - Scrollable dashboard with all widgets
+   - Loading skeleton animation
+   - Error state with retry button
+   - Pull-to-refresh functionality
+   - Navigation to all app sections
+
+### Files Created
+- `lib/features/home/domain/entities/wedding.dart`
+- `lib/features/home/domain/entities/wedding_task.dart`
+- `lib/features/home/domain/entities/budget_item.dart`
+- `lib/features/home/domain/entities/booking.dart`
+- `lib/features/home/domain/repositories/home_repository.dart`
+- `lib/features/home/data/models/wedding_model.dart`
+- `lib/features/home/data/models/wedding_task_model.dart`
+- `lib/features/home/data/models/booking_model.dart`
+- `lib/features/home/data/datasources/home_remote_datasource.dart`
+- `lib/features/home/data/repositories/home_repository_impl.dart`
+- `lib/features/home/presentation/bloc/home_bloc.dart`
+- `lib/features/home/presentation/bloc/home_event.dart`
+- `lib/features/home/presentation/bloc/home_state.dart`
+- `lib/features/home/presentation/widgets/countdown_card.dart`
+- `lib/features/home/presentation/widgets/quick_actions_widget.dart`
+- `lib/features/home/presentation/widgets/budget_overview_card.dart`
+- `lib/features/home/presentation/widgets/upcoming_tasks_card.dart`
+- `lib/features/home/presentation/widgets/vendor_status_card.dart`
+- `lib/features/home/presentation/pages/home_page.dart`
+
+### Files Modified
+- `lib/config/injection.dart` - Added home dependencies
+- `lib/config/routes.dart` - Connected HomePage
+
+### Action Items for Next Session
+- [x] Build vendor browsing screens (P1-040 to P1-048) - Completed!
+- [ ] Setup Firebase project (P0-032)
+- [ ] Build booking system screens (P1-050 to P1-056)
+
+### Notes
+- Home dashboard loads all data in parallel for performance
+- Empty states show helpful prompts to set up wedding/budget
+- Task completion updates local stats immediately (optimistic update)
+
+---
+
+## Session 3 (Vendor Marketplace) - February 2, 2026
+
+### Participants
+- User (Project Owner)
+- Claude (AI Project Manager)
+
+### Duration
+~2 hours
+
+### Topics Discussed
+1. Building vendor marketplace feature
+2. Clean architecture implementation for vendors
+3. Filter and pagination design
+4. Favorites functionality with local storage
+
+### Work Completed
+
+1. **Vendor Feature Domain Layer**
+   - Created Category entity with icon mapping
+   - Created Vendor and VendorSummary entities
+   - Created VendorPackage, PortfolioItem, Review entities
+   - Defined VendorRepository interface with VendorFilter and PaginatedResult
+
+2. **Vendor Feature Data Layer**
+   - Created all model classes with JSON serialization
+   - Implemented VendorRemoteDataSource for API calls
+   - Implemented VendorLocalDataSource for favorites storage
+   - Implemented VendorRepositoryImpl with error handling
+
+3. **Vendor BLoC**
+   - Categories loading with caching
+   - Vendor list with filtering, sorting, and pagination
+   - Vendor detail loading
+   - Reviews pagination
+   - Favorites toggle with optimistic updates
+
+4. **Vendor UI**
+   - VendorsPage with category grid and search bar
+   - VendorListPage with filter modal and infinite scroll
+   - VendorDetailPage with tabbed interface (Portfolio, Packages, Reviews, About)
+   - CategoryCard widget for category grid
+   - VendorFilterModal for price/rating/sort filtering
+   - PortfolioTab with full-screen gallery viewer
+   - PackagesTab with package selection cards
+   - ReviewsTab with star ratings and vendor responses
+   - AboutTab with contact info and business details
+
+5. **Configuration Updates**
+   - Updated injection.dart with vendor dependencies
+   - Updated routes.dart with vendor routes
+   - Fixed failures.dart for consistent named parameters
+
+### Files Created
+- `lib/features/vendors/domain/entities/category.dart`
+- `lib/features/vendors/domain/entities/vendor.dart`
+- `lib/features/vendors/domain/entities/vendor_package.dart`
+- `lib/features/vendors/domain/entities/portfolio_item.dart`
+- `lib/features/vendors/domain/entities/review.dart`
+- `lib/features/vendors/domain/repositories/vendor_repository.dart`
+- `lib/features/vendors/data/models/category_model.dart`
+- `lib/features/vendors/data/models/vendor_model.dart`
+- `lib/features/vendors/data/models/vendor_package_model.dart`
+- `lib/features/vendors/data/models/portfolio_item_model.dart`
+- `lib/features/vendors/data/models/review_model.dart`
+- `lib/features/vendors/data/datasources/vendor_remote_datasource.dart`
+- `lib/features/vendors/data/datasources/vendor_local_datasource.dart`
+- `lib/features/vendors/data/repositories/vendor_repository_impl.dart`
+- `lib/features/vendors/presentation/bloc/vendor_event.dart`
+- `lib/features/vendors/presentation/bloc/vendor_state.dart`
+- `lib/features/vendors/presentation/bloc/vendor_bloc.dart`
+- `lib/features/vendors/presentation/pages/vendors_page.dart`
+- `lib/features/vendors/presentation/pages/vendor_list_page.dart`
+- `lib/features/vendors/presentation/pages/vendor_detail_page.dart`
+- `lib/features/vendors/presentation/widgets/category_card.dart`
+- `lib/features/vendors/presentation/widgets/vendor_filter_modal.dart`
+- `lib/features/vendors/presentation/widgets/portfolio_tab.dart`
+- `lib/features/vendors/presentation/widgets/packages_tab.dart`
+- `lib/features/vendors/presentation/widgets/reviews_tab.dart`
+- `lib/features/vendors/presentation/widgets/about_tab.dart`
+
+### Files Modified
+- `lib/config/injection.dart` - Added vendor dependencies
+- `lib/config/routes.dart` - Added vendor routes
+- `lib/core/errors/failures.dart` - Fixed parameter consistency
+
+### Decisions Made
+| Decision | Choice | Reason |
+|----------|--------|--------|
+| Favorites storage | SharedPreferences | Simple, local-only, no auth needed |
+| Pagination | Infinite scroll | Better mobile UX |
+| Filter state | In BLoC | Single source of truth |
+| Gallery viewer | Custom full screen | Pinch-to-zoom support |
+
+### Action Items for Next Session
+- [ ] Setup Firebase project (P0-032)
+- [ ] Build booking system screens (P1-050 to P1-056)
+- [ ] Build chat system screens (P1-070 to P1-077)
+
+### Notes
+- Vendor marketplace feature fully implemented (P1-040 to P1-048)
+- Favorites stored locally, will sync with API when user auth is integrated
+- Filter modal supports price range, rating, and multiple sort options
+- Portfolio gallery supports pinch-to-zoom and captions
 
 ---
 

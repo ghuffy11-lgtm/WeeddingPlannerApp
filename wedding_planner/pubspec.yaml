@@ -33,6 +33,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
 
   # Firebase
   firebase_core: ^2.24.2
@@ -51,7 +52,7 @@ dependencies:
   reactive_forms: ^16.1.1
 
   # Utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   url_launcher: ^6.2.2
   share_plus: ^7.2.1
   image_picker: ^1.0.7
@@ -92,23 +93,24 @@ flutter:
     - assets/icons/
     - assets/animations/
 
-  fonts:
-    - family: CormorantGaramond
-      fonts:
-        - asset: assets/fonts/CormorantGaramond/CormorantGaramond-Regular.ttf
-        - asset: assets/fonts/CormorantGaramond/CormorantGaramond-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/CormorantGaramond/CormorantGaramond-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/CormorantGaramond/CormorantGaramond-Bold.ttf
-          weight: 700
-
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter/Inter-Regular.ttf
-        - asset: assets/fonts/Inter/Inter-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Inter/Inter-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Inter/Inter-Bold.ttf
-          weight: 700
+  # TODO: Add custom fonts when available
+  # fonts:
+  #   - family: CormorantGaramond
+  #     fonts:
+  #       - asset: assets/fonts/CormorantGaramond/CormorantGaramond-Regular.ttf
+  #       - asset: assets/fonts/CormorantGaramond/CormorantGaramond-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/CormorantGaramond/CormorantGaramond-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/CormorantGaramond/CormorantGaramond-Bold.ttf
+  #         weight: 700
+  #
+  #   - family: Inter
+  #     fonts:
+  #       - asset: assets/fonts/Inter/Inter-Regular.ttf
+  #       - asset: assets/fonts/Inter/Inter-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Inter/Inter-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Inter/Inter-Bold.ttf
+  #         weight: 700

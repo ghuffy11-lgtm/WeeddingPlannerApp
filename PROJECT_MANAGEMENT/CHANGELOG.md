@@ -5,6 +5,190 @@
 
 ---
 
+## February 2, 2026 (Session 3 - Vendor Marketplace)
+
+### Added
+
+- **Vendor Feature** (`lib/features/vendors/`)
+  - **Domain Layer**
+    - Category entity with icon mapping
+    - Vendor and VendorSummary entities
+    - VendorPackage entity with price formatting
+    - PortfolioItem entity
+    - Review entity
+    - VendorRepository interface with VendorFilter and PaginatedResult
+
+  - **Data Layer**
+    - CategoryModel, VendorModel, VendorSummaryModel
+    - VendorPackageModel, PortfolioItemModel, ReviewModel
+    - VendorRemoteDataSource for API calls (categories, vendors, reviews)
+    - VendorLocalDataSource for favorites storage
+    - VendorRepositoryImpl with error handling
+
+  - **Presentation Layer**
+    - VendorBloc with events and states for all operations
+    - VendorsPage (category grid with search)
+    - VendorListPage (vendor list with filters and pagination)
+    - VendorDetailPage (tabbed view with portfolio, packages, reviews, about)
+    - CategoryCard widget
+    - VendorFilterModal (price range, rating, sort options)
+    - PortfolioTab with full-screen gallery viewer
+    - PackagesTab with package cards
+    - ReviewsTab with infinite scroll pagination
+    - AboutTab with contact info and business details
+
+### Modified
+
+- **Dependency Injection** (`lib/config/injection.dart`)
+  - Added VendorRemoteDataSource, VendorLocalDataSource
+  - Added VendorRepository, VendorBloc registrations
+
+- **Routes** (`lib/config/routes.dart`)
+  - Connected VendorsPage with BlocProvider
+  - Added VendorDetailPage route with vendorId parameter
+  - Added VendorListPage routes for category and search
+
+- **Failures** (`lib/core/errors/failures.dart`)
+  - Ensured consistent named parameter style for all failure classes
+
+### Technical Notes
+
+- Categories loaded from API with caching
+- Vendor list supports filtering, sorting, and infinite scroll pagination
+- Favorites stored locally using SharedPreferences
+- Reviews support pagination with load more
+- Portfolio gallery supports pinch-to-zoom
+
+---
+
+## February 2, 2026 (Session 3 - Home Dashboard)
+
+### Added
+
+- **Home Feature** (`lib/features/home/`)
+  - Domain entities: Wedding, WeddingTask, BudgetItem, Booking
+  - HomeRepository interface with data operations
+  - HomeRemoteDataSource for API integration
+  - HomeRepositoryImpl with error handling
+  - HomeBloc with state management (load, refresh, complete task)
+
+- **Home Dashboard Widgets**
+  - CountdownCard - Wedding countdown with couple names
+  - QuickActionsWidget - 8 quick action buttons grid
+  - BudgetOverviewCard - Budget progress bar and category breakdown
+  - UpcomingTasksCard - Task list with completion and stats
+  - VendorStatusCard - Booking list with vendor status badges
+
+- **Home Page**
+  - Full dashboard layout with pull-to-refresh
+  - Loading skeleton states
+  - Error handling with retry
+  - Navigation to all app sections
+
+### Modified
+
+- **Dependency Injection** (`lib/config/injection.dart`)
+  - Added HomeRemoteDataSource, HomeRepository, HomeBloc registration
+
+- **Routes** (`lib/config/routes.dart`)
+  - Connected HomePage with BlocProvider
+
+---
+
+## February 2, 2026 (Session 3 - Continued)
+
+### Fixed
+
+- **Theme Type Names** (`lib/core/theme/app_theme.dart`)
+  - Fixed `CardTheme` → `CardThemeData` for Flutter SDK compatibility
+  - Fixed `DialogTheme` → `DialogThemeData` for Flutter SDK compatibility
+  - Fixed `TabBarTheme` → `TabBarThemeData` for Flutter SDK compatibility
+
+- **Dependencies** (`pubspec.yaml`)
+  - Fixed intl version conflict: ^0.19.0 → ^0.20.2 (required by flutter_localizations)
+  - Commented out custom fonts (font files not yet added)
+
+- **Tests** (`test/widget_test.dart`)
+  - Fixed broken test referencing non-existent `MyApp` class
+  - Created placeholder smoke test
+
+- **Firebase** (`lib/main.dart`)
+  - Commented out Firebase.initializeApp() (requires Firebase project config)
+
+### Modified
+
+- **Docker** (`docker-compose.yml`)
+  - Added Flutter development container service
+
+### Technical Notes
+
+- Flutter analyze: 222 info-level warnings (style suggestions), 0 errors
+- Flutter test: 1 test passed
+- App compiles successfully but requires Firebase config to run
+
+---
+
+## February 2, 2026 (Session 3)
+
+### Added
+
+- **Authentication Feature** (`lib/features/auth/`)
+  - Auth BLoC with states/events for login, register, logout
+  - Auth Repository implementation with API integration
+  - Remote data source for API calls (login, register, refresh, password reset)
+  - Local data source for secure token storage (flutter_secure_storage)
+  - User model with JSON serialization
+  - Auth tokens model with expiration handling
+
+- **Auth Screens**
+  - Splash page with animated logo and auth check
+  - Welcome page with app introduction and feature highlights
+  - Login page with email/password, social buttons, forgot password
+  - Register page with account type selection (Couple/Vendor)
+
+- **Onboarding Feature** (`lib/features/onboarding/`)
+  - Onboarding BLoC with step navigation
+  - Onboarding data entity with wedding preferences
+  - 6-step flow: Date, Budget, Guest Count, Styles, Traditions, Celebration
+  - Wedding date picker with "no date yet" option
+  - Budget slider with currency selection (USD, KWD, EUR, GBP, AED)
+  - Guest count with region-adaptive suggestions (Western, Middle East, South Asian)
+  - Style preferences multi-select (Romantic, Modern, Traditional, etc.)
+  - Cultural traditions selection (Western, Islamic, Hindu, etc.)
+  - Celebration completion screen with quick action cards
+
+### Modified
+
+- **Dependency Injection** (`lib/config/injection.dart`)
+  - Added AuthBloc, AuthRepository, data sources registration
+  - Added AuthInterceptor for automatic token injection
+  - Updated API base URL for development
+
+- **App Configuration** (`lib/app.dart`)
+  - Added BlocProvider for AuthBloc
+
+- **Routes** (`lib/config/routes.dart`)
+  - Connected auth pages (splash, welcome, login, register)
+  - Connected onboarding page
+
+- **Dependencies** (`pubspec.yaml`)
+  - Added flutter_secure_storage: ^9.0.0
+
+- **Exceptions** (`lib/core/errors/exceptions.dart`)
+  - Added ConflictException for email already exists
+  - Updated ValidationException to accept dynamic errors
+  - Added statusCode to ServerException
+
+### Technical Notes
+
+- Auth flow: Splash -> checks auth -> Welcome/Home based on login state
+- Registration flow: Register -> Onboarding (couples) or Home (vendors)
+- Tokens stored securely with flutter_secure_storage
+- API base URL configurable via environment variable API_BASE_URL
+- Default API URL points to Android emulator localhost (10.0.2.2:3000)
+
+---
+
 ## January 31, 2026 (Session 2)
 
 ### Added

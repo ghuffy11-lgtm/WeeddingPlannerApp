@@ -99,7 +99,24 @@ services:
       retries: 3
       start_period: 60s
 
+  # Flutter Development Container
+  flutter:
+    image: ghcr.io/cirruslabs/flutter:stable
+    container_name: wedding_planner_flutter
+    working_dir: /app
+    volumes:
+      - ./wedding_planner:/app
+      - flutter_pub_cache:/root/.pub-cache
+    networks:
+      - wedding_network
+    tty: true
+    stdin_open: true
+    command: tail -f /dev/null
+
 networks:
   wedding_network:
     name: wedding_planner_network
     driver: bridge
+
+volumes:
+  flutter_pub_cache:
