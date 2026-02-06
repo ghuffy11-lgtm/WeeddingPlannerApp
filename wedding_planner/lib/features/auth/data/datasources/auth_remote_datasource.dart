@@ -61,9 +61,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
 
-      final data = response.data as Map<String, dynamic>;
+      final responseData = response.data as Map<String, dynamic>;
+      final data = responseData['data'] as Map<String, dynamic>? ?? responseData;
       final userData = data['user'] as Map<String, dynamic>;
-      final tokensData = data['tokens'] as Map<String, dynamic>? ?? data;
+      // Tokens are at the same level as user, not in a nested 'tokens' object
+      final tokensData = data;
 
       return (
         user: UserModel.fromJson(userData),
@@ -88,9 +90,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
 
-      final data = response.data as Map<String, dynamic>;
+      final responseData = response.data as Map<String, dynamic>;
+      final data = responseData['data'] as Map<String, dynamic>? ?? responseData;
       final userData = data['user'] as Map<String, dynamic>;
-      final tokensData = data['tokens'] as Map<String, dynamic>? ?? data;
+      // Tokens are at the same level as user, not in a nested 'tokens' object
+      final tokensData = data;
 
       return (
         user: UserModel.fromJson(userData),
@@ -109,7 +113,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         data: {'refresh_token': refreshToken},
       );
 
-      return AuthTokens.fromJson(response.data as Map<String, dynamic>);
+      final responseData = response.data as Map<String, dynamic>;
+      final data = responseData['data'] as Map<String, dynamic>? ?? responseData;
+      return AuthTokens.fromJson(data);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -119,7 +125,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> getCurrentUser() async {
     try {
       final response = await dio.get('/users/me');
-      return UserModel.fromJson(response.data as Map<String, dynamic>);
+      final responseData = response.data as Map<String, dynamic>;
+      final data = responseData['data'] as Map<String, dynamic>? ?? responseData;
+      return UserModel.fromJson(data);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -191,8 +199,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
 
     final statusCode = response.statusCode ?? 500;
-    final data = response.data as Map<String, dynamic>?;
-    final message = data?['message'] as String? ?? 'Server error';
+    final responseData = response.data as Map<String, dynamic>?;
+    // Handle both {message: ...} and {error: {message: ...}} formats
+    final errorData = responseData?['error'] as Map<String, dynamic>?;
+    final message = errorData?['message'] as String? ??
+                    responseData?['message'] as String? ??
+                    'Server error';
 
     switch (statusCode) {
       case 400:
@@ -206,7 +218,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       case 409:
         return ConflictException(message: message);
       case 422:
-        final errors = data?['errors'] as Map<String, dynamic>?;
+        final errors = responseData?['errors'] as Map<String, dynamic>?;
         return ValidationException(message: message, errors: errors);
       default:
         return ServerException(message: message, statusCode: statusCode);

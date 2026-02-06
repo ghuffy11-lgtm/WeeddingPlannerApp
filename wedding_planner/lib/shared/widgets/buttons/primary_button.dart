@@ -4,7 +4,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 
 /// Primary Button Widget
-/// Rose Gold background, white text, full width by default
+/// Primary background (hot pink), white text, full width by default
 class PrimaryButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -33,12 +33,12 @@ class PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.roseGold,
+          backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
-          disabledBackgroundColor: AppColors.roseGold.withOpacity(0.5),
-          disabledForegroundColor: AppColors.white.withOpacity(0.7),
+          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
+          disabledForegroundColor: AppColors.white.withValues(alpha: 0.7),
           shape: RoundedRectangleBorder(
-            borderRadius: AppSpacing.borderRadiusSmall,
+            borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
         ),

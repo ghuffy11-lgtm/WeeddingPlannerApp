@@ -17,6 +17,10 @@ import '../features/vendors/data/datasources/vendor_local_datasource.dart';
 import '../features/vendors/data/repositories/vendor_repository_impl.dart';
 import '../features/vendors/domain/repositories/vendor_repository.dart';
 import '../features/vendors/presentation/bloc/vendor_bloc.dart';
+import '../features/booking/data/datasources/booking_remote_datasource.dart';
+import '../features/booking/data/repositories/booking_repository_impl.dart';
+import '../features/booking/domain/repositories/booking_repository.dart';
+import '../features/booking/presentation/bloc/booking_bloc.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -119,6 +123,11 @@ void _registerDataSources() {
       sharedPreferences: getIt<SharedPreferences>(),
     ),
   );
+
+  // Booking Data Sources
+  getIt.registerLazySingleton<BookingRemoteDataSource>(
+    () => BookingRemoteDataSourceImpl(dio: getIt<Dio>()),
+  );
 }
 
 void _registerRepositories() {
@@ -144,6 +153,13 @@ void _registerRepositories() {
       localDataSource: getIt<VendorLocalDataSource>(),
     ),
   );
+
+  // Booking Repository
+  getIt.registerLazySingleton<BookingRepository>(
+    () => BookingRepositoryImpl(
+      remoteDataSource: getIt<BookingRemoteDataSource>(),
+    ),
+  );
 }
 
 void _registerUseCases() {
@@ -166,6 +182,11 @@ void _registerBlocs() {
   // Vendor BLoC - Factory so each navigation creates fresh state
   getIt.registerFactory<VendorBloc>(
     () => VendorBloc(vendorRepository: getIt<VendorRepository>()),
+  );
+
+  // Booking BLoC - Factory so each navigation creates fresh state
+  getIt.registerFactory<BookingBloc>(
+    () => BookingBloc(repository: getIt<BookingRepository>()),
   );
 }
 

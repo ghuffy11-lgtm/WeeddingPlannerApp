@@ -12,14 +12,18 @@ class UserModel extends User {
   });
 
   /// Create from JSON
+  /// Handles both camelCase (API) and snake_case field names
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Handle both camelCase (API) and snake_case field names
+    final createdAtStr = json['created_at'] as String? ?? json['createdAt'] as String?;
+
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String,
       phone: json['phone'] as String?,
-      userType: _parseUserType(json['user_type'] as String?),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      isActive: json['is_active'] as bool? ?? true,
+      userType: _parseUserType(json['user_type'] as String? ?? json['userType'] as String?),
+      createdAt: createdAtStr != null ? DateTime.parse(createdAtStr) : DateTime.now(),
+      isActive: json['is_active'] as bool? ?? json['isActive'] as bool? ?? true,
     );
   }
 

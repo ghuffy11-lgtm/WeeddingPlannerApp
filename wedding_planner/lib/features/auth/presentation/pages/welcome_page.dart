@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,34 +8,57 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/buttons/secondary_button.dart';
+import '../../../../shared/widgets/glass_card.dart';
 
 /// Welcome Page
-/// Introduces the app and provides login/register options
+/// Dark theme with glassmorphism design
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blushRose,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.large),
-          child: Column(
-            children: [
-              const Spacer(flex: 1),
-              // Hero Section
-              _buildHeroSection(context),
-              const Spacer(flex: 2),
-              // Features List
-              _buildFeaturesList(),
-              const Spacer(flex: 2),
-              // Action Buttons
-              _buildActionButtons(context),
-              const SizedBox(height: AppSpacing.medium),
-            ],
+      backgroundColor: AppColors.backgroundDark,
+      body: Stack(
+        children: [
+          // Background glows
+          const BackgroundGlow(
+            color: AppColors.accentPurple,
+            alignment: Alignment(-1, -0.5),
+            size: 400,
           ),
-        ),
+          const BackgroundGlow(
+            color: AppColors.primary,
+            alignment: Alignment(1, 0.5),
+            size: 350,
+          ),
+          const BackgroundGlow(
+            color: AppColors.accentCyan,
+            alignment: Alignment(0, 1),
+            size: 300,
+          ),
+
+          // Content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.large),
+              child: Column(
+                children: [
+                  const Spacer(flex: 1),
+                  // Hero Section
+                  _buildHeroSection(context),
+                  const Spacer(flex: 2),
+                  // Features List
+                  _buildFeaturesList(),
+                  const Spacer(flex: 2),
+                  // Action Buttons
+                  _buildActionButtons(context),
+                  const SizedBox(height: AppSpacing.medium),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -42,17 +66,17 @@ class WelcomePage extends StatelessWidget {
   Widget _buildHeroSection(BuildContext context) {
     return Column(
       children: [
-        // Logo
+        // Logo with gradient
         Container(
           width: 100,
           height: 100,
           decoration: BoxDecoration(
-            color: AppColors.white,
+            gradient: AppColors.primaryGradient,
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
-                color: AppColors.roseGold.withOpacity(0.2),
-                blurRadius: 20,
+                color: AppColors.primary.withValues(alpha: 0.4),
+                blurRadius: 30,
                 offset: const Offset(0, 10),
               ),
             ],
@@ -60,15 +84,15 @@ class WelcomePage extends StatelessWidget {
           child: const Icon(
             Icons.favorite,
             size: 50,
-            color: AppColors.roseGold,
+            color: AppColors.white,
           ),
         ),
         const SizedBox(height: AppSpacing.large),
         // Title
         Text(
           'Wedding Planner',
-          style: AppTypography.h1.copyWith(
-            color: AppColors.deepCharcoal,
+          style: AppTypography.hero.copyWith(
+            color: AppColors.textPrimary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -77,7 +101,7 @@ class WelcomePage extends StatelessWidget {
         Text(
           'Your dream wedding, perfectly planned',
           style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.warmGray,
+            color: AppColors.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -87,10 +111,10 @@ class WelcomePage extends StatelessWidget {
 
   Widget _buildFeaturesList() {
     final features = [
-      (Icons.check_circle_outline, 'Find trusted vendors'),
-      (Icons.calendar_today_outlined, 'Plan every detail'),
-      (Icons.people_outline, 'Manage your guest list'),
-      (Icons.chat_bubble_outline, 'Chat with vendors'),
+      (Icons.check_circle_outline, 'Find trusted vendors', AppColors.accent),
+      (Icons.calendar_today_outlined, 'Plan every detail', AppColors.accentPurple),
+      (Icons.people_outline, 'Manage your guest list', AppColors.primary),
+      (Icons.chat_bubble_outline, 'Chat with vendors', AppColors.accent),
     ];
 
     return Column(
@@ -99,24 +123,24 @@ class WelcomePage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.small),
           child: Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.roseGold.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+              GlassCard(
+                width: 44,
+                height: 44,
+                padding: EdgeInsets.zero,
+                borderRadius: 12,
                 child: Icon(
                   feature.$1,
-                  color: AppColors.roseGold,
-                  size: 20,
+                  color: feature.$3,
+                  size: 22,
                 ),
               ),
               const SizedBox(width: AppSpacing.base),
-              Text(
-                feature.$2,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.deepCharcoal,
+              Expanded(
+                child: Text(
+                  feature.$2,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
             ],

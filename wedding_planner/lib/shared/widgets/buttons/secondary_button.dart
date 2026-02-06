@@ -4,7 +4,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 
 /// Secondary Button Widget
-/// White background, Rose Gold border and text
+/// Glass background, primary border and text
 class SecondaryButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -33,16 +33,16 @@ class SecondaryButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: isLoading ? null : onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.roseGold,
-          backgroundColor: AppColors.white,
+          foregroundColor: AppColors.textPrimary,
+          backgroundColor: AppColors.glassBackground,
           side: BorderSide(
             color: onPressed == null
-                ? AppColors.roseGold.withOpacity(0.5)
-                : AppColors.roseGold,
-            width: 1.5,
+                ? AppColors.glassBorder.withValues(alpha: 0.5)
+                : AppColors.glassBorder,
+            width: 1,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: AppSpacing.borderRadiusSmall,
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
         child: isLoading
@@ -51,7 +51,7 @@ class SecondaryButton extends StatelessWidget {
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.roseGold),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
               )
             : Row(
@@ -65,7 +65,7 @@ class SecondaryButton extends StatelessWidget {
                   Text(
                     text,
                     style: AppTypography.buttonLarge.copyWith(
-                      color: AppColors.roseGold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],

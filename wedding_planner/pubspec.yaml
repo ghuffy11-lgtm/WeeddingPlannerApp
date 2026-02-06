@@ -1,7 +1,7 @@
 name: wedding_planner
 description: Wedding Planning & Vendor Marketplace App
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.1.0+4
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
@@ -47,6 +47,7 @@ dependencies:
   shimmer: ^3.0.0
   lottie: ^3.0.0
   flutter_staggered_grid_view: ^0.7.0
+  google_fonts: ^6.1.0
 
   # Forms & Validation
   reactive_forms: ^16.1.1
@@ -93,24 +94,6 @@ flutter:
     - assets/icons/
     - assets/animations/
 
-  # TODO: Add custom fonts when available
-  # fonts:
-  #   - family: CormorantGaramond
-  #     fonts:
-  #       - asset: assets/fonts/CormorantGaramond/CormorantGaramond-Regular.ttf
-  #       - asset: assets/fonts/CormorantGaramond/CormorantGaramond-Medium.ttf
-  #         weight: 500
-  #       - asset: assets/fonts/CormorantGaramond/CormorantGaramond-SemiBold.ttf
-  #         weight: 600
-  #       - asset: assets/fonts/CormorantGaramond/CormorantGaramond-Bold.ttf
-  #         weight: 700
-  #
-  #   - family: Inter
-  #     fonts:
-  #       - asset: assets/fonts/Inter/Inter-Regular.ttf
-  #       - asset: assets/fonts/Inter/Inter-Medium.ttf
-  #         weight: 500
-  #       - asset: assets/fonts/Inter/Inter-SemiBold.ttf
-  #         weight: 600
-  #       - asset: assets/fonts/Inter/Inter-Bold.ttf
-  #         weight: 700
+  # Fonts loaded via google_fonts package:
+  # - Plus Jakarta Sans (headers)
+  # - Manrope (body text)

@@ -1,7 +1,7 @@
 # Task Tracker
 
 > Track all development tasks by phase and component
-> **Last Updated:** February 2, 2026
+> **Last Updated:** February 6, 2026
 
 ---
 
@@ -48,7 +48,7 @@
 |----|------|-------------|--------|-------|
 | P0-030 | Setup Node.js project | Claude | [x] | Completed Feb 1 |
 | P0-031 | Setup PostgreSQL database | Claude | [x] | Docker + init.sql |
-| P0-032 | Setup Firebase project | - | [ ] | For chat/notifications |
+| P0-032 | Setup Firebase project | Claude | [x] | Session 4 - Integration ready, needs user config |
 | P0-033 | Create base API structure | Claude | [x] | Express + TypeScript |
 | P0-034 | Setup authentication (JWT) | Claude | [x] | Access + Refresh tokens |
 | P0-035 | Setup Docker environment | Claude | [x] | All services running |
@@ -71,6 +71,7 @@
 | P1-007 | Forgot password flow | Claude | [x] | Dialog in login screen |
 | P1-008 | Auth BLoC | Claude | [x] | Completed Feb 2 |
 | P1-009 | Auth API integration | Claude | [x] | Completed Feb 2 |
+| P1-010 | Fix API response parsing in UserModel | Claude | [x] | Session 4 - camelCase fix |
 
 ### Couple Onboarding (Mobile)
 | ID | Task | Assigned To | Status | Notes |
@@ -110,13 +111,13 @@
 ### Booking System (Mobile)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-050 | Package selection screen | - | [ ] | - |
-| P1-051 | Date selection calendar | - | [ ] | - |
-| P1-052 | Booking request form | - | [ ] | - |
-| P1-053 | Booking confirmation screen | - | [ ] | - |
-| P1-054 | My bookings list | - | [ ] | - |
-| P1-055 | Booking detail screen | - | [ ] | - |
-| P1-056 | Booking BLoC | - | [ ] | - |
+| P1-050 | Package selection screen | Claude | [x] | Completed Feb 3 - in CreateBookingPage |
+| P1-051 | Date selection calendar | Claude | [x] | Completed Feb 3 - in CreateBookingPage |
+| P1-052 | Booking request form | Claude | [x] | Completed Feb 3 - CreateBookingPage |
+| P1-053 | Booking confirmation screen | Claude | [x] | Completed Feb 3 - Success redirects to /bookings |
+| P1-054 | My bookings list | Claude | [x] | Completed Feb 3 - BookingsPage with filters |
+| P1-055 | Booking detail screen | Claude | [x] | Completed Feb 3 - BookingDetailPage |
+| P1-056 | Booking BLoC | Claude | [x] | Completed Feb 3 - Full state management |
 
 ### Vendor App (Mobile)
 | ID | Task | Assigned To | Status | Notes |

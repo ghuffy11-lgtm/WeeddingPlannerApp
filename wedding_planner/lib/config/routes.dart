@@ -13,6 +13,11 @@ import '../features/vendors/presentation/bloc/vendor_bloc.dart';
 import '../features/vendors/presentation/pages/vendors_page.dart';
 import '../features/vendors/presentation/pages/vendor_list_page.dart';
 import '../features/vendors/presentation/pages/vendor_detail_page.dart';
+import '../features/vendors/domain/entities/vendor.dart';
+import '../features/booking/presentation/bloc/booking_bloc.dart';
+import '../features/booking/presentation/pages/bookings_page.dart';
+import '../features/booking/presentation/pages/booking_detail_page.dart';
+import '../features/booking/presentation/pages/create_booking_page.dart';
 import '../shared/widgets/layout/main_scaffold.dart';
 import 'injection.dart';
 
@@ -40,6 +45,10 @@ class AppRoutes {
   // Vendor Routes
   static const String vendorDetail = '/vendors/:id';
   static const String vendorBooking = '/vendors/:id/book';
+
+  // Booking Routes
+  static const String bookings = '/bookings';
+  static const String bookingDetail = '/bookings/:id';
 
   // Task Routes
   static const String taskDetail = '/tasks/:id';
@@ -187,6 +196,41 @@ final GoRouter appRouter = GoRouter(
         return BlocProvider(
           create: (_) => getIt<VendorBloc>(),
           child: VendorListPage(searchQuery: searchQuery),
+        );
+      },
+    ),
+
+    // Create Booking (from vendor page)
+    GoRoute(
+      path: '/vendors/:id/book',
+      builder: (context, state) {
+        final vendor = state.extra as Vendor;
+        return BlocProvider(
+          create: (_) => getIt<BookingBloc>(),
+          child: CreateBookingPage(vendor: vendor),
+        );
+      },
+    ),
+
+    // Bookings List
+    GoRoute(
+      path: AppRoutes.bookings,
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<BookingBloc>(),
+          child: const BookingsPage(),
+        );
+      },
+    ),
+
+    // Booking Detail
+    GoRoute(
+      path: '/bookings/:id',
+      builder: (context, state) {
+        final bookingId = state.pathParameters['id']!;
+        return BlocProvider(
+          create: (_) => getIt<BookingBloc>(),
+          child: BookingDetailPage(bookingId: bookingId),
         );
       },
     ),

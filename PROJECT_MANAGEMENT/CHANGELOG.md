@@ -5,6 +5,215 @@
 
 ---
 
+## February 6, 2026 (Session 4 - Firebase Setup)
+
+### Added
+- **Firebase Integration** (P0-032)
+  - `lib/firebase_options.dart` - Firebase configuration with platform detection
+  - `lib/main.dart` - Firebase initialization with graceful error handling
+  - `android/app/google-services.json` - Android Firebase config (placeholder)
+  - `ios/Runner/GoogleService-Info.plist` - iOS Firebase config (placeholder)
+  - `ios/Podfile` - iOS CocoaPods configuration for Firebase
+
+- **Documentation**
+  - `docs/FIREBASE_SETUP.md` - Complete Firebase setup guide
+
+### Modified
+- **Android Configuration**
+  - `android/settings.gradle.kts` - Added Google Services plugin v4.4.2
+  - `android/app/build.gradle.kts` - Added Google Services plugin, multidex support
+  - `android/app/src/main/AndroidManifest.xml` - Added permissions for notifications
+
+- **iOS Configuration**
+  - `ios/Runner/Info.plist` - Added background modes for push notifications
+
+### Technical Notes
+- Firebase is integrated with placeholder config - app builds and runs
+- Firebase features (chat, notifications) require user to configure their Firebase project
+- See `docs/FIREBASE_SETUP.md` for setup instructions
+- App gracefully handles missing Firebase config - continues without Firebase features
+
+---
+
+## February 6, 2026 (Session 4 - API Response Parsing Fix)
+
+### Fixed
+- **UserModel** (`lib/features/auth/data/models/user_model.dart`)
+  - Fixed `type Null is not a subtype of type String` crash on login
+  - Updated `fromJson` to handle both camelCase (API) and snake_case field names
+  - Made `created_at` optional with fallback to `DateTime.now()`
+  - Fields now supported: `userType`/`user_type`, `createdAt`/`created_at`, `isActive`/`is_active`
+
+### Technical Notes
+- Root cause: API returns camelCase (`userType`) but model expected snake_case (`user_type`)
+- API doesn't return `created_at` field, causing null cast error
+- Fix is backwards-compatible with both naming conventions
+
+---
+
+## February 3, 2026 (Session 3 - Booking System)
+
+### Added
+
+- **Booking Feature** (`lib/features/booking/`)
+  - **Domain Layer**
+    - Booking, BookingSummary entities with status enum
+    - BookingVendor, BookingPackage, BookingWedding embedded entities
+    - CreateBookingRequest for API
+    - BookingRepository interface with filter/pagination support
+
+  - **Data Layer**
+    - BookingModel, BookingSummaryModel with JSON serialization
+    - BookingRemoteDataSource for API calls
+    - BookingRepositoryImpl with error handling
+
+  - **Presentation Layer**
+    - BookingBloc with events/states for all operations
+    - BookingsPage - My bookings list with filter chips
+    - BookingDetailPage - Full booking details with cancel/review actions
+    - CreateBookingPage - Book a vendor with date/package selection
+    - BookingCard widget with glass effect
+
+### Modified
+
+- **Dependency Injection** (`lib/config/injection.dart`)
+  - Added BookingRemoteDataSource, BookingRepository, BookingBloc registrations
+
+- **Routes** (`lib/config/routes.dart`)
+  - Added /bookings route for My Bookings list
+  - Added /bookings/:id route for booking details
+  - Added /vendors/:id/book route for creating bookings
+
+- **Vendor Detail Page** (`lib/features/vendors/presentation/pages/vendor_detail_page.dart`)
+  - Updated Book Now button to pass vendor data to booking page
+
+### Technical Notes
+
+- Booking statuses: pending, accepted, declined, confirmed, completed, cancelled
+- Filter bookings by status in My Bookings page
+- Infinite scroll pagination for booking list
+- Cancel booking with confirmation dialog
+- Add review with star rating for completed bookings
+- Dark theme with glassmorphism consistent with rest of app
+
+---
+
+## February 3, 2026 (Session 3 - Design Overhaul Continued)
+
+### Modified
+
+- **Register Page** (`lib/features/auth/presentation/pages/register_page.dart`)
+  - Updated to dark theme with glassmorphism design
+  - Added BackgroundGlow effects
+  - Updated account type selection cards with glass effect
+  - Updated social login buttons with GlassButton
+
+- **Onboarding Flow** (`lib/features/onboarding/`)
+  - Updated onboarding_page.dart with dark theme and gradient progress bar
+  - Updated all 6 step widgets with new design:
+    - wedding_date_step.dart - Glass date picker and options
+    - budget_step.dart - Gradient budget display with glass currency chips
+    - guest_count_step.dart - Glass region selection cards
+    - styles_step.dart - Glass style cards with gradient icons
+    - traditions_step.dart - Glass tradition tiles
+    - celebration_step.dart - Gradient celebration icon with glass action cards
+
+- **Vendor Pages** (`lib/features/vendors/presentation/`)
+  - vendors_page.dart - Dark theme with glass search bar, BackgroundGlow
+  - vendor_list_page.dart - Glass app bar, glass filter indicator
+  - vendor_detail_page.dart - Glass action buttons, dark surface header
+
+- **Vendor Widgets**
+  - category_card.dart - Glass effect with gradient icon background
+
+### Technical Notes
+
+- All pages now use AppColors.backgroundDark (#0A0A0C) as base
+- Glass effects use BackdropFilter with ImageFilter.blur
+- BackgroundGlow components provide ambient lighting effects
+- Consistent use of AppColors.primary (#EE2B7C), accent (#00F2FF), accentPurple (#7000FF)
+- Text colors: textPrimary, textSecondary, textTertiary for hierarchy
+
+---
+
+## February 3, 2026 (Session 3 - Design Overhaul)
+
+### Added
+
+- **Glassmorphism Widgets** (`lib/shared/widgets/glass_card.dart`)
+  - `GlassCard` - Frosted glass card with backdrop blur effect
+  - `GlassButton` - Semi-transparent button with blur
+  - `GlassIconButton` - Circular icon button with glass effect
+  - `GlassChip` - Tag/chip with color tint
+  - `BackgroundGlow` - Ambient glow effects for backgrounds
+
+- **Custom Bottom Navigation** (`lib/shared/widgets/bottom_nav_bar.dart`)
+  - `AppBottomNavBar` - Custom nav with raised center "Mastermind" button
+  - Gradient and glow effects on center button
+
+- **Documentation**
+  - `AGENTS.md` - Quick reference for AI agents
+  - `docs/FLUTTER_DOCKER_DEVELOPMENT.md` - Docker commands for Flutter builds
+  - `docs/SESSION_3_SUMMARY.md` - Design overhaul summary
+
+- **Design Reference Files** (`design_references/wedapp/`)
+  - User's preferred design from Google AI Studio (Stitch)
+  - React/TypeScript components for reference
+
+### Modified
+
+- **Color Palette** (`lib/core/constants/app_colors.dart`)
+  - Converted to dark theme
+  - Primary: Hot pink (#EE2B7C)
+  - Accent: Cyan (#00F2FF), Purple (#7000FF)
+  - Backgrounds: #0A0A0C, #050508, #16161A
+  - Added glass effect colors (semi-transparent whites)
+
+- **Typography** (`lib/core/constants/app_typography.dart`)
+  - Switched to Plus Jakarta Sans (headers) + Manrope (body)
+  - Added new text styles: hero, h4, labelOverline, countdownUnit, tag, badge
+
+- **Theme** (`lib/core/theme/app_theme.dart`)
+  - Complete dark theme implementation
+  - Glassmorphism-styled components
+
+- **App Config** (`lib/app.dart`)
+  - Changed themeMode to ThemeMode.dark
+
+- **Home Page** (`lib/features/home/presentation/pages/home_page.dart`)
+  - Hero section with gradient overlay
+  - Trending themes carousel
+  - Featured vendors section
+  - Background glow effects
+
+- **Welcome Page** (`lib/features/auth/presentation/pages/welcome_page.dart`)
+  - Dark theme with glassmorphism cards
+  - Background glow effects
+
+- **Login Page** (`lib/features/auth/presentation/pages/login_page.dart`)
+  - Dark theme with glass inputs
+  - Updated social login buttons
+
+- **Buttons** (`lib/shared/widgets/buttons/`)
+  - Updated PrimaryButton with new colors
+  - Updated SecondaryButton with glass style
+
+- **Dependencies** (`pubspec.yaml`)
+  - Added google_fonts: ^6.1.0
+
+- **Documentation**
+  - Updated `docs/DEVELOPMENT_SETUP.md` with Docker option
+  - Updated `AI_AGENTS_START_HERE.md` with Docker commands
+
+### Technical Notes
+
+- Flutter is NOT installed locally - use Docker for all builds
+- Docker command for APK: `docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -v "flutter_gradle:/root/.gradle" -w /app ghcr.io/cirruslabs/flutter:latest flutter build apk --debug`
+- Built debug APK: wedding_planner_v2_debug.apk (154MB)
+- Volume mounts cache dependencies between runs
+
+---
+
 ## February 2, 2026 (Session 3 - Vendor Marketplace)
 
 ### Added

@@ -23,10 +23,10 @@ class WeddingPlannerApp extends StatelessWidget {
         title: 'Wedding Planner',
         debugShowCheckedModeBanner: false,
 
-        // Theme
-        theme: AppTheme.lightTheme,
+        // Theme - Dark mode for elegant design
+        theme: AppTheme.darkTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.light,
+        themeMode: ThemeMode.dark,
 
         // Routing
         routerConfig: appRouter,

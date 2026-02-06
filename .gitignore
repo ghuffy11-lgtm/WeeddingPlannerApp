@@ -20,4 +20,11 @@ Thumbs.db
 
 # Claude Code
 .claude/
+
+# APK and build outputs (keep locally, don't push to GitHub)
 *.apk
+*.aab
+*.ipa
+**/build/
+**/outputs/
+wedding_planner/build/

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
+import '../../../../shared/widgets/glass_card.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -18,7 +20,7 @@ import '../widgets/traditions_step.dart';
 import '../widgets/wedding_date_step.dart';
 
 /// Onboarding Page
-/// Guides couples through initial setup
+/// Dark theme with glassmorphism design
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});
 
@@ -87,31 +89,53 @@ class _OnboardingViewState extends State<_OnboardingView> {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: AppColors.blushRose,
-          body: SafeArea(
-            child: Column(
-              children: [
-                // Progress indicator
-                _buildProgressBar(state),
-                // Page content
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: const [
-                      WeddingDateStep(),
-                      BudgetStep(),
-                      GuestCountStep(),
-                      StylesStep(),
-                      TraditionsStep(),
-                      CelebrationStep(),
-                    ],
-                  ),
+          backgroundColor: AppColors.backgroundDark,
+          body: Stack(
+            children: [
+              // Background glows
+              const BackgroundGlow(
+                color: AppColors.accentPurple,
+                alignment: Alignment(-0.8, -0.6),
+                size: 350,
+              ),
+              const BackgroundGlow(
+                color: AppColors.primary,
+                alignment: Alignment(0.9, 0.5),
+                size: 300,
+              ),
+              const BackgroundGlow(
+                color: AppColors.accent,
+                alignment: Alignment(-0.5, 0.9),
+                size: 250,
+              ),
+
+              // Content
+              SafeArea(
+                child: Column(
+                  children: [
+                    // Progress indicator
+                    _buildProgressBar(state),
+                    // Page content
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: const [
+                          WeddingDateStep(),
+                          BudgetStep(),
+                          GuestCountStep(),
+                          StylesStep(),
+                          TraditionsStep(),
+                          CelebrationStep(),
+                        ],
+                      ),
+                    ),
+                    // Navigation buttons
+                    if (!state.isComplete) _buildNavigationButtons(context, state),
+                  ],
                 ),
-                // Navigation buttons
-                if (!state.isComplete) _buildNavigationButtons(context, state),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -130,19 +154,19 @@ class _OnboardingViewState extends State<_OnboardingView> {
             children: [
               // Back button
               if (!state.isFirstStep)
-                IconButton(
-                  onPressed: () {
+                GlassIconButton(
+                  icon: Icons.arrow_back,
+                  onTap: () {
                     context.read<OnboardingBloc>().add(const OnboardingBackPressed());
                   },
-                  icon: const Icon(Icons.arrow_back, color: AppColors.deepCharcoal),
                 )
               else
-                const SizedBox(width: 48),
+                const SizedBox(width: 40),
               // Step indicator
               Text(
                 'Step ${state.stepIndex + 1} of ${state.totalSteps}',
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.warmGray,
+                  color: AppColors.textSecondary,
                 ),
               ),
               // Skip button
@@ -153,21 +177,43 @@ class _OnboardingViewState extends State<_OnboardingView> {
                 child: Text(
                   'Skip',
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.roseGold,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.small),
-          // Progress bar
+          // Progress bar with glass effect
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: state.progress,
-              backgroundColor: AppColors.champagne.withOpacity(0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.roseGold),
-              minHeight: 6,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+              child: Container(
+                height: 6,
+                decoration: BoxDecoration(
+                  color: AppColors.glassBackground,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: constraints.maxWidth * state.progress,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppColors.primary, AppColors.accent],
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ),
           ),
         ],

@@ -1,7 +1,7 @@
 # Project Status
 
-> **Current Status:** Phase 1 In Progress - Auth, Onboarding, Home & Vendors Complete
-> **Last Updated:** February 2, 2026
+> **Current Status:** Phase 1 In Progress - Auth, Onboarding, Home, Vendors, Booking & Design Complete
+> **Last Updated:** February 6, 2026
 
 ---
 
@@ -10,7 +10,7 @@
 ```
 Planning & Design    [##########] 100%
 Project Setup        [##########] 100%
-Phase 1 Development  [#####-----]  46%
+Phase 1 Development  [######----]  55%
 Phase 2 Development  [----------]   0%
 Phase 2.5 Development[----------]   0%
 Phase 3 Development  [----------]   0%
@@ -38,7 +38,42 @@ Phase 3 Development  [----------]   0%
 - [x] API tested and working (health check, auth, categories)
 - [x] GitHub repository setup
 
-### Completed This Session
+### Completed This Session (Session 4)
+- [x] Fixed UserModel.fromJson() crash on login
+- [x] Added support for both camelCase (API) and snake_case field names
+- [x] Made created_at field optional with fallback to DateTime.now()
+- [x] Firebase integration (P0-032) - Added Google Services plugin, firebase_options.dart, config files
+- [x] Created Firebase setup guide (`docs/FIREBASE_SETUP.md`)
+- [x] Built APK with Firebase integration (154MB)
+
+### Previously Completed (Session 3 - Booking System)
+- [x] Built complete booking feature (domain, data, presentation layers)
+- [x] Created BookingsPage - My bookings list with status filters
+- [x] Created BookingDetailPage - View details, cancel, add reviews
+- [x] Created CreateBookingPage - Book vendors with date/package selection
+- [x] Created BookingCard widget with glassmorphism
+- [x] Integrated booking routes and dependency injection
+- [x] Built APK v1.1.0 with booking feature
+
+### Previously Completed (Session 3 - Design Overhaul Continued)
+- [x] Updated register page to dark/glassmorphism design
+- [x] Updated all 6 onboarding step widgets to new design
+- [x] Updated vendors_page.dart with glass search bar and BackgroundGlow
+- [x] Updated vendor_list_page.dart with glass app bar
+- [x] Updated vendor_detail_page.dart with glass action buttons
+- [x] Updated category_card.dart with glass effect
+
+### Previously Completed (Session 3 - Design Overhaul)
+- [x] Converted app to dark theme based on Google Stitch design
+- [x] New color palette: Hot pink (#EE2B7C), Cyan (#00F2FF), Purple (#7000FF)
+- [x] Created glassmorphism widgets (GlassCard, GlassButton, GlassIconButton)
+- [x] Updated typography to Plus Jakarta Sans + Manrope fonts
+- [x] Updated home page with hero section, trending themes, featured vendors
+- [x] Updated welcome page and login page with new design
+- [x] Built debug APK with new design (154MB)
+- [x] Documented Docker-based Flutter development workflow
+
+### Previously Completed (Session 3)
 - [x] Build Flutter authentication screens (splash, welcome, login, register)
 - [x] Build couple onboarding flow (6 steps)
 - [x] Auth BLoC and API integration
@@ -47,9 +82,11 @@ Phase 3 Development  [----------]   0%
 - [x] Vendor BLoC with filtering, pagination, and favorites
 
 ### Ready for Next Session
-- [ ] Setup Firebase for chat/notifications
-- [ ] Build booking system screens
-- [ ] Build chat system screens
+- [ ] User: Configure Firebase project (see docs/FIREBASE_SETUP.md)
+- [ ] Build chat system screens (P1-070 to P1-077)
+- [ ] Build guest management screens (P1-080+)
+- [ ] Build budget tracker screens
+- [ ] Update vendor filter modal to match new design
 
 ---
 
@@ -57,7 +94,7 @@ Phase 3 Development  [----------]   0%
 
 | Component | Status | Progress |
 |-----------|--------|----------|
-| Couple App (Flutter) | Auth, Onboarding, Home & Vendors Done | 50% |
+| Couple App (Flutter) | Auth, Onboarding, Home, Vendors & Booking Done | 60% |
 | Vendor App (Flutter) | Not Started | 0% |
 | Admin Panel (Web) | Not Started | 0% |
 | Support Panel (Web) | Not Started | 0% |
@@ -111,7 +148,7 @@ Phase 3 Development  [----------]   0%
 | Vendor Browsing | Mobile | **Done** |
 | Vendor Profiles | Mobile | **Done** |
 | Booking System | API | **Done** |
-| Booking System | Mobile | Not Started |
+| Booking System | Mobile | **Done** |
 | Chat (Couple-Vendor) | Mobile + Firebase | Not Started |
 | Guest Management | API | **Done** |
 | Guest Management | Mobile | Not Started |
@@ -197,7 +234,10 @@ Phase 3 Development  [----------]   0%
 
 - Project started: January 30, 2026
 - Backend API completed: February 1, 2026
+- Design overhaul completed: February 3, 2026
 - Framework: Flutter (mobile), Next.js (web panels)
 - Commission model: Flexible per-vendor percentage
 - Languages: English, Arabic (RTL), French, Spanish
 - Development server: Remote Docker server at /mnt/repo/WeeddingPlannerApp
+- **Flutter builds: Use Docker (see docs/FLUTTER_DOCKER_DEVELOPMENT.md)**
+- Design reference files: `/design_references/wedapp/`

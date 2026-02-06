@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,7 +10,7 @@ import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
 
 /// Guest Count Step
-/// Allows couples to estimate their guest count
+/// Dark theme with glassmorphism design
 class GuestCountStep extends StatefulWidget {
   const GuestCountStep({super.key});
 
@@ -78,13 +79,24 @@ class _GuestCountStepState extends State<GuestCountStep> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.roseGold.withOpacity(0.1),
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.accentPurple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.groups,
                 size: 40,
-                color: AppColors.roseGold,
+                color: AppColors.white,
               ),
             ),
           ),
@@ -94,7 +106,7 @@ class _GuestCountStepState extends State<GuestCountStep> {
             child: Text(
               'How many guests?',
               style: AppTypography.h2.copyWith(
-                color: AppColors.deepCharcoal,
+                color: AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -104,7 +116,7 @@ class _GuestCountStepState extends State<GuestCountStep> {
             child: Text(
               "An estimate helps with venue and catering planning",
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -118,20 +130,20 @@ class _GuestCountStepState extends State<GuestCountStep> {
                 controller: _controller,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
-                style: AppTypography.h1.copyWith(
-                  color: AppColors.roseGold,
+                style: AppTypography.hero.copyWith(
+                  color: AppColors.primary,
                   fontSize: 48,
                 ),
                 decoration: InputDecoration(
                   hintText: '0',
-                  hintStyle: AppTypography.h1.copyWith(
-                    color: AppColors.warmGray.withOpacity(0.5),
+                  hintStyle: AppTypography.hero.copyWith(
+                    color: AppColors.textTertiary.withValues(alpha: 0.5),
                     fontSize: 48,
                   ),
                   border: InputBorder.none,
                   suffixText: 'guests',
                   suffixStyle: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.warmGray,
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 onChanged: (value) {
@@ -150,14 +162,14 @@ class _GuestCountStepState extends State<GuestCountStep> {
           Text(
             'Quick select by region',
             style: AppTypography.labelLarge.copyWith(
-              color: AppColors.deepCharcoal,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: AppSpacing.small),
           Text(
             'Average wedding sizes vary by culture',
             style: AppTypography.bodySmall.copyWith(
-              color: AppColors.warmGray,
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: AppSpacing.base),
@@ -173,49 +185,55 @@ class _GuestCountStepState extends State<GuestCountStep> {
                   });
                   _setDefaultForRegion(entry.key);
                 },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.base),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.roseGold.withOpacity(0.1)
-                        : AppColors.white,
-                    borderRadius: AppSpacing.borderRadiusMedium,
-                    border: Border.all(
-                      color: isSelected ? AppColors.roseGold : AppColors.divider,
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        isSelected ? Icons.check_circle : Icons.circle_outlined,
-                        color: isSelected ? AppColors.roseGold : AppColors.warmGray,
-                      ),
-                      const SizedBox(width: AppSpacing.base),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              entry.value['name'] as String,
-                              style: AppTypography.bodyLarge.copyWith(
-                                color: isSelected
-                                    ? AppColors.roseGold
-                                    : AppColors.deepCharcoal,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              'Average: ${entry.value['average']}',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.warmGray,
-                              ),
-                            ),
-                          ],
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(AppSpacing.base),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary.withValues(alpha: 0.15)
+                            : AppColors.glassBackground,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : AppColors.glassBorder,
+                          width: isSelected ? 2 : 1,
                         ),
                       ),
-                    ],
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSelected ? Icons.check_circle : Icons.circle_outlined,
+                            color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: AppSpacing.base),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  entry.value['name'] as String,
+                                  style: AppTypography.bodyLarge.copyWith(
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  'Average: ${entry.value['average']}',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../config/routes.dart';
+import '../../../../shared/widgets/glass_card.dart';
 import '../../domain/entities/category.dart';
 import '../bloc/vendor_bloc.dart';
 import '../bloc/vendor_event.dart';
@@ -12,6 +14,7 @@ import '../bloc/vendor_state.dart';
 import '../widgets/category_card.dart';
 
 /// Main vendors page showing category grid
+/// Dark theme with glassmorphism design
 class VendorsPage extends StatefulWidget {
   const VendorsPage({super.key});
 
@@ -59,123 +62,147 @@ class _VendorsPageState extends State<VendorsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blushRose,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.medium),
-              child: Text(
-                'Find Vendors',
-                style: AppTypography.h1,
-              ),
-            ),
+      backgroundColor: AppColors.backgroundDark,
+      body: Stack(
+        children: [
+          // Background glows
+          const BackgroundGlow(
+            color: AppColors.accentPurple,
+            alignment: Alignment(-0.8, -0.5),
+            size: 350,
+          ),
+          const BackgroundGlow(
+            color: AppColors.primary,
+            alignment: Alignment(0.9, 0.3),
+            size: 300,
+          ),
 
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.medium),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: AppSpacing.borderRadiusMedium,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.black.withAlpha(13),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search vendors...',
-                    hintStyle: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.warmGray,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: AppColors.warmGray,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.tune, color: AppColors.warmGray),
-                      onPressed: _onSearch,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.medium,
-                      vertical: AppSpacing.base,
+          // Content
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.medium),
+                  child: Text(
+                    'Find Vendors',
+                    style: AppTypography.hero.copyWith(
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (_) => _onSearch(),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: AppSpacing.large),
-
-            // Categories Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.medium),
-              child: Text(
-                'Browse by Category',
-                style: AppTypography.h3,
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.medium),
-
-            // Categories Grid
-            Expanded(
-              child: BlocBuilder<VendorBloc, VendorState>(
-                builder: (context, state) {
-                  if (state.categoriesStatus == VendorStatus.loading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.roseGold,
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.medium),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.glassBackground,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.glassBorder),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Search vendors...',
+                            hintStyle: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.textTertiary,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              color: AppColors.textTertiary,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.tune, color: AppColors.textTertiary),
+                              onPressed: _onSearch,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.medium,
+                              vertical: AppSpacing.base,
+                            ),
+                          ),
+                          textInputAction: TextInputAction.search,
+                          onSubmitted: (_) => _onSearch(),
+                        ),
                       ),
-                    );
-                  }
-
-                  if (state.categoriesStatus == VendorStatus.error) {
-                    return _buildErrorState(state.categoriesError);
-                  }
-
-                  if (state.categories.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      _loadData();
-                    },
-                    color: AppColors.roseGold,
-                    child: GridView.builder(
-                      padding: const EdgeInsets.all(AppSpacing.medium),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        mainAxisSpacing: AppSpacing.medium,
-                        crossAxisSpacing: AppSpacing.medium,
-                        childAspectRatio: 0.85,
-                      ),
-                      itemCount: state.categories.length,
-                      itemBuilder: (context, index) {
-                        final category = state.categories[index];
-                        return CategoryCard(
-                          category: category,
-                          onTap: () => _onCategoryTap(category),
-                        );
-                      },
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.large),
+
+                // Categories Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.medium),
+                  child: Text(
+                    'Browse by Category',
+                    style: AppTypography.h3.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.medium),
+
+                // Categories Grid
+                Expanded(
+                  child: BlocBuilder<VendorBloc, VendorState>(
+                    builder: (context, state) {
+                      if (state.categoriesStatus == VendorStatus.loading) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                        );
+                      }
+
+                      if (state.categoriesStatus == VendorStatus.error) {
+                        return _buildErrorState(state.categoriesError);
+                      }
+
+                      if (state.categories.isEmpty) {
+                        return _buildEmptyState();
+                      }
+
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          _loadData();
+                        },
+                        color: AppColors.primary,
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(AppSpacing.medium),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            mainAxisSpacing: AppSpacing.medium,
+                            crossAxisSpacing: AppSpacing.medium,
+                            childAspectRatio: 0.85,
+                          ),
+                          itemCount: state.categories.length,
+                          itemBuilder: (context, index) {
+                            final category = state.categories[index];
+                            return CategoryCard(
+                              category: category,
+                              onTap: () => _onCategoryTap(category),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -195,23 +222,26 @@ class _VendorsPageState extends State<VendorsPage> {
             const SizedBox(height: AppSpacing.medium),
             Text(
               'Failed to load categories',
-              style: AppTypography.h3,
+              style: AppTypography.h3.copyWith(
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: AppSpacing.small),
             Text(
               error ?? 'An error occurred',
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.large),
-            ElevatedButton(
-              onPressed: _loadData,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.roseGold,
+            GlassButton(
+              onTap: _loadData,
+              isPrimary: true,
+              child: const Text(
+                'Retry',
+                style: TextStyle(color: AppColors.white),
               ),
-              child: const Text('Retry'),
             ),
           ],
         ),
@@ -229,18 +259,20 @@ class _VendorsPageState extends State<VendorsPage> {
             const Icon(
               Icons.category_outlined,
               size: 64,
-              color: AppColors.warmGray,
+              color: AppColors.textTertiary,
             ),
             const SizedBox(height: AppSpacing.medium),
             Text(
               'No categories available',
-              style: AppTypography.h3,
+              style: AppTypography.h3.copyWith(
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: AppSpacing.small),
             Text(
               'Check back later for vendor categories',
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),

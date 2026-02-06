@@ -1,0 +1,9 @@
+
+{
+  "name": "Wedding & Entertainment Mastermind Hub",
+  "description": "An all-in-one AI-driven ecosystem for wedding planning, talent scouting, and agentic execution. Features include AR venue previews, vocal match AI, and secure fintech integration.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

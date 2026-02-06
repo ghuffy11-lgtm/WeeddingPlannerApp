@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -7,13 +8,14 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
+import '../../../../shared/widgets/glass_card.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
 /// Login Page
-/// Allows users to sign in with email/password or social providers
+/// Dark theme with glassmorphism design
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -91,171 +93,187 @@ class _LoginPageState extends State<LoginPage> {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: AppColors.blushRose,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.deepCharcoal),
-              onPressed: () => context.pop(),
-            ),
-          ),
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.large),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    Text(
-                      'Welcome Back',
-                      style: AppTypography.h1.copyWith(
-                        color: AppColors.deepCharcoal,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.small),
-                    Text(
-                      'Sign in to continue planning your perfect day',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.warmGray,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
+          backgroundColor: AppColors.backgroundDark,
+          body: Stack(
+            children: [
+              // Background glows
+              const BackgroundGlow(
+                color: AppColors.accentPurple,
+                alignment: Alignment(-1, -0.3),
+                size: 350,
+              ),
+              const BackgroundGlow(
+                color: AppColors.primary,
+                alignment: Alignment(1, 0.8),
+                size: 300,
+              ),
 
-                    // Email Field
-                    AppTextField(
-                      label: 'Email',
-                      hint: 'Enter your email',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      validator: _validateEmail,
-                      prefixIcon: const Icon(Icons.email_outlined, color: AppColors.warmGray),
-                    ),
-                    const SizedBox(height: AppSpacing.base),
-
-                    // Password Field
-                    AppTextField(
-                      label: 'Password',
-                      hint: 'Enter your password',
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      textInputAction: TextInputAction.done,
-                      validator: _validatePassword,
-                      prefixIcon: const Icon(Icons.lock_outline, color: AppColors.warmGray),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: AppColors.warmGray,
+              // Content
+              SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppSpacing.large),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Back Button
+                        GlassIconButton(
+                          icon: Icons.arrow_back,
+                          onTap: () => context.pop(),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      onSubmitted: (_) => _onLogin(),
-                    ),
-                    const SizedBox(height: AppSpacing.small),
+                        const SizedBox(height: AppSpacing.xl),
 
-                    // Forgot Password
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => _showForgotPasswordDialog(),
-                        child: Text(
-                          'Forgot Password?',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.roseGold,
-                            fontWeight: FontWeight.w500,
+                        // Header
+                        Text(
+                          'Welcome Back',
+                          style: AppTypography.hero.copyWith(
+                            color: AppColors.textPrimary,
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.large),
+                        const SizedBox(height: AppSpacing.small),
+                        Text(
+                          'Sign in to continue planning your perfect day',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
 
-                    // Login Button
-                    PrimaryButton(
-                      text: 'Sign In',
-                      onPressed: _onLogin,
-                      isLoading: state.isLoading,
-                    ),
-                    const SizedBox(height: AppSpacing.large),
+                        // Email Field
+                        AppTextField(
+                          label: 'Email',
+                          hint: 'Enter your email',
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          validator: _validateEmail,
+                          prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textTertiary),
+                        ),
+                        const SizedBox(height: AppSpacing.base),
 
-                    // Divider
-                    Row(
-                      children: [
-                        const Expanded(child: Divider(color: AppColors.divider)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base),
-                          child: Text(
-                            'or continue with',
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.warmGray,
+                        // Password Field
+                        AppTextField(
+                          label: 'Password',
+                          hint: 'Enter your password',
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.done,
+                          validator: _validatePassword,
+                          prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textTertiary),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                              color: AppColors.textTertiary,
                             ),
-                          ),
-                        ),
-                        const Expanded(child: Divider(color: AppColors.divider)),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.large),
-
-                    // Social Login Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _SocialButton(
-                            icon: Icons.g_mobiledata,
-                            label: 'Google',
                             onPressed: () {
-                              context.read<AuthBloc>().add(const AuthGoogleLoginRequested());
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
                             },
                           ),
+                          onSubmitted: (_) => _onLogin(),
                         ),
-                        const SizedBox(width: AppSpacing.base),
-                        Expanded(
-                          child: _SocialButton(
-                            icon: Icons.apple,
-                            label: 'Apple',
-                            onPressed: () {
-                              context.read<AuthBloc>().add(const AuthAppleLoginRequested());
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
+                        const SizedBox(height: AppSpacing.small),
 
-                    // Register Link
-                    Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Don't have an account? ",
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.warmGray,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => context.push(AppRoutes.register),
+                        // Forgot Password
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () => _showForgotPasswordDialog(),
                             child: Text(
-                              'Sign Up',
-                              style: AppTypography.bodyMedium.copyWith(
-                                color: AppColors.roseGold,
+                              'Forgot Password?',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: AppSpacing.large),
+
+                        // Login Button
+                        PrimaryButton(
+                          text: 'Sign In',
+                          onPressed: _onLogin,
+                          isLoading: state.isLoading,
+                        ),
+                        const SizedBox(height: AppSpacing.large),
+
+                        // Divider
+                        Row(
+                          children: [
+                            Expanded(child: Divider(color: AppColors.glassBorder)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base),
+                              child: Text(
+                                'or continue with',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.textTertiary,
+                                ),
+                              ),
+                            ),
+                            Expanded(child: Divider(color: AppColors.glassBorder)),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.large),
+
+                        // Social Login Buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _SocialButton(
+                                icon: Icons.g_mobiledata,
+                                label: 'Google',
+                                onPressed: () {
+                                  context.read<AuthBloc>().add(const AuthGoogleLoginRequested());
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.base),
+                            Expanded(
+                              child: _SocialButton(
+                                icon: Icons.apple,
+                                label: 'Apple',
+                                onPressed: () {
+                                  context.read<AuthBloc>().add(const AuthAppleLoginRequested());
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+
+                        // Register Link
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account? ",
+                                style: AppTypography.bodyMedium.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => context.push(AppRoutes.register),
+                                child: Text(
+                                  'Sign Up',
+                                  style: AppTypography.bodyMedium.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         );
       },
@@ -268,18 +286,48 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset Password'),
+        backgroundColor: AppColors.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: AppColors.glassBorder),
+        ),
+        title: Text(
+          'Reset Password',
+          style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Enter your email address and we\'ll send you a link to reset your password.'),
+            Text(
+              'Enter your email address and we\'ll send you a link to reset your password.',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textPrimary,
+              ),
+              decoration: InputDecoration(
                 labelText: 'Email',
-                border: OutlineInputBorder(),
+                labelStyle: AppTypography.labelMedium.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.glassBorder),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.glassBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
               ),
             ),
           ],
@@ -287,18 +335,28 @@ class _LoginPageState extends State<LoginPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: AppTypography.buttonMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {
               if (emailController.text.isNotEmpty) {
-                context.read<AuthBloc>().add(
+                this.context.read<AuthBloc>().add(
                   AuthPasswordResetRequested(email: emailController.text.trim()),
                 );
                 Navigator.pop(context);
               }
             },
-            child: const Text('Send Reset Link'),
+            child: Text(
+              'Send Reset Link',
+              style: AppTypography.buttonMedium.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
           ),
         ],
       ),
@@ -306,7 +364,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-/// Social Login Button
+/// Social Login Button with glassmorphism
 class _SocialButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -320,24 +378,18 @@ class _SocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        side: const BorderSide(color: AppColors.divider),
-        shape: RoundedRectangleBorder(
-          borderRadius: AppSpacing.borderRadiusSmall,
-        ),
-      ),
+    return GlassButton(
+      onTap: onPressed,
+      height: 52,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: AppColors.deepCharcoal, size: 24),
+          Icon(icon, color: AppColors.textPrimary, size: 24),
           const SizedBox(width: 8),
           Text(
             label,
             style: AppTypography.buttonMedium.copyWith(
-              color: AppColors.deepCharcoal,
+              color: AppColors.textPrimary,
             ),
           ),
         ],

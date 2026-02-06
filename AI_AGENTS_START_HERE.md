@@ -2,6 +2,24 @@
 
 Welcome to the Wedding Planner App project.
 
+## CRITICAL: Building Flutter
+
+**Flutter is NOT installed locally. Use Docker:**
+
+```bash
+cd /mnt/repo/WeeddingPlannerApp/wedding_planner
+
+# Get dependencies
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -w /app ghcr.io/cirruslabs/flutter:latest flutter pub get
+
+# Build APK
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -v "flutter_gradle:/root/.gradle" -w /app ghcr.io/cirruslabs/flutter:latest flutter build apk --debug
+```
+
+See `docs/FLUTTER_DOCKER_DEVELOPMENT.md` for all commands.
+
+---
+
 ## Before You Do ANYTHING:
 
 ### Step 1: Read the Master Instructions
@@ -48,6 +66,7 @@ Open: PROJECT_MANAGEMENT/FEATURE_SPECS.md
 Wedding Planner App/
 │
 ├── AI_AGENTS_START_HERE.md      ← You are here
+├── AGENTS.md                    ← Quick reference for AI agents
 │
 ├── PROJECT_MANAGEMENT/          ← All tracking & instructions
 │   ├── MASTER_INSTRUCTIONS.md   ← READ THIS FIRST!
@@ -58,7 +77,12 @@ Wedding Planner App/
 │   └── CHANGELOG.md
 │
 ├── docs/
-│   └── TECHNICAL_ARCHITECTURE.md
+│   ├── TECHNICAL_ARCHITECTURE.md
+│   ├── DEVELOPMENT_SETUP.md
+│   ├── FLUTTER_DOCKER_DEVELOPMENT.md  ← Docker commands for Flutter
+│   └── SESSION_3_SUMMARY.md           ← Design overhaul notes
+│
+├── design_references/wedapp/    ← UI design from Google Stitch (React)
 │
 ├── wedding_planner/             ← Flutter mobile app code
 │

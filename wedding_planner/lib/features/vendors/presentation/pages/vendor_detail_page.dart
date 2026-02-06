@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
+import '../../../../shared/widgets/glass_card.dart';
 import '../bloc/vendor_bloc.dart';
 import '../bloc/vendor_event.dart';
 import '../bloc/vendor_state.dart';
@@ -15,6 +17,7 @@ import '../widgets/reviews_tab.dart';
 import '../widgets/about_tab.dart';
 
 /// Vendor detail page with portfolio, packages, reviews, and about tabs
+/// Dark theme with glassmorphism design
 class VendorDetailPage extends StatefulWidget {
   final String vendorId;
 
@@ -56,12 +59,12 @@ class _VendorDetailPageState extends State<VendorDetailPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blushRose,
+      backgroundColor: AppColors.backgroundDark,
       body: BlocBuilder<VendorBloc, VendorState>(
         builder: (context, state) {
           if (state.vendorDetailStatus == VendorStatus.loading) {
             return const Center(
-              child: CircularProgressIndicator(color: AppColors.roseGold),
+              child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
 
@@ -83,48 +86,69 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                 SliverAppBar(
                   expandedHeight: 250,
                   pinned: true,
-                  backgroundColor: AppColors.blushRose,
+                  backgroundColor: AppColors.surfaceDark,
                   leading: IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.white.withAlpha(230),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: AppColors.deepCharcoal,
+                    icon: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassBackground,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.glassBorder),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
                       ),
                     ),
                     onPressed: () => context.pop(),
                   ),
                   actions: [
                     IconButton(
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withAlpha(230),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite
-                              ? AppColors.roseGold
-                              : AppColors.deepCharcoal,
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.glassBackground,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.glassBorder),
+                            ),
+                            child: Icon(
+                              isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: isFavorite
+                                  ? AppColors.primary
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
                         ),
                       ),
                       onPressed: _onFavoriteTap,
                     ),
                     IconButton(
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withAlpha(230),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.share,
-                          color: AppColors.deepCharcoal,
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.glassBackground,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.glassBorder),
+                            ),
+                            child: const Icon(
+                              Icons.share,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
                         ),
                       ),
                       onPressed: () {
@@ -138,28 +162,28 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                             imageUrl: vendor.portfolio.first.imageUrl,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
-                              color: AppColors.blushRose,
+                              color: AppColors.surfaceDark,
                               child: const Center(
                                 child: CircularProgressIndicator(
-                                  color: AppColors.roseGold,
+                                  color: AppColors.primary,
                                 ),
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
-                              color: AppColors.blushRose,
+                              color: AppColors.surfaceDark,
                               child: const Icon(
                                 Icons.store,
                                 size: 64,
-                                color: AppColors.warmGray,
+                                color: AppColors.textTertiary,
                               ),
                             ),
                           )
                         : Container(
-                            color: AppColors.champagne,
+                            color: AppColors.surfaceDark,
                             child: const Icon(
                               Icons.store,
                               size: 64,
-                              color: AppColors.warmGray,
+                              color: AppColors.textTertiary,
                             ),
                           ),
                   ),
@@ -168,7 +192,7 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                 // Vendor Info Header
                 SliverToBoxAdapter(
                   child: Container(
-                    color: AppColors.white,
+                    color: AppColors.surfaceDark,
                     padding: const EdgeInsets.all(AppSpacing.medium),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,8 +209,16 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                                     vertical: AppSpacing.micro,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.champagne,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        AppColors.primary.withValues(alpha: 0.2),
+                                        AppColors.accentPurple.withValues(alpha: 0.2),
+                                      ],
+                                    ),
                                     borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: AppColors.primary.withValues(alpha: 0.3),
+                                    ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -194,13 +226,14 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                                       const Icon(
                                         Icons.emoji_events,
                                         size: 14,
-                                        color: AppColors.deepCharcoal,
+                                        color: AppColors.primary,
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
                                         'Featured',
                                         style: AppTypography.tiny.copyWith(
                                           fontWeight: FontWeight.w600,
+                                          color: AppColors.primary,
                                         ),
                                       ),
                                     ],
@@ -213,8 +246,11 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                                     vertical: AppSpacing.micro,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.success.withAlpha(51),
+                                    color: AppColors.success.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: AppColors.success.withValues(alpha: 0.3),
+                                    ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -244,7 +280,9 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                         // Business Name
                         Text(
                           vendor.businessName,
-                          style: AppTypography.h1,
+                          style: AppTypography.h1.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
                         ),
 
                         const SizedBox(height: AppSpacing.small),
@@ -254,7 +292,7 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                           Text(
                             vendor.category!.name,
                             style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.warmGray,
+                              color: AppColors.textSecondary,
                             ),
                           ),
 
@@ -273,13 +311,14 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                               vendor.ratingAvg.toStringAsFixed(1),
                               style: AppTypography.labelLarge.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '(${vendor.reviewCount} reviews)',
                               style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.warmGray,
+                                color: AppColors.textSecondary,
                               ),
                             ),
                             const Spacer(),
@@ -290,13 +329,15 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                                   vertical: AppSpacing.micro,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.blushRose,
+                                  color: AppColors.glassBackground,
                                   borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: AppColors.glassBorder),
                                 ),
                                 child: Text(
                                   vendor.priceDisplay,
                                   style: AppTypography.labelMedium.copyWith(
                                     fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                               ),
@@ -312,14 +353,14 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                               const Icon(
                                 Icons.location_on,
                                 size: 18,
-                                color: AppColors.warmGray,
+                                color: AppColors.textTertiary,
                               ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   vendor.locationDisplay,
                                   style: AppTypography.bodySmall.copyWith(
-                                    color: AppColors.warmGray,
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -334,13 +375,13 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                               const Icon(
                                 Icons.schedule,
                                 size: 18,
-                                color: AppColors.warmGray,
+                                color: AppColors.textTertiary,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 'Usually responds within ${vendor.responseTimeHours} hours',
                                 style: AppTypography.bodySmall.copyWith(
-                                  color: AppColors.warmGray,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
@@ -357,9 +398,9 @@ class _VendorDetailPageState extends State<VendorDetailPage>
                   delegate: _TabBarDelegate(
                     TabBar(
                       controller: _tabController,
-                      labelColor: AppColors.roseGold,
-                      unselectedLabelColor: AppColors.warmGray,
-                      indicatorColor: AppColors.roseGold,
+                      labelColor: AppColors.primary,
+                      unselectedLabelColor: AppColors.textTertiary,
+                      indicatorColor: AppColors.primary,
                       indicatorWeight: 3,
                       tabs: const [
                         Tab(text: 'Portfolio'),
@@ -391,72 +432,57 @@ class _VendorDetailPageState extends State<VendorDetailPage>
           final vendor = state.selectedVendor;
           if (vendor == null) return const SizedBox.shrink();
 
-          return Container(
-            padding: EdgeInsets.only(
-              left: AppSpacing.medium,
-              right: AppSpacing.medium,
-              top: AppSpacing.medium,
-              bottom: AppSpacing.medium + MediaQuery.of(context).padding.bottom,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.black.withAlpha(13),
-                  blurRadius: 8,
-                  offset: const Offset(0, -2),
+          return ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: EdgeInsets.only(
+                  left: AppSpacing.medium,
+                  right: AppSpacing.medium,
+                  top: AppSpacing.medium,
+                  bottom: AppSpacing.medium + MediaQuery.of(context).padding.bottom,
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                // Chat Button
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.roseGold),
-                    borderRadius: AppSpacing.borderRadiusMedium,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceDark,
+                  border: Border(
+                    top: BorderSide(color: AppColors.glassBorder),
                   ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.chat_bubble_outline,
-                      color: AppColors.roseGold,
+                ),
+                child: Row(
+                  children: [
+                    // Chat Button
+                    GlassIconButton(
+                      icon: Icons.chat_bubble_outline,
+                      size: 48,
+                      onTap: () {
+                        // TODO: Navigate to chat
+                      },
                     ),
-                    onPressed: () {
-                      // TODO: Navigate to chat
-                    },
-                  ),
-                ),
 
-                // Call Button
-                const SizedBox(width: AppSpacing.small),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.roseGold),
-                    borderRadius: AppSpacing.borderRadiusMedium,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.phone_outlined,
-                      color: AppColors.roseGold,
+                    // Call Button
+                    const SizedBox(width: AppSpacing.small),
+                    GlassIconButton(
+                      icon: Icons.phone_outlined,
+                      size: 48,
+                      onTap: () {
+                        // TODO: Make phone call
+                      },
                     ),
-                    onPressed: () {
-                      // TODO: Make phone call
-                    },
-                  ),
-                ),
 
-                const SizedBox(width: AppSpacing.medium),
+                    const SizedBox(width: AppSpacing.medium),
 
-                // Book Now Button
-                Expanded(
-                  child: PrimaryButton(
-                    text: 'Book Now',
-                    onPressed: () {
-                      context.push('/vendors/${vendor.id}/book');
-                    },
-                  ),
+                    // Book Now Button
+                    Expanded(
+                      child: PrimaryButton(
+                        text: 'Book Now',
+                        onPressed: () {
+                          context.push('/vendors/${vendor.id}/book', extra: vendor);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -480,28 +506,34 @@ class _VendorDetailPageState extends State<VendorDetailPage>
               const SizedBox(height: AppSpacing.medium),
               Text(
                 'Failed to load vendor',
-                style: AppTypography.h3,
+                style: AppTypography.h3.copyWith(
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: AppSpacing.small),
               Text(
                 error ?? 'An error occurred',
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.warmGray,
+                  color: AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.large),
-              ElevatedButton(
-                onPressed: _loadVendor,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.roseGold,
+              GlassButton(
+                onTap: _loadVendor,
+                isPrimary: true,
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(color: AppColors.white),
                 ),
-                child: const Text('Retry'),
               ),
               const SizedBox(height: AppSpacing.medium),
               TextButton(
                 onPressed: () => context.pop(),
-                child: const Text('Go Back'),
+                child: Text(
+                  'Go Back',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
               ),
             ],
           ),
@@ -530,7 +562,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     return Container(
-      color: AppColors.white,
+      color: AppColors.surfaceDark,
       child: tabBar,
     );
   }

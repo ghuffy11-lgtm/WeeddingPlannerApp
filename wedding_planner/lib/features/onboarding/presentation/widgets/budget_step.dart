@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,7 +10,7 @@ import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
 
 /// Budget Step
-/// Allows couples to set their wedding budget
+/// Dark theme with glassmorphism design
 class BudgetStep extends StatefulWidget {
   const BudgetStep({super.key});
 
@@ -78,13 +79,24 @@ class _BudgetStepState extends State<BudgetStep> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.roseGold.withOpacity(0.1),
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.accentPurple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.account_balance_wallet,
                 size: 40,
-                color: AppColors.roseGold,
+                color: AppColors.white,
               ),
             ),
           ),
@@ -94,7 +106,7 @@ class _BudgetStepState extends State<BudgetStep> {
             child: Text(
               "What's your budget?",
               style: AppTypography.h2.copyWith(
-                color: AppColors.deepCharcoal,
+                color: AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -104,7 +116,7 @@ class _BudgetStepState extends State<BudgetStep> {
             child: Text(
               "This helps us recommend vendors within your range",
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -112,11 +124,16 @@ class _BudgetStepState extends State<BudgetStep> {
           const SizedBox(height: AppSpacing.xl),
           // Budget Display
           Center(
-            child: Text(
-              _formatBudget(_currentBudget),
-              style: AppTypography.h1.copyWith(
-                color: AppColors.roseGold,
-                fontSize: 48,
+            child: ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [AppColors.primary, AppColors.accent],
+              ).createShader(bounds),
+              child: Text(
+                _formatBudget(_currentBudget),
+                style: AppTypography.hero.copyWith(
+                  color: AppColors.white,
+                  fontSize: 48,
+                ),
               ),
             ),
           ),
@@ -124,10 +141,10 @@ class _BudgetStepState extends State<BudgetStep> {
           // Budget Slider
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: AppColors.roseGold,
-              inactiveTrackColor: AppColors.champagne.withOpacity(0.3),
-              thumbColor: AppColors.roseGold,
-              overlayColor: AppColors.roseGold.withOpacity(0.2),
+              activeTrackColor: AppColors.primary,
+              inactiveTrackColor: AppColors.glassBackground,
+              thumbColor: AppColors.primary,
+              overlayColor: AppColors.primary.withValues(alpha: 0.2),
               trackHeight: 8,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14),
             ),
@@ -152,11 +169,11 @@ class _BudgetStepState extends State<BudgetStep> {
               children: [
                 Text(
                   '\$5,000',
-                  style: AppTypography.caption.copyWith(color: AppColors.warmGray),
+                  style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
                 ),
                 Text(
                   '\$100,000+',
-                  style: AppTypography.caption.copyWith(color: AppColors.warmGray),
+                  style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
                 ),
               ],
             ),
@@ -166,7 +183,7 @@ class _BudgetStepState extends State<BudgetStep> {
           Text(
             'Currency',
             style: AppTypography.labelLarge.copyWith(
-              color: AppColors.deepCharcoal,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: AppSpacing.small),
@@ -182,26 +199,32 @@ class _BudgetStepState extends State<BudgetStep> {
                   });
                   _updateBudget();
                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.base,
-                    vertical: AppSpacing.small,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.roseGold.withOpacity(0.1)
-                        : AppColors.white,
-                    borderRadius: AppSpacing.borderRadiusSmall,
-                    border: Border.all(
-                      color: isSelected ? AppColors.roseGold : AppColors.divider,
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Text(
-                    '${currency['symbol']} ${currency['code']}',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: isSelected ? AppColors.roseGold : AppColors.warmGray,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.base,
+                        vertical: AppSpacing.small,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary.withValues(alpha: 0.15)
+                            : AppColors.glassBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : AppColors.glassBorder,
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        '${currency['symbol']} ${currency['code']}',
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
                     ),
                   ),
                 ),

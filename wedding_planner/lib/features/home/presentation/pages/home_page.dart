@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,18 +7,14 @@ import '../../../../config/routes.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../shared/widgets/glass_card.dart';
 import '../../../../shared/widgets/feedback/error_state.dart' as feedback;
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
 import '../bloc/home_state.dart';
-import '../widgets/budget_overview_card.dart';
-import '../widgets/countdown_card.dart';
-import '../widgets/quick_actions_widget.dart';
-import '../widgets/upcoming_tasks_card.dart';
-import '../widgets/vendor_status_card.dart';
 
-/// Home Page
-/// Main dashboard for couples showing wedding overview
+/// Home Page - Discovery Home
+/// Main dashboard with hero section, trending themes, and featured vendors
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -29,14 +26,13 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Load home data when page is first shown
     context.read<HomeBloc>().add(const HomeLoadRequested());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundDark,
       body: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           if (state.isLoading) {
@@ -55,91 +51,78 @@ class _HomePageState extends State<HomePage> {
           }
 
           return RefreshIndicator(
-            color: AppColors.roseGold,
+            color: AppColors.primary,
+            backgroundColor: AppColors.surfaceDark,
             onRefresh: () async {
               context.read<HomeBloc>().add(const HomeRefreshRequested());
-              // Wait for refresh to complete
               await Future.delayed(const Duration(milliseconds: 500));
             },
-            child: CustomScrollView(
-              slivers: [
-                // App Bar
-                SliverAppBar(
-                  floating: true,
-                  backgroundColor: AppColors.background,
-                  elevation: 0,
-                  title: Text(
-                    'Wedding Planner',
-                    style: AppTypography.h2.copyWith(
-                      color: AppColors.deepCharcoal,
-                    ),
-                  ),
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.notifications_outlined),
-                      color: AppColors.deepCharcoal,
-                      onPressed: () {
-                        // TODO: Navigate to notifications
-                      },
-                    ),
-                  ],
+            child: Stack(
+              children: [
+                // Background glows
+                const BackgroundGlow(
+                  color: AppColors.accentPurple,
+                  alignment: Alignment(-1.5, -0.5),
+                  size: 400,
+                ),
+                const BackgroundGlow(
+                  color: AppColors.accentCyan,
+                  alignment: Alignment(1.5, 0.8),
+                  size: 350,
                 ),
 
                 // Content
-                SliverPadding(
-                  padding: const EdgeInsets.all(AppSpacing.base),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Countdown Card
-                      CountdownCard(
-                        daysUntilWedding: state.daysUntilWedding,
-                        coupleNames:
-                            state.wedding?.coupleDisplayName ?? 'Your Wedding',
-                        weddingDate: state.wedding?.weddingDate,
-                        onTap: () {
-                          // TODO: Navigate to wedding settings
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.large),
+                CustomScrollView(
+                  slivers: [
+                    // App Bar
+                    _buildAppBar(context),
 
-                      // Quick Actions
-                      QuickActionsWidget(
-                        actions: _buildQuickActions(context),
-                      ),
-                      const SizedBox(height: AppSpacing.large),
+                    // Content
+                    SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Hero Section
+                          _HeroSection(
+                            daysUntilWedding: state.daysUntilWedding ?? 0,
+                            coupleNames: state.wedding?.coupleDisplayName ?? 'Your Wedding',
+                          ),
 
-                      // Budget Overview
-                      BudgetOverviewCard(
-                        totalBudget: state.totalBudget,
-                        spentAmount: state.spentAmount,
-                        currency: state.wedding?.currency ?? 'USD',
-                        categories: state.budgetSummary,
-                        onTap: () => context.push(AppRoutes.budget),
-                      ),
-                      const SizedBox(height: AppSpacing.base),
+                          const SizedBox(height: 32),
 
-                      // Upcoming Tasks
-                      UpcomingTasksCard(
-                        tasks: state.upcomingTasks,
-                        stats: state.taskStats,
-                        onTaskComplete: (taskId) {
-                          context.read<HomeBloc>().add(HomeTaskCompleted(taskId));
-                        },
-                        onViewAll: () => context.go(AppRoutes.tasks),
-                      ),
-                      const SizedBox(height: AppSpacing.base),
+                          // Trending Themes Section
+                          _buildSectionHeader(
+                            'Trending Themes',
+                            onSeeAll: () {},
+                          ),
+                          const SizedBox(height: 16),
+                          const _TrendingThemesCarousel(),
 
-                      // Vendor Status
-                      VendorStatusCard(
-                        bookings: state.recentBookings,
-                        onViewAll: () => context.go(AppRoutes.vendors),
-                        onBookingTap: (booking) {
-                          context.push('/vendors/${booking.vendorId}');
-                        },
+                          const SizedBox(height: 32),
+
+                          // Wedding Date CTA Card
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _WeddingDateCard(
+                              onTap: () => context.go(AppRoutes.tasks),
+                            ),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Featured Vendors Section
+                          _buildSectionHeader(
+                            'Featured Vendors',
+                            onSeeAll: () => context.go(AppRoutes.vendors),
+                          ),
+                          const SizedBox(height: 16),
+                          const _FeaturedVendorsSection(),
+
+                          const SizedBox(height: 100), // Bottom padding for nav
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.xl),
-                    ]),
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -149,51 +132,427 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  List<QuickAction> _buildQuickActions(BuildContext context) {
-    return [
-      QuickAction(
-        icon: Icons.checklist,
-        label: 'Tasks',
-        onTap: () => context.go(AppRoutes.tasks),
+  Widget _buildAppBar(BuildContext context) {
+    return SliverAppBar(
+      floating: true,
+      backgroundColor: AppColors.backgroundDark.withValues(alpha: 0.8),
+      elevation: 0,
+      flexibleSpace: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(color: Colors.transparent),
+        ),
       ),
-      QuickAction(
-        icon: Icons.store,
-        label: 'Vendors',
-        onTap: () => context.go(AppRoutes.vendors),
+      leading: Padding(
+        padding: const EdgeInsets.all(8),
+        child: GlassIconButton(
+          icon: Icons.search,
+          onTap: () {},
+        ),
       ),
-      QuickAction(
-        icon: Icons.people,
-        label: 'Guests',
-        onTap: () => context.push(AppRoutes.guests),
+      title: Text(
+        'Discovery Home',
+        style: AppTypography.h3.copyWith(
+          color: AppColors.textPrimary,
+        ),
       ),
-      QuickAction(
-        icon: Icons.account_balance_wallet,
-        label: 'Budget',
-        onTap: () => context.push(AppRoutes.budget),
+      centerTitle: true,
+      actions: [
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: GlassIconButton(
+            icon: Icons.favorite_border,
+            onTap: () {},
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: AppTypography.h2,
+          ),
+          if (onSeeAll != null)
+            GestureDetector(
+              onTap: onSeeAll,
+              child: Text(
+                'See All',
+                style: AppTypography.labelLarge.copyWith(
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+        ],
       ),
-      QuickAction(
-        icon: Icons.mail,
-        label: 'Invites',
-        onTap: () => context.push(AppRoutes.invitations),
+    );
+  }
+}
+
+/// Hero Section with wedding countdown
+class _HeroSection extends StatelessWidget {
+  final int daysUntilWedding;
+  final String coupleNames;
+
+  const _HeroSection({
+    required this.daysUntilWedding,
+    required this.coupleNames,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 0),
+      height: 400,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: const NetworkImage(
+            'https://images.unsplash.com/photo-1519741497674-611481863552?w=800',
+          ),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            AppColors.backgroundDark.withValues(alpha: 0.3),
+            BlendMode.darken,
+          ),
+        ),
       ),
-      QuickAction(
-        icon: Icons.table_chart,
-        label: 'Seating',
-        onTap: () => context.push(AppRoutes.seating),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.transparent,
+              AppColors.backgroundDark.withValues(alpha: 0.7),
+              AppColors.backgroundDark,
+            ],
+            stops: const [0.0, 0.6, 1.0],
+          ),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your Dream Wedding\nStarts Here',
+              style: AppTypography.hero.copyWith(
+                height: 1.1,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Discover vendors, themes, and shop the latest bridal trends.',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _PrimaryButton(
+              label: 'Get Inspired',
+              onTap: () {},
+            ),
+          ],
+        ),
       ),
-      QuickAction(
-        icon: Icons.chat,
-        label: 'Chat',
-        onTap: () => context.go(AppRoutes.chat),
+    );
+  }
+}
+
+/// Primary Button with gradient
+class _PrimaryButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _PrimaryButton({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.buttonMedium.copyWith(
+            color: AppColors.white,
+          ),
+        ),
       ),
-      QuickAction(
-        icon: Icons.calendar_today,
-        label: 'Timeline',
-        onTap: () {
-          // TODO: Navigate to timeline
-        },
+    );
+  }
+}
+
+/// Trending Themes Carousel
+class _TrendingThemesCarousel extends StatelessWidget {
+  const _TrendingThemesCarousel();
+
+  @override
+  Widget build(BuildContext context) {
+    final themes = [
+      _ThemeData(
+        title: 'Rustic Charm',
+        subtitle: 'Warm and earthy vibes',
+        imageUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600',
+      ),
+      _ThemeData(
+        title: 'Modern Chic',
+        subtitle: 'Clean lines and minimalist',
+        imageUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600',
+      ),
+      _ThemeData(
+        title: 'Garden Romance',
+        subtitle: 'Floral and enchanting',
+        imageUrl: 'https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=600',
       ),
     ];
+
+    return SizedBox(
+      height: 300,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: themes.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(right: index < themes.length - 1 ? 16 : 0),
+            child: _ThemeCard(theme: themes[index]),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ThemeData {
+  final String title;
+  final String subtitle;
+  final String imageUrl;
+
+  const _ThemeData({
+    required this.title,
+    required this.subtitle,
+    required this.imageUrl,
+  });
+}
+
+class _ThemeCard extends StatelessWidget {
+  final _ThemeData theme;
+
+  const _ThemeCard({required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 200,
+          height: 250,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            image: DecorationImage(
+              image: NetworkImage(theme.imageUrl),
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          theme.title,
+          style: AppTypography.h4,
+        ),
+        Text(
+          theme.subtitle,
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.primary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Wedding Date CTA Card
+class _WeddingDateCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _WeddingDateCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+      borderColor: AppColors.primary.withValues(alpha: 0.2),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Planning for a specific date?',
+            style: AppTypography.h3,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tell us your wedding date to get personalized recommendations and countdowns.',
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: onTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.white,
+              ),
+              child: const Text('Set Wedding Date'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Featured Vendors Section
+class _FeaturedVendorsSection extends StatelessWidget {
+  const _FeaturedVendorsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final vendors = [
+      _VendorData(
+        name: 'Elena Bloom',
+        role: 'Photographer',
+        rating: 4.9,
+        imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300',
+      ),
+      _VendorData(
+        name: 'Petals & Co.',
+        role: 'Floral Design',
+        rating: 4.8,
+        imageUrl: 'https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=300',
+      ),
+      _VendorData(
+        name: 'Sweet Moments',
+        role: 'Cake Designer',
+        rating: 4.9,
+        imageUrl: 'https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=300',
+      ),
+    ];
+
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: vendors.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(right: index < vendors.length - 1 ? 16 : 0),
+            child: _VendorCircle(vendor: vendors[index]),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _VendorData {
+  final String name;
+  final String role;
+  final double rating;
+  final String imageUrl;
+
+  const _VendorData({
+    required this.name,
+    required this.role,
+    required this.rating,
+    required this.imageUrl,
+  });
+}
+
+class _VendorCircle extends StatelessWidget {
+  final _VendorData vendor;
+
+  const _VendorCircle({required this.vendor});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 120,
+      child: Column(
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+                width: 2,
+              ),
+            ),
+            child: ClipOval(
+              child: Image.network(
+                vendor.imageUrl,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            vendor.name,
+            style: AppTypography.labelLarge,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            vendor.role,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textTertiary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.star,
+                size: 14,
+                color: AppColors.warning,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                vendor.rating.toString(),
+                style: AppTypography.labelMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -203,43 +562,45 @@ class _LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          floating: true,
-          backgroundColor: AppColors.background,
-          elevation: 0,
-          title: Text(
-            'Wedding Planner',
-            style: AppTypography.h2.copyWith(
-              color: AppColors.deepCharcoal,
-            ),
-          ),
+    return Stack(
+      children: [
+        const BackgroundGlow(
+          color: AppColors.accentPurple,
+          alignment: Alignment(-1.5, -0.5),
+          size: 400,
         ),
-        SliverPadding(
-          padding: const EdgeInsets.all(AppSpacing.base),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              // Countdown skeleton
-              _SkeletonBox(height: 180),
-              const SizedBox(height: AppSpacing.large),
-
-              // Quick actions skeleton
-              _SkeletonBox(height: 100),
-              const SizedBox(height: AppSpacing.large),
-
-              // Budget skeleton
-              _SkeletonBox(height: 150),
-              const SizedBox(height: AppSpacing.base),
-
-              // Tasks skeleton
-              _SkeletonBox(height: 200),
-              const SizedBox(height: AppSpacing.base),
-
-              // Vendors skeleton
-              _SkeletonBox(height: 180),
-            ]),
-          ),
+        const BackgroundGlow(
+          color: AppColors.accentCyan,
+          alignment: Alignment(1.5, 0.8),
+          size: 350,
+        ),
+        CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              floating: true,
+              backgroundColor: AppColors.backgroundDark.withValues(alpha: 0.8),
+              elevation: 0,
+              title: Text(
+                'Discovery Home',
+                style: AppTypography.h3,
+              ),
+              centerTitle: true,
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.all(AppSpacing.base),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _SkeletonBox(height: 400),
+                  const SizedBox(height: AppSpacing.large),
+                  _SkeletonBox(height: 300),
+                  const SizedBox(height: AppSpacing.large),
+                  _SkeletonBox(height: 150),
+                  const SizedBox(height: AppSpacing.large),
+                  _SkeletonBox(height: 200),
+                ]),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -257,8 +618,12 @@ class _SkeletonBox extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.blushRose.withValues(alpha: 0.3),
-        borderRadius: AppSpacing.borderRadiusMedium,
+        color: AppColors.glassBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.glassBorder,
+          width: 1,
+        ),
       ),
     );
   }

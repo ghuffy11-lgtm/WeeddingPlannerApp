@@ -309,17 +309,41 @@ You should see the tables created.
 
 ## Step 2: Set Up Flutter App
 
-### 2.1 Navigate to Flutter Project
+### Option A: Using Local Flutter Installation
+
+#### 2.1 Navigate to Flutter Project
 
 ```bash
 cd wedding_planner
 ```
 
-### 2.2 Install Dependencies
+#### 2.2 Install Dependencies
 
 ```bash
 flutter pub get
 ```
+
+### Option B: Using Docker (No Flutter Installation Required)
+
+If Flutter is not installed locally, use Docker instead. See **[FLUTTER_DOCKER_DEVELOPMENT.md](./FLUTTER_DOCKER_DEVELOPMENT.md)** for detailed instructions.
+
+**Quick reference:**
+
+```bash
+# Navigate to Flutter project
+cd wedding_planner
+
+# Get dependencies
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -w /app ghcr.io/cirruslabs/flutter:latest flutter pub get
+
+# Build debug APK
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -v "flutter_gradle:/root/.gradle" -w /app ghcr.io/cirruslabs/flutter:latest flutter build apk --debug
+
+# Analyze code
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -w /app ghcr.io/cirruslabs/flutter:latest flutter analyze
+```
+
+Output APK: `build/app/outputs/flutter-apk/app-debug.apk`
 
 ### 2.3 Generate Code (Freezed, JSON)
 
@@ -553,4 +577,12 @@ After setup is complete:
 
 ---
 
-**Last Updated:** January 30, 2026
+**Last Updated:** February 3, 2026
+
+---
+
+## Related Documentation
+
+- [FLUTTER_DOCKER_DEVELOPMENT.md](./FLUTTER_DOCKER_DEVELOPMENT.md) - Build Flutter without local installation
+- [SESSION_3_SUMMARY.md](./SESSION_3_SUMMARY.md) - Design overhaul session notes
+- [TECHNICAL_ARCHITECTURE.md](./TECHNICAL_ARCHITECTURE.md) - System architecture details

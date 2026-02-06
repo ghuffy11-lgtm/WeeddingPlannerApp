@@ -39,7 +39,7 @@ class ErrorState extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -59,7 +59,7 @@ class ErrorState extends StatelessWidget {
               Text(
                 description!,
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.warmGray,
+                  color: AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),

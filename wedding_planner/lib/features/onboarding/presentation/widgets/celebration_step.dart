@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -5,9 +6,10 @@ import '../../../../config/routes.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../shared/widgets/glass_card.dart';
 
 /// Celebration Step
-/// Shows congratulations and next steps
+/// Dark theme with glassmorphism design
 class CelebrationStep extends StatefulWidget {
   const CelebrationStep({super.key});
 
@@ -62,13 +64,22 @@ class _CelebrationStepState extends State<CelebrationStep>
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.accentPurple],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.roseGold.withOpacity(0.3),
-                      blurRadius: 20,
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                      blurRadius: 30,
                       offset: const Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: AppColors.accentPurple.withValues(alpha: 0.2),
+                      blurRadius: 50,
+                      spreadRadius: 10,
                     ),
                   ],
                 ),
@@ -81,19 +92,24 @@ class _CelebrationStepState extends State<CelebrationStep>
             ),
             const SizedBox(height: AppSpacing.xl),
             // Title
-            Text(
-              "You're all set!",
-              style: AppTypography.h1.copyWith(
-                color: AppColors.deepCharcoal,
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [AppColors.primary, AppColors.accent],
+              ).createShader(bounds),
+              child: Text(
+                "You're all set!",
+                style: AppTypography.hero.copyWith(
+                  color: AppColors.white,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.base),
             // Subtitle
             Text(
               "Your wedding planning journey begins now.\nLet's make your dream wedding a reality!",
               style: AppTypography.bodyLarge.copyWith(
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -144,53 +160,64 @@ class _QuickActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.base),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: AppSpacing.borderRadiusMedium,
-          border: Border.all(color: AppColors.divider),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: AppColors.roseGold.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: AppColors.roseGold,
-              ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.base),
+            decoration: BoxDecoration(
+              color: AppColors.glassBackground,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.glassBorder),
             ),
-            const SizedBox(width: AppSpacing.base),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTypography.labelLarge.copyWith(
-                      color: AppColors.deepCharcoal,
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.2),
+                        AppColors.accentPurple.withValues(alpha: 0.2),
+                      ],
                     ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  Text(
-                    description,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.warmGray,
-                    ),
+                  child: Icon(
+                    icon,
+                    color: AppColors.primary,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: AppSpacing.base),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTypography.labelLarge.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        description,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textTertiary,
+                ),
+              ],
             ),
-            const Icon(
-              Icons.chevron_right,
-              color: AppColors.warmGray,
-            ),
-          ],
+          ),
         ),
       ),
     );

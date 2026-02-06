@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,7 +11,7 @@ import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
 
 /// Styles Step
-/// Allows couples to select their wedding style preferences
+/// Dark theme with glassmorphism design
 class StylesStep extends StatelessWidget {
   const StylesStep({super.key});
 
@@ -30,13 +31,24 @@ class StylesStep extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.roseGold.withOpacity(0.1),
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.accentPurple],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
                   child: const Icon(
                     Icons.palette,
                     size: 40,
-                    color: AppColors.roseGold,
+                    color: AppColors.white,
                   ),
                 ),
               ),
@@ -46,7 +58,7 @@ class StylesStep extends StatelessWidget {
                 child: Text(
                   "What's your style?",
                   style: AppTypography.h2.copyWith(
-                    color: AppColors.deepCharcoal,
+                    color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -56,7 +68,7 @@ class StylesStep extends StatelessWidget {
                 child: Text(
                   "Select all that inspire you (you can choose multiple)",
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.warmGray,
+                    color: AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -94,7 +106,7 @@ class StylesStep extends StatelessWidget {
                   child: Text(
                     '${state.data.styles.length} style${state.data.styles.length > 1 ? 's' : ''} selected',
                     style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.roseGold,
+                      color: AppColors.primary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -122,64 +134,72 @@ class _StyleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.roseGold.withOpacity(0.1) : AppColors.white,
-          borderRadius: AppSpacing.borderRadiusMedium,
-          border: Border.all(
-            color: isSelected ? AppColors.roseGold : AppColors.divider,
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.roseGold.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Stack(
-          children: [
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    style.emoji,
-                    style: const TextStyle(fontSize: 36),
-                  ),
-                  const SizedBox(height: AppSpacing.small),
-                  Text(
-                    style.displayName,
-                    style: AppTypography.labelLarge.copyWith(
-                      color: isSelected ? AppColors.roseGold : AppColors.deepCharcoal,
-                    ),
-                  ),
-                ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary.withValues(alpha: 0.15)
+                  : AppColors.glassBackground,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : AppColors.glassBorder,
+                width: isSelected ? 2 : 1,
               ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
             ),
-            if (isSelected)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: const BoxDecoration(
-                    color: AppColors.roseGold,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check,
-                    color: AppColors.white,
-                    size: 16,
+            child: Stack(
+              children: [
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        style.emoji,
+                        style: const TextStyle(fontSize: 36),
+                      ),
+                      const SizedBox(height: AppSpacing.small),
+                      Text(
+                        style.displayName,
+                        style: AppTypography.labelLarge.copyWith(
+                          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-          ],
+                if (isSelected)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        color: AppColors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

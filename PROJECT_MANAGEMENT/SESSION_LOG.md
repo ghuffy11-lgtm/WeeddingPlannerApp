@@ -666,6 +666,284 @@
 
 ---
 
+## Session 3 (Design Overhaul) - February 3, 2026
+
+### Participants
+- User (Project Owner)
+- Claude (AI Project Manager)
+
+### Duration
+~2 hours
+
+### Topics Discussed
+1. User dissatisfied with original simple/light design
+2. User downloaded preferred design from Google AI Studio (Stitch)
+3. Converting React/TypeScript design to Flutter
+4. Setting up Docker-based Flutter builds
+
+### Work Completed
+
+1. **Design System Overhaul**
+   - Converted from light theme to dark theme
+   - New color palette: Hot pink (#EE2B7C), Cyan (#00F2FF), Purple (#7000FF)
+   - Dark backgrounds: #0A0A0C, #050508, #16161A
+   - Updated typography to Plus Jakarta Sans + Manrope fonts
+
+2. **New Widgets Created**
+   - `GlassCard` - Frosted glass card with backdrop blur
+   - `GlassButton` - Semi-transparent button
+   - `GlassIconButton` - Circular icon button with glass effect
+   - `GlassChip` - Tag/chip with color tint
+   - `BackgroundGlow` - Ambient glow effects
+   - `AppBottomNavBar` - Custom nav with raised center button
+
+3. **Screens Updated**
+   - `home_page.dart` - Hero section, trending themes carousel, featured vendors
+   - `welcome_page.dart` - Dark theme with glassmorphism
+   - `login_page.dart` - Dark theme with glass inputs
+   - All button widgets updated for new colors
+
+4. **Documentation Created**
+   - `AGENTS.md` - Quick reference for AI agents
+   - `docs/FLUTTER_DOCKER_DEVELOPMENT.md` - Docker commands for Flutter
+   - `docs/SESSION_3_SUMMARY.md` - Design overhaul summary
+   - Updated `docs/DEVELOPMENT_SETUP.md` with Docker option
+
+5. **Build System**
+   - Configured Docker-based Flutter builds (no local Flutter installation needed)
+   - Built debug APK: `wedding_planner_v2_debug.apk` (154MB)
+   - Documented all Docker commands for future sessions
+
+### Files Created
+- `lib/shared/widgets/glass_card.dart`
+- `lib/shared/widgets/bottom_nav_bar.dart`
+- `docs/FLUTTER_DOCKER_DEVELOPMENT.md`
+- `docs/SESSION_3_SUMMARY.md`
+- `AGENTS.md`
+
+### Files Modified
+- `lib/core/constants/app_colors.dart` - New dark color palette
+- `lib/core/constants/app_typography.dart` - New fonts
+- `lib/core/theme/app_theme.dart` - Complete dark theme
+- `lib/app.dart` - Changed to dark mode
+- `lib/features/home/presentation/pages/home_page.dart` - New design
+- `lib/features/auth/presentation/pages/welcome_page.dart` - New design
+- `lib/features/auth/presentation/pages/login_page.dart` - New design
+- `lib/shared/widgets/buttons/primary_button.dart` - Updated colors
+- `lib/shared/widgets/buttons/secondary_button.dart` - Updated to glass style
+- `lib/shared/widgets/feedback/error_state.dart` - Fixed deprecated methods
+- `pubspec.yaml` - Added google_fonts package
+
+### Design Reference Files (User Provided)
+Located at `/design_references/wedapp/`:
+- `App.tsx` - Main app structure
+- `index.html` - Color scheme and CSS
+- `types.ts` - TypeScript types
+- `components/BottomNav.tsx` - Navigation design
+- `components/Checklist.tsx` - Task list design
+- `components/DiscoveryHome.tsx` - Home screen design
+- `components/MastermindHub.tsx` - Planning hub design
+- `components/TalentHub.tsx` - Vendor listing design
+
+### Decisions Made
+| Decision | Choice | Reason |
+|----------|--------|--------|
+| Theme | Dark mode only | User preference for elegant/fancy |
+| Flutter builds | Docker-based | No local Flutter installation |
+| Fonts | Google Fonts package | Web fonts, no asset files needed |
+| Design reference | Keep React files | Reference for future screens |
+
+### Docker Commands for Flutter
+```bash
+# Get dependencies
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -w /app ghcr.io/cirruslabs/flutter:latest flutter pub get
+
+# Build APK
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -v "flutter_gradle:/root/.gradle" -w /app ghcr.io/cirruslabs/flutter:latest flutter build apk --debug
+```
+
+### Action Items for Next Session
+- [ ] Update remaining screens to match new design (register, onboarding, vendors)
+- [ ] Setup Firebase project (P0-032)
+- [ ] Build booking system screens (P1-050 to P1-056)
+- [ ] Implement custom bottom navigation in MainScaffold
+
+### User Preferences Noted
+- User wants to control design decisions
+- User prefers dark, elegant, "fancy" designs
+- User does not want simple "webpage-like" designs
+- Show designs for approval before implementing major changes
+
+### Notes
+- Flutter is NOT installed locally - always use Docker
+- Volume mounts cache dependencies between runs (flutter_pub_cache, flutter_gradle)
+- First APK build takes ~6 minutes, subsequent builds are faster
+- Design reference files are React/TypeScript - need manual conversion to Flutter
+
+---
+
+## Session 3 Continued - February 3, 2026 (Booking System)
+
+### Participants
+- User (Project Owner)
+- Claude (AI Developer)
+
+### Duration
+~1 hour
+
+### Topics Discussed
+1. **APK Build Issues**
+   - Previous APK had installation error
+   - Rebuilt APK with version bumping (1.0.1, 1.0.2)
+   - Confirmed timestamp changes for user verification
+
+2. **Design Updates from Other Agent**
+   - Checked CHANGELOG for updates by another agent
+   - Register page, onboarding steps, vendor pages updated to dark theme
+   - Built APK v1.0.2 with all design updates
+
+3. **Booking System Implementation**
+   - User requested booking system as next task
+   - Built complete feature following existing patterns
+
+### Work Completed
+
+1. **Booking Feature** (`lib/features/booking/`)
+   - Domain layer: Booking entities, BookingStatus enum, repository interface
+   - Data layer: Models, remote datasource, repository implementation
+   - Presentation layer: BLoC, pages, widgets
+
+2. **Pages Created**
+   - `BookingsPage` - My bookings list with status filter chips
+   - `BookingDetailPage` - View booking, cancel, add review
+   - `CreateBookingPage` - Book vendor with date/package selection
+   - `BookingCard` widget with glassmorphism
+
+3. **Integration**
+   - Updated `injection.dart` with booking dependencies
+   - Updated `routes.dart` with /bookings, /bookings/:id, /vendors/:id/book
+   - Updated VendorDetailPage Book Now button to pass vendor data
+
+4. **Build**
+   - Fixed build errors (AppTypography.labelSmall → bodySmall, AppSpacing.extraLarge → xl)
+   - Built APK v1.1.0 with booking feature (154MB)
+
+### Files Created
+- `lib/features/booking/domain/entities/booking.dart`
+- `lib/features/booking/domain/repositories/booking_repository.dart`
+- `lib/features/booking/data/models/booking_model.dart`
+- `lib/features/booking/data/datasources/booking_remote_datasource.dart`
+- `lib/features/booking/data/repositories/booking_repository_impl.dart`
+- `lib/features/booking/presentation/bloc/booking_bloc.dart`
+- `lib/features/booking/presentation/bloc/booking_event.dart`
+- `lib/features/booking/presentation/bloc/booking_state.dart`
+- `lib/features/booking/presentation/pages/bookings_page.dart`
+- `lib/features/booking/presentation/pages/booking_detail_page.dart`
+- `lib/features/booking/presentation/pages/create_booking_page.dart`
+- `lib/features/booking/presentation/widgets/booking_card.dart`
+
+### Files Modified
+- `lib/config/injection.dart`
+- `lib/config/routes.dart`
+- `lib/features/vendors/presentation/pages/vendor_detail_page.dart`
+- `PROJECT_MANAGEMENT/CHANGELOG.md`
+- `PROJECT_MANAGEMENT/PROJECT_STATUS.md`
+- `PROJECT_MANAGEMENT/TASK_TRACKER.md`
+
+### Tasks Completed
+- P1-050: Package selection screen ✓
+- P1-051: Date selection calendar ✓
+- P1-052: Booking request form ✓
+- P1-053: Booking confirmation screen ✓
+- P1-054: My bookings list ✓
+- P1-055: Booking detail screen ✓
+- P1-056: Booking BLoC ✓
+
+### Action Items for Next Session
+- [ ] Setup Firebase project (P0-032)
+- [ ] Build chat system (P1-070 to P1-077)
+- [ ] Build guest management (P1-080+)
+- [ ] Build budget tracker screens
+
+### Notes
+- APK Location: `/mnt/repo/WeeddingPlannerApp/wedding_planner_v1.1.0_debug.apk`
+- Phase 1 progress: 55%
+- User reminded to update project docs - important for continuity
+
+---
+
+## Session 4 - February 6, 2026
+
+### Participants
+- User (Project Owner)
+- Claude (AI Developer)
+
+### Duration
+~1 hour
+
+### Topics Discussed
+1. Login crash investigation
+2. API response vs model field mismatch
+3. camelCase vs snake_case handling
+4. Firebase project setup (P0-032)
+
+### Work Completed
+
+1. **Bug Fix: API Response Parsing**
+   - Identified mismatch between API response (camelCase) and model (snake_case)
+   - Updated `UserModel.fromJson()` to handle both formats
+   - Made `created_at` optional since API doesn't return it
+   - Built and tested APK - login now works
+
+2. **Firebase Integration (P0-032)**
+   - Added Google Services plugin to Android Gradle configuration
+   - Created `firebase_options.dart` with platform detection
+   - Created placeholder `google-services.json` for Android
+   - Created placeholder `GoogleService-Info.plist` for iOS
+   - Created `ios/Podfile` with Firebase CocoaPods configuration
+   - Updated `main.dart` with graceful Firebase initialization
+   - Added Android permissions (INTERNET, notifications)
+   - Added iOS background modes for push notifications
+   - Created `docs/FIREBASE_SETUP.md` setup guide
+   - Successfully built APK with Firebase integration (154MB)
+
+### Files Created
+- `lib/firebase_options.dart`
+- `android/app/google-services.json`
+- `ios/Runner/GoogleService-Info.plist`
+- `ios/Podfile`
+- `docs/FIREBASE_SETUP.md`
+
+### Files Modified
+- `lib/main.dart`
+- `android/settings.gradle.kts`
+- `android/app/build.gradle.kts`
+- `android/app/src/main/AndroidManifest.xml`
+- `ios/Runner/Info.plist`
+- `lib/features/auth/data/models/user_model.dart`
+
+### Decisions Made
+| Decision | Choice | Reason |
+|----------|--------|--------|
+| Field naming | Support both cases | Backwards compatibility |
+| Missing created_at | Default to now | API doesn't provide it |
+| Firebase config | Placeholder values | User needs to create Firebase project |
+| Firebase init | Graceful fallback | App works without Firebase config |
+| minSdk | 21 | Required for Firebase |
+
+### Action Items for Next Session
+- [ ] User: Configure Firebase project and update config files
+- [ ] Build chat system (P1-070 to P1-077)
+- [ ] Build guest management (P1-080+)
+
+### Notes
+- Test credentials: demo@wedding.app / password123
+- Login confirmed working on emulator
+- Firebase integration complete - needs user to configure Firebase project
+- See `docs/FIREBASE_SETUP.md` for setup instructions
+
+---
+
 ## Session Template (Copy for Future Sessions)
 
 ```
