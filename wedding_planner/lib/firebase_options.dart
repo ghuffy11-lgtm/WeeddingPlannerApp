@@ -1,16 +1,6 @@
-// File generated for Firebase configuration.
-// IMPORTANT: Replace these placeholder values with your actual Firebase project configuration.
-//
-// To get your configuration:
-// 1. Go to https://console.firebase.google.com
-// 2. Create a new project or select existing one
-// 3. Add an Android app with package name: com.example.wedding_planner
-// 4. Download google-services.json to android/app/
-// 5. Add an iOS app (optional) and download GoogleService-Info.plist
-// 6. Update the values below with your Firebase project details
-//
-// Alternatively, run: dart pub global activate flutterfire_cli
-// Then: flutterfire configure
+// Firebase configuration for Wedding Planner App
+// Generated from google-services.json and GoogleService-Info.plist
+// Project: wedding-planner-fcc81
 
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
@@ -43,50 +33,52 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // PLACEHOLDER VALUES - Replace with your actual Firebase configuration
-  // These are example values and will NOT work until replaced
-
+  // Web configuration (uses Android API key - add web app in Firebase Console for dedicated key)
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: '1:000000000000:web:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'wedding-planner-app',
-    authDomain: 'wedding-planner-app.firebaseapp.com',
-    storageBucket: 'wedding-planner-app.appspot.com',
+    apiKey: 'AIzaSyBCie08VSS8i48YpaT9-I6X839okxqWOgo',
+    appId: '1:22327346735:android:6e84ae465ba1b83cc768da',
+    messagingSenderId: '22327346735',
+    projectId: 'wedding-planner-fcc81',
+    authDomain: 'wedding-planner-fcc81.firebaseapp.com',
+    storageBucket: 'wedding-planner-fcc81.firebasestorage.app',
   );
 
+  // Android configuration from google-services.json
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: '1:000000000000:android:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'wedding-planner-app',
-    storageBucket: 'wedding-planner-app.appspot.com',
+    apiKey: 'AIzaSyBCie08VSS8i48YpaT9-I6X839okxqWOgo',
+    appId: '1:22327346735:android:6e84ae465ba1b83cc768da',
+    messagingSenderId: '22327346735',
+    projectId: 'wedding-planner-fcc81',
+    storageBucket: 'wedding-planner-fcc81.firebasestorage.app',
   );
 
+  // iOS configuration from GoogleService-Info.plist
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: '1:000000000000:ios:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'wedding-planner-app',
-    storageBucket: 'wedding-planner-app.appspot.com',
+    apiKey: 'AIzaSyCQr4Op-jIA7XFfo7ThU4dsJhbX7pinBB0',
+    appId: '1:22327346735:ios:32d5af5a5108b85cc768da',
+    messagingSenderId: '22327346735',
+    projectId: 'wedding-planner-fcc81',
+    storageBucket: 'wedding-planner-fcc81.firebasestorage.app',
     iosBundleId: 'com.example.weddingPlanner',
   );
 
+  // macOS configuration (uses iOS config - add macOS app in Firebase Console for dedicated config)
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_MACOS_API_KEY',
-    appId: '1:000000000000:ios:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'wedding-planner-app',
-    storageBucket: 'wedding-planner-app.appspot.com',
+    apiKey: 'AIzaSyCQr4Op-jIA7XFfo7ThU4dsJhbX7pinBB0',
+    appId: '1:22327346735:ios:32d5af5a5108b85cc768da',
+    messagingSenderId: '22327346735',
+    projectId: 'wedding-planner-fcc81',
+    storageBucket: 'wedding-planner-fcc81.firebasestorage.app',
     iosBundleId: 'com.example.weddingPlanner',
   );
 
+  // Windows configuration (uses Android config - add web app in Firebase Console for dedicated config)
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'YOUR_WINDOWS_API_KEY',
-    appId: '1:000000000000:web:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'wedding-planner-app',
-    authDomain: 'wedding-planner-app.firebaseapp.com',
-    storageBucket: 'wedding-planner-app.appspot.com',
+    apiKey: 'AIzaSyBCie08VSS8i48YpaT9-I6X839okxqWOgo',
+    appId: '1:22327346735:android:6e84ae465ba1b83cc768da',
+    messagingSenderId: '22327346735',
+    projectId: 'wedding-planner-fcc81',
+    authDomain: 'wedding-planner-fcc81.firebaseapp.com',
+    storageBucket: 'wedding-planner-fcc81.firebasestorage.app',
   );
 }
