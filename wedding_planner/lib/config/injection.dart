@@ -21,6 +21,10 @@ import '../features/booking/data/datasources/booking_remote_datasource.dart';
 import '../features/booking/data/repositories/booking_repository_impl.dart';
 import '../features/booking/domain/repositories/booking_repository.dart';
 import '../features/booking/presentation/bloc/booking_bloc.dart';
+import '../features/chat/data/datasources/chat_firestore_datasource.dart';
+import '../features/chat/data/repositories/chat_repository_impl.dart';
+import '../features/chat/domain/repositories/chat_repository.dart';
+import '../features/chat/presentation/bloc/chat_bloc.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -128,6 +132,11 @@ void _registerDataSources() {
   getIt.registerLazySingleton<BookingRemoteDataSource>(
     () => BookingRemoteDataSourceImpl(dio: getIt<Dio>()),
   );
+
+  // Chat Data Sources
+  getIt.registerLazySingleton<ChatFirestoreDataSource>(
+    () => ChatFirestoreDataSourceImpl(),
+  );
 }
 
 void _registerRepositories() {
@@ -160,6 +169,13 @@ void _registerRepositories() {
       remoteDataSource: getIt<BookingRemoteDataSource>(),
     ),
   );
+
+  // Chat Repository
+  getIt.registerLazySingleton<ChatRepository>(
+    () => ChatRepositoryImpl(
+      dataSource: getIt<ChatFirestoreDataSource>(),
+    ),
+  );
 }
 
 void _registerUseCases() {
@@ -187,6 +203,14 @@ void _registerBlocs() {
   // Booking BLoC - Factory so each navigation creates fresh state
   getIt.registerFactory<BookingBloc>(
     () => BookingBloc(repository: getIt<BookingRepository>()),
+  );
+
+  // Chat BLoC - Singleton for real-time updates across screens
+  getIt.registerLazySingleton<ChatBloc>(
+    () => ChatBloc(
+      repository: getIt<ChatRepository>(),
+      dataSource: getIt<ChatFirestoreDataSource>(),
+    ),
   );
 }
 

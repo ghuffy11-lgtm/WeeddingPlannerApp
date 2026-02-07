@@ -18,6 +18,9 @@ import '../features/booking/presentation/bloc/booking_bloc.dart';
 import '../features/booking/presentation/pages/bookings_page.dart';
 import '../features/booking/presentation/pages/booking_detail_page.dart';
 import '../features/booking/presentation/pages/create_booking_page.dart';
+import '../features/chat/presentation/bloc/chat_bloc.dart';
+import '../features/chat/presentation/pages/conversations_page.dart';
+import '../features/chat/presentation/pages/chat_page.dart';
 import '../shared/widgets/layout/main_scaffold.dart';
 import 'injection.dart';
 
@@ -147,8 +150,11 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: AppRoutes.chat,
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: _PlaceholderPage(title: 'Chat'),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: BlocProvider.value(
+              value: getIt<ChatBloc>(),
+              child: const ConversationsPage(),
+            ),
           ),
         ),
         GoRoute(
@@ -268,6 +274,18 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.seating,
       builder: (context, state) => const _PlaceholderPage(title: 'Seating'),
+    ),
+
+    // Chat Conversation (outside shell)
+    GoRoute(
+      path: '/chat/:id',
+      builder: (context, state) {
+        final conversationId = state.pathParameters['id']!;
+        return BlocProvider.value(
+          value: getIt<ChatBloc>(),
+          child: ChatPage(conversationId: conversationId),
+        );
+      },
     ),
   ],
 

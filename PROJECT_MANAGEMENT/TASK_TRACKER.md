@@ -1,7 +1,7 @@
 # Task Tracker
 
 > Track all development tasks by phase and component
-> **Last Updated:** February 6, 2026
+> **Last Updated:** February 7, 2026
 
 ---
 
@@ -135,14 +135,14 @@
 ### Chat System (Mobile)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-070 | Conversations list | - | [ ] | - |
-| P1-071 | Chat screen | - | [ ] | - |
-| P1-072 | Send text messages | - | [ ] | - |
-| P1-073 | Send images | - | [ ] | - |
-| P1-074 | Read receipts | - | [ ] | - |
-| P1-075 | Typing indicator | - | [ ] | - |
-| P1-076 | Push notifications | - | [ ] | - |
-| P1-077 | Firebase integration | - | [ ] | - |
+| P1-070 | Conversations list | Claude | [x] | Completed Feb 7 - ConversationsPage |
+| P1-071 | Chat screen | Claude | [x] | Completed Feb 7 - ChatPage with bubbles |
+| P1-072 | Send text messages | Claude | [x] | Completed Feb 7 - ChatInput widget |
+| P1-073 | Send images | Claude | [x] | Completed Feb 7 - UI ready, handler in bloc |
+| P1-074 | Read receipts | Claude | [x] | Completed Feb 7 - MessageStatus in bubbles |
+| P1-075 | Typing indicator | Claude | [x] | Completed Feb 7 - In ConversationTile & ChatPage |
+| P1-076 | Push notifications | - | [ ] | UI ready, needs FCM handler |
+| P1-077 | Firebase Firestore | Claude | [x] | Completed Feb 7 - ChatFirestoreDataSource |
 
 ### Guest Management (Mobile)
 | ID | Task | Assigned To | Status | Notes |
