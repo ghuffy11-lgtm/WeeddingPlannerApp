@@ -5,6 +5,61 @@
 
 ---
 
+## February 8, 2026 (Session 5 - Guest Management Complete)
+
+### Added
+
+- **Guest Feature** (`lib/features/guests/`) - P1-080+ COMPLETE
+  - **Domain Layer**
+    - `Guest` and `GuestSummary` entities with computed properties (fullName, initials)
+    - `RsvpStatus` enum (pending, confirmed, declined, maybe)
+    - `GuestCategory` enum (family, friends, coworkers, neighbors, other) with icons
+    - `GuestSide` enum (bride, groom, both)
+    - `MealPreference` enum (standard, vegetarian, vegan, halal, kosher, gluten_free, other)
+    - `GuestRequest` for create/update operations
+    - `GuestStats` for statistics overview
+    - `GuestRepository` interface with filter, pagination, RSVP, invitations, import/export
+
+  - **Data Layer**
+    - `GuestSummaryModel`, `GuestModel`, `GuestStatsModel` with JSON serialization
+    - Support for both camelCase and snake_case field names
+    - `GuestRemoteDataSource` for API calls with proper type casting
+    - `GuestRepositoryImpl` with error handling using dartz Either
+
+  - **Presentation Layer**
+    - `GuestBloc` with events for CRUD, filtering, selection, bulk actions
+    - `GuestsPage` - Guest list with search, filters, stats card, selection mode, bulk actions
+    - `GuestDetailPage` - Full guest details with RSVP update, contact info, meal preferences
+    - `AddEditGuestPage` - Form for adding/editing guests with validation
+    - `GuestCard` widget with glassmorphism and RSVP status badges
+    - `GuestStatsCard` widget for overview statistics
+
+### Modified
+
+- **Dependency Injection** (`lib/config/injection.dart`)
+  - Added GuestRemoteDataSource, GuestRepository, GuestBloc registrations
+
+- **Routes** (`lib/config/routes.dart`)
+  - Added /guests route for guest list
+  - Added /guests/:id route for guest details
+  - Added /guests/add route for adding new guests
+  - Added /guests/:id/edit route for editing guests
+
+### Technical Notes
+
+- Guest list supports filtering by RSVP status, category, and side
+- Search functionality for finding guests by name
+- Selection mode for bulk invitation sending
+- RSVP status update directly from detail page
+- Plus ones tracking with guest count
+- Meal preference and dietary notes for catering
+- Table assignment field for seating chart integration
+- Invitation status tracking (sent, when, response time)
+- Dark theme with glassmorphism consistent with rest of app
+- Debug APK built successfully (59.3MB release)
+
+---
+
 ## February 7, 2026 (Session 4 - Chat System Complete)
 
 ### Added

@@ -1,7 +1,7 @@
 # Task Tracker
 
 > Track all development tasks by phase and component
-> **Last Updated:** February 7, 2026
+> **Last Updated:** February 8, 2026
 
 ---
 
@@ -147,12 +147,15 @@
 ### Guest Management (Mobile)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-080 | Guest list screen | - | [ ] | - |
-| P1-081 | Add guest form | - | [ ] | - |
-| P1-082 | Import from contacts | - | [ ] | - |
-| P1-083 | Import CSV | - | [ ] | - |
-| P1-084 | Guest groups | - | [ ] | - |
-| P1-085 | Guest detail view | - | [ ] | - |
+| P1-080 | Guest list screen | Claude | [x] | Completed Feb 8 - GuestsPage with search/filters |
+| P1-081 | Add guest form | Claude | [x] | Completed Feb 8 - AddEditGuestPage |
+| P1-082 | Import from contacts | - | [ ] | UI ready, needs contacts permission |
+| P1-083 | Import CSV | Claude | [x] | Completed Feb 8 - API ready in datasource |
+| P1-084 | Guest groups/categories | Claude | [x] | Completed Feb 8 - GuestCategory enum |
+| P1-085 | Guest detail view | Claude | [x] | Completed Feb 8 - GuestDetailPage |
+| P1-086 | RSVP status update | Claude | [x] | Completed Feb 8 - in GuestDetailPage |
+| P1-087 | Bulk invitation sending | Claude | [x] | Completed Feb 8 - selection mode in list |
+| P1-088 | Guest BLoC | Claude | [x] | Completed Feb 8 - full state management |
 
 ### Budget Tracker (Mobile)
 | ID | Task | Assigned To | Status | Notes |

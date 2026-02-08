@@ -25,6 +25,10 @@ import '../features/chat/data/datasources/chat_firestore_datasource.dart';
 import '../features/chat/data/repositories/chat_repository_impl.dart';
 import '../features/chat/domain/repositories/chat_repository.dart';
 import '../features/chat/presentation/bloc/chat_bloc.dart';
+import '../features/guests/data/datasources/guest_remote_datasource.dart';
+import '../features/guests/data/repositories/guest_repository_impl.dart';
+import '../features/guests/domain/repositories/guest_repository.dart';
+import '../features/guests/presentation/bloc/guest_bloc.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -137,6 +141,11 @@ void _registerDataSources() {
   getIt.registerLazySingleton<ChatFirestoreDataSource>(
     () => ChatFirestoreDataSourceImpl(),
   );
+
+  // Guest Data Sources
+  getIt.registerLazySingleton<GuestRemoteDataSource>(
+    () => GuestRemoteDataSourceImpl(dio: getIt<Dio>()),
+  );
 }
 
 void _registerRepositories() {
@@ -176,6 +185,13 @@ void _registerRepositories() {
       dataSource: getIt<ChatFirestoreDataSource>(),
     ),
   );
+
+  // Guest Repository
+  getIt.registerLazySingleton<GuestRepository>(
+    () => GuestRepositoryImpl(
+      remoteDataSource: getIt<GuestRemoteDataSource>(),
+    ),
+  );
 }
 
 void _registerUseCases() {
@@ -211,6 +227,11 @@ void _registerBlocs() {
       repository: getIt<ChatRepository>(),
       dataSource: getIt<ChatFirestoreDataSource>(),
     ),
+  );
+
+  // Guest BLoC - Factory so each navigation creates fresh state
+  getIt.registerFactory<GuestBloc>(
+    () => GuestBloc(repository: getIt<GuestRepository>()),
   );
 }
 

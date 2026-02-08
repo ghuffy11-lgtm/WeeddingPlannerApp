@@ -21,6 +21,10 @@ import '../features/booking/presentation/pages/create_booking_page.dart';
 import '../features/chat/presentation/bloc/chat_bloc.dart';
 import '../features/chat/presentation/pages/conversations_page.dart';
 import '../features/chat/presentation/pages/chat_page.dart';
+import '../features/guests/presentation/bloc/guest_bloc.dart';
+import '../features/guests/presentation/pages/guests_page.dart';
+import '../features/guests/presentation/pages/guest_detail_page.dart';
+import '../features/guests/presentation/pages/add_edit_guest_page.dart';
 import '../shared/widgets/layout/main_scaffold.dart';
 import 'injection.dart';
 
@@ -247,10 +251,50 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const _PlaceholderPage(title: 'Budget'),
     ),
 
-    // Guests
+    // Guests List
     GoRoute(
       path: AppRoutes.guests,
-      builder: (context, state) => const _PlaceholderPage(title: 'Guests'),
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<GuestBloc>(),
+          child: const GuestsPage(),
+        );
+      },
+    ),
+
+    // Guest Detail
+    GoRoute(
+      path: '/guests/:id',
+      builder: (context, state) {
+        final guestId = state.pathParameters['id']!;
+        return BlocProvider(
+          create: (_) => getIt<GuestBloc>(),
+          child: GuestDetailPage(guestId: guestId),
+        );
+      },
+    ),
+
+    // Add Guest
+    GoRoute(
+      path: '/guests/add',
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<GuestBloc>(),
+          child: const AddEditGuestPage(),
+        );
+      },
+    ),
+
+    // Edit Guest
+    GoRoute(
+      path: '/guests/:id/edit',
+      builder: (context, state) {
+        final guestId = state.pathParameters['id']!;
+        return BlocProvider(
+          create: (_) => getIt<GuestBloc>(),
+          child: AddEditGuestPage(guestId: guestId),
+        );
+      },
     ),
 
     // Invitations
