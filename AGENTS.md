@@ -32,11 +32,15 @@ docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -w /app
 # Analyze code (check for errors)
 docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -w /app ghcr.io/cirruslabs/flutter:latest flutter analyze
 
-# Build APK
+# Build Release APK (recommended for user testing)
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -v "flutter_gradle:/root/.gradle" -w /app ghcr.io/cirruslabs/flutter:latest flutter build apk --release
+
+# Build Debug APK (for development)
 docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -v "flutter_gradle:/root/.gradle" -w /app ghcr.io/cirruslabs/flutter:latest flutter build apk --debug
 ```
 
-**Output:** `build/app/outputs/flutter-apk/app-debug.apk`
+**Output (Release):** `build/app/outputs/flutter-apk/app-release.apk` (~60MB)
+**Output (Debug):** `build/app/outputs/flutter-apk/app-debug.apk` (~150MB)
 
 **Timeout:** Set to 600000ms (10 min) for APK builds.
 
@@ -73,6 +77,14 @@ Design reference files are in `/design_references/wedapp/`.
 - Show designs for approval before major changes
 - User prefers dark, elegant, "fancy" designs (not simple webpage-like)
 - User downloaded design from Google Stitch that they like
+
+## User Testing Setup
+
+- **Device**: Tablet
+- **APK Type**: Release APK (smaller, faster)
+- **APK Location**: `wedding_planner/build/app/outputs/flutter-apk/app-release.apk`
+- **IMPORTANT**: User must **uninstall old APK before installing new one** - signature conflicts cause "App not installed as package conflicts with existing package" error
+- **Build command**: `flutter build apk --release` (via Docker)
 
 ## Session History
 

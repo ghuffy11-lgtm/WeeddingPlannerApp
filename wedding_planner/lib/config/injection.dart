@@ -29,6 +29,10 @@ import '../features/guests/data/datasources/guest_remote_datasource.dart';
 import '../features/guests/data/repositories/guest_repository_impl.dart';
 import '../features/guests/domain/repositories/guest_repository.dart';
 import '../features/guests/presentation/bloc/guest_bloc.dart';
+import '../features/budget/data/datasources/budget_remote_datasource.dart';
+import '../features/budget/data/repositories/budget_repository_impl.dart';
+import '../features/budget/domain/repositories/budget_repository.dart';
+import '../features/budget/presentation/bloc/budget_bloc.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -146,6 +150,11 @@ void _registerDataSources() {
   getIt.registerLazySingleton<GuestRemoteDataSource>(
     () => GuestRemoteDataSourceImpl(dio: getIt<Dio>()),
   );
+
+  // Budget Data Sources
+  getIt.registerLazySingleton<BudgetRemoteDataSource>(
+    () => BudgetRemoteDataSourceImpl(dio: getIt<Dio>()),
+  );
 }
 
 void _registerRepositories() {
@@ -192,6 +201,13 @@ void _registerRepositories() {
       remoteDataSource: getIt<GuestRemoteDataSource>(),
     ),
   );
+
+  // Budget Repository
+  getIt.registerLazySingleton<BudgetRepository>(
+    () => BudgetRepositoryImpl(
+      remoteDataSource: getIt<BudgetRemoteDataSource>(),
+    ),
+  );
 }
 
 void _registerUseCases() {
@@ -232,6 +248,11 @@ void _registerBlocs() {
   // Guest BLoC - Factory so each navigation creates fresh state
   getIt.registerFactory<GuestBloc>(
     () => GuestBloc(repository: getIt<GuestRepository>()),
+  );
+
+  // Budget BLoC - Factory so each navigation creates fresh state
+  getIt.registerFactory<BudgetBloc>(
+    () => BudgetBloc(repository: getIt<BudgetRepository>()),
   );
 }
 

@@ -25,6 +25,11 @@ import '../features/guests/presentation/bloc/guest_bloc.dart';
 import '../features/guests/presentation/pages/guests_page.dart';
 import '../features/guests/presentation/pages/guest_detail_page.dart';
 import '../features/guests/presentation/pages/add_edit_guest_page.dart';
+import '../features/budget/presentation/bloc/budget_bloc.dart';
+import '../features/budget/presentation/pages/budget_page.dart';
+import '../features/budget/presentation/pages/add_edit_expense_page.dart';
+import '../features/budget/presentation/pages/expense_detail_page.dart';
+import '../features/budget/domain/entities/budget.dart';
 import '../shared/widgets/layout/main_scaffold.dart';
 import 'injection.dart';
 
@@ -245,10 +250,64 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
-    // Budget
+    // Budget Overview
     GoRoute(
       path: AppRoutes.budget,
-      builder: (context, state) => const _PlaceholderPage(title: 'Budget'),
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<BudgetBloc>(),
+          child: const BudgetPage(),
+        );
+      },
+    ),
+
+    // Add Expense
+    GoRoute(
+      path: '/budget/add',
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<BudgetBloc>(),
+          child: const AddEditExpensePage(),
+        );
+      },
+    ),
+
+    // Expense Detail
+    GoRoute(
+      path: '/budget/expense/:id',
+      builder: (context, state) {
+        final expenseId = state.pathParameters['id']!;
+        return BlocProvider(
+          create: (_) => getIt<BudgetBloc>(),
+          child: ExpenseDetailPage(expenseId: expenseId),
+        );
+      },
+    ),
+
+    // Edit Expense
+    GoRoute(
+      path: '/budget/expense/:id/edit',
+      builder: (context, state) {
+        final expenseId = state.pathParameters['id']!;
+        return BlocProvider(
+          create: (_) => getIt<BudgetBloc>(),
+          child: AddEditExpensePage(expenseId: expenseId),
+        );
+      },
+    ),
+
+    // Category Detail
+    GoRoute(
+      path: '/budget/category/:categoryName',
+      builder: (context, state) {
+        final category = state.extra as CategoryBudget?;
+        return BlocProvider(
+          create: (_) => getIt<BudgetBloc>(),
+          child: _PlaceholderPage(
+            title: category?.category.displayName ?? 'Category',
+          ),
+        );
+      },
     ),
 
     // Guests List

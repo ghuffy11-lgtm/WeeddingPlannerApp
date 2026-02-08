@@ -1085,16 +1085,74 @@ docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -v "flu
 | Bulk actions | Selection mode with send all | Efficiency for large guest lists |
 
 ### Action Items for Next Session
-- [ ] Build budget tracker feature (P1-060+)
+- [x] Build budget tracker feature (P1-090+) - DONE
 - [ ] Build profile/settings feature
+- [ ] Build task management feature
 - [ ] Test guest management with real API data
-- [ ] Implement CSV import/export for guests
+- [ ] Test budget tracker with real API data
 
 ### Notes
 - Guest management feature fully implemented
 - Release APK size reduced to 59.3MB (from debug 153MB)
 - All type casting properly handled for null safety
 - Phase 1 progress: ~70%
+
+### User Testing Setup
+- **Device**: Tablet
+- **APK Location**: `wedding_planner/build/app/outputs/flutter-apk/app-release.apk`
+- **IMPORTANT**: User must uninstall old APK before installing new one (package signature conflict error: "App not installed as package conflicts with existing package")
+
+---
+
+## Session 5 (Continued) - February 8, 2026
+
+### Work Completed
+
+1. **Budget Feature - Domain Layer**
+   - Created `Budget`, `CategoryBudget`, `Expense`, `BudgetStats` entities
+   - Created `BudgetCategory` enum with 16 categories and icons
+   - Created `PaymentStatus` enum (pending, partiallyPaid, paid, refunded)
+   - Defined `BudgetRepository` interface with filtering and pagination
+
+2. **Budget Feature - Data Layer**
+   - Created model classes with JSON serialization
+   - Implemented `BudgetRemoteDataSource` for API calls
+   - Implemented `BudgetRepositoryImpl` with error handling
+
+3. **Budget Feature - Presentation Layer**
+   - Created `BudgetBloc` with expense CRUD and payment updates
+   - Created `BudgetPage` with 3 tabs (Categories, Expenses, Payments)
+   - Created `AddEditExpensePage` for creating/editing expenses
+   - Created `ExpenseDetailPage` for viewing and updating payments
+   - Created widgets: `BudgetSummaryCard`, `CategoryBudgetCard`, `ExpenseCard`, `UpcomingPaymentCard`
+
+4. **Integration**
+   - Updated `injection.dart` with budget dependencies
+   - Updated `routes.dart` with budget routes
+   - Built release APK successfully (59.7MB)
+
+### Files Created
+- `lib/features/budget/domain/entities/budget.dart`
+- `lib/features/budget/domain/repositories/budget_repository.dart`
+- `lib/features/budget/data/models/budget_model.dart`
+- `lib/features/budget/data/datasources/budget_remote_datasource.dart`
+- `lib/features/budget/data/repositories/budget_repository_impl.dart`
+- `lib/features/budget/presentation/bloc/budget_bloc.dart`
+- `lib/features/budget/presentation/bloc/budget_event.dart`
+- `lib/features/budget/presentation/bloc/budget_state.dart`
+- `lib/features/budget/presentation/pages/budget_page.dart`
+- `lib/features/budget/presentation/pages/add_edit_expense_page.dart`
+- `lib/features/budget/presentation/pages/expense_detail_page.dart`
+- `lib/features/budget/presentation/widgets/budget_widgets.dart`
+
+### Files Modified
+- `lib/config/injection.dart` - Added budget dependencies
+- `lib/config/routes.dart` - Added budget routes
+
+### Notes
+- Budget tracker feature fully implemented (P1-090 to P1-093)
+- Phase 1 progress: ~80%
+- Demo credentials: demo@wedding.app / password123
 
 ---
 

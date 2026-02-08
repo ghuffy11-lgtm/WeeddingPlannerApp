@@ -160,10 +160,13 @@
 ### Budget Tracker (Mobile)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-090 | Budget overview screen | - | [ ] | - |
-| P1-091 | Add expense form | - | [ ] | - |
-| P1-092 | Category breakdown | - | [ ] | - |
-| P1-093 | Budget alerts | - | [ ] | - |
+| P1-090 | Budget overview screen | Claude | [x] | Completed Feb 8 - BudgetPage with tabs |
+| P1-091 | Add expense form | Claude | [x] | Completed Feb 8 - AddEditExpensePage |
+| P1-092 | Category breakdown | Claude | [x] | Completed Feb 8 - CategoryBudgetCard |
+| P1-093 | Budget alerts | Claude | [x] | Completed Feb 8 - Overdue/upcoming in Payments tab |
+| P1-094 | Expense detail view | Claude | [x] | Completed Feb 8 - ExpenseDetailPage |
+| P1-095 | Payment status update | Claude | [x] | Completed Feb 8 - In detail page |
+| P1-096 | Budget BLoC | Claude | [x] | Completed Feb 8 - Full state management |
 
 ### Invitations (Mobile)
 | ID | Task | Assigned To | Status | Notes |

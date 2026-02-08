@@ -5,6 +5,56 @@
 
 ---
 
+## February 8, 2026 (Session 5 - Budget Tracker Complete)
+
+### Added
+
+- **Budget Feature** (`lib/features/budget/`) - P1-090+ COMPLETE
+  - **Domain Layer**
+    - `Budget` entity with totals and currency formatting
+    - `BudgetCategory` enum (16 categories: venue, catering, photography, etc.)
+    - `PaymentStatus` enum (pending, partiallyPaid, paid, refunded)
+    - `CategoryBudget` for category-level tracking
+    - `Expense` entity with due dates, vendors, notes
+    - `BudgetStats` for statistics overview
+    - `BudgetRepository` interface with CRUD, filters, payments
+
+  - **Data Layer**
+    - `BudgetModel`, `CategoryBudgetModel`, `ExpenseModel`, `BudgetStatsModel`
+    - `BudgetRemoteDataSource` for API calls
+    - `BudgetRepositoryImpl` with error handling
+
+  - **Presentation Layer**
+    - `BudgetBloc` with expense CRUD, filtering, payment updates
+    - `BudgetPage` - Overview with tabs (Categories, Expenses, Payments)
+    - `AddEditExpensePage` - Form for creating/editing expenses
+    - `ExpenseDetailPage` - Full expense details with payment status update
+    - `BudgetSummaryCard`, `CategoryBudgetCard`, `ExpenseCard`, `UpcomingPaymentCard`
+
+### Modified
+
+- **Dependency Injection** (`lib/config/injection.dart`)
+  - Added BudgetRemoteDataSource, BudgetRepository, BudgetBloc registrations
+
+- **Routes** (`lib/config/routes.dart`)
+  - Added /budget route for budget overview
+  - Added /budget/add route for adding expenses
+  - Added /budget/expense/:id route for expense details
+  - Added /budget/expense/:id/edit route for editing expenses
+  - Added /budget/category/:categoryName route for category details
+
+### Technical Notes
+
+- 16 budget categories with icons
+- Progress tracking for each category
+- Payment status management (pending, partial, paid, refunded)
+- Due date tracking with overdue/upcoming alerts
+- Vendor linking for expenses
+- Tabbed interface: Categories, Expenses, Payments
+- Release APK built successfully (59.7MB)
+
+---
+
 ## February 8, 2026 (Session 5 - Guest Management Complete)
 
 ### Added
