@@ -8,6 +8,9 @@ const router = Router();
 router.use(authenticate);
 
 // Couple routes
+// GET /api/v1/bookings - alias for my-bookings (used by Flutter app)
+router.get('/', requireUserType('couple'), bookingController.getMyBookings);
+
 // GET /api/v1/bookings/my-bookings
 router.get('/my-bookings', requireUserType('couple'), bookingController.getMyBookings);
 

@@ -10,6 +10,15 @@ router.use(authenticate);
 // GET /api/v1/weddings/me
 router.get('/me', requireUserType('couple'), weddingController.getMyWedding);
 
+// GET /api/v1/weddings/me/tasks - get tasks for current user's wedding
+router.get('/me/tasks', requireUserType('couple'), weddingController.getMyTasks);
+
+// GET /api/v1/weddings/me/tasks/stats - get task statistics for current user's wedding
+router.get('/me/tasks/stats', requireUserType('couple'), weddingController.getMyTaskStats);
+
+// GET /api/v1/weddings/me/budget/summary - get budget summary for current user's wedding
+router.get('/me/budget/summary', requireUserType('couple'), weddingController.getMyBudgetSummary);
+
 // POST /api/v1/weddings
 router.post('/', requireUserType('couple'), weddingController.createWedding);
 

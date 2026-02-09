@@ -34,8 +34,16 @@ class HomeState extends Equatable {
   /// Initial state
   factory HomeState.initial() => const HomeState();
 
-  /// Loading state
-  HomeState loading() => copyWith(status: HomeStatus.loading);
+  /// Loading state - also clears any previous error
+  HomeState loading() => HomeState(
+        status: HomeStatus.loading,
+        wedding: wedding,
+        upcomingTasks: upcomingTasks,
+        budgetSummary: budgetSummary,
+        recentBookings: recentBookings,
+        taskStats: taskStats,
+        isRefreshing: isRefreshing,
+      );
 
   /// Loaded state
   HomeState loaded() => copyWith(status: HomeStatus.loaded, isRefreshing: false);

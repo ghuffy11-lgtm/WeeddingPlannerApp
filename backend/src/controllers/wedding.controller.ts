@@ -47,6 +47,149 @@ export const getMyWedding = async (
   }
 };
 
+export const getMyTasks = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const { limit, status, sort, order } = req.query;
+
+    // Find user's wedding first
+    const wedding = await prisma.weddings.findFirst({
+      where: { user_id: userId },
+    });
+
+    if (!wedding) {
+      throw ApiError.notFound('Wedding not found. Please create one first.');
+    }
+
+    const where: Record<string, unknown> = { wedding_id: wedding.id };
+    if (status === 'pending') where.is_completed = false;
+    if (status === 'completed') where.is_completed = true;
+
+    const orderBy: Record<string, unknown>[] = [];
+    if (sort === 'due_date') {
+      orderBy.push({ due_date: order === 'desc' ? 'desc' : 'asc' });
+    }
+    orderBy.push({ created_at: 'desc' });
+
+    const tasks = await prisma.tasks.findMany({
+      where,
+      orderBy,
+      take: limit ? parseInt(limit as string, 10) : undefined,
+    });
+
+    sendSuccess(res, tasks);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMyTaskStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+
+    // Find user's wedding first
+    const wedding = await prisma.weddings.findFirst({
+      where: { user_id: userId },
+    });
+
+    if (!wedding) {
+      throw ApiError.notFound('Wedding not found. Please create one first.');
+    }
+
+    const [total, completed, overdue] = await Promise.all([
+      prisma.tasks.count({ where: { wedding_id: wedding.id } }),
+      prisma.tasks.count({ where: { wedding_id: wedding.id, is_completed: true } }),
+      prisma.tasks.count({
+        where: {
+          wedding_id: wedding.id,
+          is_completed: false,
+          due_date: { lt: new Date() },
+        },
+      }),
+    ]);
+
+    sendSuccess(res, {
+      total,
+      completed,
+      pending: total - completed,
+      overdue,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMyBudgetSummary = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+
+    // Find user's wedding first
+    const wedding = await prisma.weddings.findFirst({
+      where: { user_id: userId },
+    });
+
+    if (!wedding) {
+      throw ApiError.notFound('Wedding not found. Please create one first.');
+    }
+
+    const budgetItems = await prisma.budget_items.findMany({
+      where: { wedding_id: wedding.id },
+    });
+
+    // Group by category and calculate totals
+    const categoryMap = new Map<string, { estimated: number; actual: number; count: number }>();
+
+    for (const item of budgetItems) {
+      const category = item.category || 'Other';
+      const existing = categoryMap.get(category) || { estimated: 0, actual: 0, count: 0 };
+      categoryMap.set(category, {
+        estimated: existing.estimated + (Number(item.estimated_amount) || 0),
+        actual: existing.actual + (Number(item.actual_amount) || 0),
+        count: existing.count + 1,
+      });
+    }
+
+    const categories = Array.from(categoryMap.entries()).map(([category, data]) => ({
+      category,
+      estimatedAmount: data.estimated,
+      actualAmount: data.actual,
+      itemCount: data.count,
+    }));
+
+    const totals = categories.reduce(
+      (acc, cat) => ({
+        estimated: acc.estimated + cat.estimatedAmount,
+        actual: acc.actual + cat.actualAmount,
+      }),
+      { estimated: 0, actual: 0 }
+    );
+
+    sendSuccess(res, {
+      categories,
+      summary: {
+        budgetTotal: Number(wedding.budget_total) || 0,
+        estimatedTotal: totals.estimated,
+        actualTotal: totals.actual,
+        remaining: (Number(wedding.budget_total) || 0) - totals.actual,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createWedding = async (
   req: Request,
   res: Response,

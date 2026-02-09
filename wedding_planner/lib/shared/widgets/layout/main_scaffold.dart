@@ -60,10 +60,10 @@ class _BottomNavBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.surfaceDark,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(0.3),
             offset: const Offset(0, -2),
             blurRadius: 8,
           ),
@@ -150,7 +150,7 @@ class _NavItem extends StatelessWidget {
               children: [
                 Icon(
                   isSelected ? selectedIcon : icon,
-                  color: isSelected ? AppColors.roseGold : AppColors.warmGray,
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
                   size: 24,
                 ),
                 if (badgeCount != null && badgeCount! > 0)
@@ -186,7 +186,7 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? AppColors.roseGold : AppColors.warmGray,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
               ),
             ),
           ],

@@ -47,6 +47,7 @@ import '../features/vendor_app/presentation/pages/availability_page.dart';
 import '../features/vendor_app/presentation/pages/packages_page.dart';
 import '../features/vendor_app/presentation/pages/add_edit_package_page.dart';
 import '../features/vendor_app/presentation/pages/vendor_profile_page.dart';
+import '../features/profile/presentation/pages/profile_page.dart';
 import '../shared/widgets/layout/main_scaffold.dart';
 import '../shared/widgets/layout/vendor_scaffold.dart';
 import 'injection.dart';
@@ -202,8 +203,11 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: AppRoutes.profile,
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: _PlaceholderPage(title: 'Profile'),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: BlocProvider(
+              create: (_) => getIt<HomeBloc>(),
+              child: const ProfilePage(),
+            ),
           ),
         ),
       ],

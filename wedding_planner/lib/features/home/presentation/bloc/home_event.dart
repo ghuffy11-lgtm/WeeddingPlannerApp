@@ -43,3 +43,8 @@ class HomeWeddingUpdated extends HomeEvent {
   @override
   List<Object?> get props => [weddingDate, partnerOneName, partnerTwoName];
 }
+
+/// Clear error state
+class HomeClearError extends HomeEvent {
+  const HomeClearError();
+}

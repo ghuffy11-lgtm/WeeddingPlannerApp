@@ -16,6 +16,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeLoadRequested>(_onLoadRequested);
     on<HomeRefreshRequested>(_onRefreshRequested);
     on<HomeTaskCompleted>(_onTaskCompleted);
+    on<HomeClearError>(_onClearError);
+  }
+
+  /// Clear error and reset to initial state
+  void _onClearError(
+    HomeClearError event,
+    Emitter<HomeState> emit,
+  ) {
+    emit(HomeState.initial());
   }
 
   Future<void> _onLoadRequested(

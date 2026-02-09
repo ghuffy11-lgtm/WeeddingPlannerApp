@@ -45,6 +45,8 @@ class _HomePageState extends State<HomePage> {
               description: state.errorMessage,
               primaryButtonText: 'Retry',
               onPrimaryButtonTap: () {
+                // Clear error state first, then reload
+                context.read<HomeBloc>().add(const HomeClearError());
                 context.read<HomeBloc>().add(const HomeLoadRequested());
               },
             );
@@ -90,6 +92,20 @@ class _HomePageState extends State<HomePage> {
 
                           const SizedBox(height: 32),
 
+                          // Wedding Countdown Card (if wedding date is set)
+                          if (state.wedding?.weddingDate != null) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: _WeddingCountdownSection(
+                                daysUntilWedding: state.daysUntilWedding ?? 0,
+                                weddingDate: state.wedding!.weddingDate!,
+                                coupleNames: state.wedding?.coupleDisplayName ?? 'Your Wedding',
+                                stylePreferences: state.wedding?.styleDisplay,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                          ],
+
                           // Trending Themes Section
                           _buildSectionHeader(
                             'Trending Themes',
@@ -100,15 +116,16 @@ class _HomePageState extends State<HomePage> {
 
                           const SizedBox(height: 32),
 
-                          // Wedding Date CTA Card
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: _WeddingDateCard(
-                              onTap: () => context.go(AppRoutes.tasks),
+                          // Wedding Date CTA Card (only show if no wedding date)
+                          if (state.wedding?.weddingDate == null) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: _WeddingDateCard(
+                                onTap: () => context.go(AppRoutes.tasks),
+                              ),
                             ),
-                          ),
-
-                          const SizedBox(height: 32),
+                            const SizedBox(height: 32),
+                          ],
 
                           // Featured Vendors Section
                           _buildSectionHeader(
@@ -552,6 +569,119 @@ class _VendorCircle extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Wedding Countdown Section with style display
+class _WeddingCountdownSection extends StatelessWidget {
+  final int daysUntilWedding;
+  final DateTime weddingDate;
+  final String coupleNames;
+  final String? stylePreferences;
+
+  const _WeddingCountdownSection({
+    required this.daysUntilWedding,
+    required this.weddingDate,
+    required this.coupleNames,
+    this.stylePreferences,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+      borderColor: AppColors.primary.withValues(alpha: 0.3),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          // Countdown
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _CountdownUnit(value: daysUntilWedding, label: 'Days'),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Until $coupleNames\'s Wedding',
+            style: AppTypography.labelLarge.copyWith(
+              color: AppColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _formatDate(weddingDate),
+            style: AppTypography.h3.copyWith(
+              color: AppColors.primary,
+            ),
+          ),
+          if (stylePreferences != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.accentPurple.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.style,
+                    size: 16,
+                    color: AppColors.accent,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    stylePreferences!,
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+}
+
+class _CountdownUnit extends StatelessWidget {
+  final int value;
+  final String label;
+
+  const _CountdownUnit({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value.toString(),
+          style: AppTypography.countdown.copyWith(
+            color: AppColors.primary,
+            fontSize: 64,
+          ),
+        ),
+        Text(
+          label.toUpperCase(),
+          style: AppTypography.countdownUnit.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
     );
   }
 }
