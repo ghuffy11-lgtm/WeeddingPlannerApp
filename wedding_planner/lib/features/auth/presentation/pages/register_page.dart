@@ -111,8 +111,8 @@ class _RegisterPageState extends State<RegisterPage> {
           if (_selectedUserType == UserType.couple) {
             context.go(AppRoutes.onboarding);
           } else {
-            // Vendor goes to vendor home
-            context.go(AppRoutes.vendorHome);
+            // Vendor goes to vendor onboarding to set up profile
+            context.go(AppRoutes.vendorOnboarding);
           }
         } else if (state.hasError) {
           ScaffoldMessenger.of(context).showSnackBar(

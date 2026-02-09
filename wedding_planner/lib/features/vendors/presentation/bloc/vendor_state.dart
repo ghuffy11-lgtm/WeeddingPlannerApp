@@ -64,6 +64,9 @@ class VendorState extends Equatable {
     this.favoriteVendorIds = const {},
   });
 
+  /// Check if categories are loading
+  bool get isLoadingCategories => categoriesStatus == VendorStatus.loading;
+
   /// Check if we can load more vendors
   bool get canLoadMoreVendors => vendorsPage < vendorsTotalPages;
 

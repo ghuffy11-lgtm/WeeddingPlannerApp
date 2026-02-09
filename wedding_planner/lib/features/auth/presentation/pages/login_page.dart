@@ -10,6 +10,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/glass_card.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
+import '../../domain/entities/user.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -73,7 +74,12 @@ class _LoginPageState extends State<LoginPage> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.isAuthenticated) {
-          context.go(AppRoutes.home);
+          // Route based on user type
+          if (state.user?.userType == UserType.vendor) {
+            context.go(AppRoutes.vendorHome);
+          } else {
+            context.go(AppRoutes.home);
+          }
         } else if (state.hasError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

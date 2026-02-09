@@ -120,9 +120,7 @@ class _HomePageState extends State<HomePage> {
                           if (state.wedding?.weddingDate == null) ...[
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: _WeddingDateCard(
-                                onTap: () => context.go(AppRoutes.tasks),
-                              ),
+                              child: const _WeddingDateCard(),
                             ),
                             const SizedBox(height: 32),
                           ],
@@ -373,41 +371,45 @@ class _ThemeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 200,
-          height: 250,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            image: DecorationImage(
-              image: NetworkImage(theme.imageUrl),
-              fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to vendor search with theme as filter
+        context.push('/vendors/search', extra: theme.title);
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 200,
+            height: 250,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              image: DecorationImage(
+                image: NetworkImage(theme.imageUrl),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          theme.title,
-          style: AppTypography.h4,
-        ),
-        Text(
-          theme.subtitle,
-          style: AppTypography.bodySmall.copyWith(
-            color: AppColors.primary,
+          const SizedBox(height: 12),
+          Text(
+            theme.title,
+            style: AppTypography.h4,
           ),
-        ),
-      ],
+          Text(
+            theme.subtitle,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 /// Wedding Date CTA Card
 class _WeddingDateCard extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _WeddingDateCard({required this.onTap});
+  const _WeddingDateCard();
 
   @override
   Widget build(BuildContext context) {
@@ -433,7 +435,7 @@ class _WeddingDateCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: onTap,
+              onPressed: () => _showDatePicker(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.white,
@@ -444,6 +446,32 @@ class _WeddingDateCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showDatePicker(BuildContext context) async {
+    final now = DateTime.now();
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 180)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365 * 3)),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.primary,
+              surface: AppColors.surfaceDark,
+            ),
+            dialogBackgroundColor: AppColors.backgroundDark,
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (selectedDate != null && context.mounted) {
+      context.read<HomeBloc>().add(HomeWeddingUpdated(weddingDate: selectedDate));
+    }
   }
 }
 
@@ -512,62 +540,68 @@ class _VendorCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 120,
-      child: Column(
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
-                width: 2,
-              ),
-            ),
-            child: ClipOval(
-              child: Image.network(
-                vendor.imageUrl,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            vendor.name,
-            style: AppTypography.labelLarge,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            vendor.role,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textTertiary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.star,
-                size: 14,
-                color: AppColors.warning,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                vendor.rating.toString(),
-                style: AppTypography.labelMedium.copyWith(
-                  fontWeight: FontWeight.w700,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to vendors page (featured vendors are just samples)
+        context.go(AppRoutes.vendors);
+      },
+      child: SizedBox(
+        width: 120,
+        child: Column(
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  width: 2,
                 ),
               ),
-            ],
-          ),
-        ],
+              child: ClipOval(
+                child: Image.network(
+                  vendor.imageUrl,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              vendor.name,
+              style: AppTypography.labelLarge,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              vendor.role,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.star,
+                  size: 14,
+                  color: AppColors.warning,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  vendor.rating.toString(),
+                  style: AppTypography.labelMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

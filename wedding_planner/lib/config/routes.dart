@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/domain/entities/user.dart';
+import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/register_page.dart';
 import '../features/auth/presentation/pages/splash_page.dart';
@@ -39,6 +41,7 @@ import '../features/vendor_app/presentation/bloc/vendor_dashboard_bloc.dart';
 import '../features/vendor_app/presentation/bloc/vendor_bookings_bloc.dart';
 import '../features/vendor_app/presentation/bloc/vendor_packages_bloc.dart';
 import '../features/vendor_app/presentation/pages/vendor_home_page.dart';
+import '../features/vendor_app/presentation/pages/vendor_onboarding_page.dart';
 import '../features/vendor_app/presentation/pages/booking_requests_page.dart';
 import '../features/vendor_app/presentation/pages/vendor_bookings_page.dart';
 import '../features/vendor_app/presentation/pages/vendor_booking_detail_page.dart';
@@ -103,6 +106,7 @@ class AppRoutes {
   static const String chatConversation = '/chat/:id';
 
   // Vendor App Routes
+  static const String vendorOnboarding = '/vendor/onboarding';
   static const String vendorHome = '/vendor';
   static const String vendorBookingRequests = '/vendor/requests';
   static const String vendorBookings = '/vendor/bookings';
@@ -120,11 +124,65 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _vendorShellNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Couple-only routes that vendors should not access
+const _coupleOnlyRoutes = [
+  AppRoutes.home,
+  AppRoutes.tasks,
+  AppRoutes.profile,
+  AppRoutes.guests,
+  AppRoutes.budget,
+  AppRoutes.bookings,
+  AppRoutes.onboarding,
+  AppRoutes.invitations,
+  AppRoutes.seating,
+];
+
+/// Vendor-only routes that couples should not access
+const _vendorOnlyRoutes = [
+  AppRoutes.vendorHome,
+  AppRoutes.vendorOnboarding,
+  AppRoutes.vendorBookings,
+  AppRoutes.vendorBookingRequests,
+  AppRoutes.vendorEarnings,
+  AppRoutes.vendorAvailability,
+  AppRoutes.vendorPackages,
+  AppRoutes.vendorProfile,
+];
+
 /// App Router Configuration
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: AppRoutes.splash,
   debugLogDiagnostics: true,
+
+  redirect: (context, state) {
+    final authBloc = getIt<AuthBloc>();
+    final user = authBloc.state.user;
+    final path = state.uri.path;
+
+    // No redirect if not authenticated or on auth routes
+    if (user == null) return null;
+
+    // Check if vendor is trying to access couple-only routes
+    if (user.userType == UserType.vendor) {
+      for (final route in _coupleOnlyRoutes) {
+        if (path == route || path.startsWith('$route/')) {
+          return AppRoutes.vendorHome;
+        }
+      }
+    }
+
+    // Check if couple is trying to access vendor-only routes
+    if (user.userType == UserType.couple) {
+      for (final route in _vendorOnlyRoutes) {
+        if (path == route || path.startsWith('$route/')) {
+          return AppRoutes.home;
+        }
+      }
+    }
+
+    return null;
+  },
 
   routes: [
     // Splash Screen
@@ -460,6 +518,20 @@ final GoRouter appRouter = GoRouter(
         return BlocProvider.value(
           value: getIt<ChatBloc>(),
           child: ChatPage(conversationId: conversationId),
+        );
+      },
+    ),
+
+    // Vendor Onboarding (outside shell - shown after vendor registration)
+    GoRoute(
+      path: AppRoutes.vendorOnboarding,
+      builder: (context, state) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => getIt<VendorBloc>()),
+            BlocProvider(create: (_) => getIt<VendorPackagesBloc>()),
+          ],
+          child: const VendorOnboardingPage(),
         );
       },
     ),
