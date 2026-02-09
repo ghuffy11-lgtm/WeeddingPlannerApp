@@ -90,8 +90,27 @@ Design reference files are in `/design_references/wedapp/`.
 
 - **Session 1-2:** Initial project setup, backend, Flutter structure
 - **Session 3:** Design overhaul to dark theme with glassmorphism
+- **Session 4:** Firebase integration, Chat system
+- **Session 5:** Guest Management, Budget Tracker
+- **Session 6:** Task Management (current)
 
-See [docs/SESSION_3_SUMMARY.md](./docs/SESSION_3_SUMMARY.md) for latest changes.
+## Features Implemented
+
+| Feature | Status | Files |
+|---------|--------|-------|
+| Auth (Login/Register) | ✅ Complete | `lib/features/auth/` |
+| Onboarding (6 steps) | ✅ Complete | `lib/features/onboarding/` |
+| Home Dashboard | ✅ Complete | `lib/features/home/` |
+| Vendor Marketplace | ✅ Complete | `lib/features/vendors/` |
+| Booking System | ✅ Complete | `lib/features/booking/` |
+| Chat (Firebase) | ✅ Complete | `lib/features/chat/` |
+| Guest Management | ✅ Complete | `lib/features/guests/` |
+| Budget Tracker | ✅ Complete | `lib/features/budget/` |
+| Task Management | ✅ Complete | `lib/features/tasks/` |
+| Profile/Settings | ❌ Not Started | - |
+| Invitations | ❌ Not Started | - |
+
+See [PROJECT_MANAGEMENT/SESSION_LOG.md](./PROJECT_MANAGEMENT/SESSION_LOG.md) for detailed logs.
 
 ## Backend
 

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/routes.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../domain/entities/user.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -70,7 +71,12 @@ class _SplashPageState extends State<SplashPage>
       if (!mounted) return;
 
       if (state.isAuthenticated) {
-        context.go(AppRoutes.home);
+        // Route based on user type
+        if (state.user?.userType == UserType.vendor) {
+          context.go(AppRoutes.vendorHome);
+        } else {
+          context.go(AppRoutes.home);
+        }
       } else if (state.isUnauthenticated) {
         context.go(AppRoutes.welcome);
       }

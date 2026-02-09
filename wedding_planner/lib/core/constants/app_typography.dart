@@ -142,6 +142,14 @@ class AppTypography {
     color: AppColors.textSecondary,
   );
 
+  static const TextStyle labelSmall = TextStyle(
+    fontFamily: fontFamilySecondary,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
+    color: AppColors.textTertiary,
+  );
+
   // Special Styles
   static const TextStyle countdown = TextStyle(
     fontFamily: fontFamilyPrimary,

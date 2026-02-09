@@ -14,6 +14,7 @@ import '../features/vendors/presentation/pages/vendors_page.dart';
 import '../features/vendors/presentation/pages/vendor_list_page.dart';
 import '../features/vendors/presentation/pages/vendor_detail_page.dart';
 import '../features/vendors/domain/entities/vendor.dart';
+import '../features/vendors/domain/entities/vendor_package.dart';
 import '../features/booking/presentation/bloc/booking_bloc.dart';
 import '../features/booking/presentation/pages/bookings_page.dart';
 import '../features/booking/presentation/pages/booking_detail_page.dart';
@@ -30,7 +31,24 @@ import '../features/budget/presentation/pages/budget_page.dart';
 import '../features/budget/presentation/pages/add_edit_expense_page.dart';
 import '../features/budget/presentation/pages/expense_detail_page.dart';
 import '../features/budget/domain/entities/budget.dart';
+import '../features/tasks/presentation/bloc/task_bloc.dart';
+import '../features/tasks/presentation/pages/tasks_page.dart';
+import '../features/tasks/presentation/pages/task_detail_page.dart';
+import '../features/tasks/presentation/pages/add_edit_task_page.dart';
+import '../features/vendor_app/presentation/bloc/vendor_dashboard_bloc.dart';
+import '../features/vendor_app/presentation/bloc/vendor_bookings_bloc.dart';
+import '../features/vendor_app/presentation/bloc/vendor_packages_bloc.dart';
+import '../features/vendor_app/presentation/pages/vendor_home_page.dart';
+import '../features/vendor_app/presentation/pages/booking_requests_page.dart';
+import '../features/vendor_app/presentation/pages/vendor_bookings_page.dart';
+import '../features/vendor_app/presentation/pages/vendor_booking_detail_page.dart';
+import '../features/vendor_app/presentation/pages/earnings_page.dart';
+import '../features/vendor_app/presentation/pages/availability_page.dart';
+import '../features/vendor_app/presentation/pages/packages_page.dart';
+import '../features/vendor_app/presentation/pages/add_edit_package_page.dart';
+import '../features/vendor_app/presentation/pages/vendor_profile_page.dart';
 import '../shared/widgets/layout/main_scaffold.dart';
+import '../shared/widgets/layout/vendor_scaffold.dart';
 import 'injection.dart';
 
 /// App Route Names
@@ -82,11 +100,24 @@ class AppRoutes {
 
   // Chat Routes
   static const String chatConversation = '/chat/:id';
+
+  // Vendor App Routes
+  static const String vendorHome = '/vendor';
+  static const String vendorBookingRequests = '/vendor/requests';
+  static const String vendorBookings = '/vendor/bookings';
+  static const String vendorBookingDetail = '/vendor/bookings/:id';
+  static const String vendorEarnings = '/vendor/earnings';
+  static const String vendorAvailability = '/vendor/availability';
+  static const String vendorPackages = '/vendor/packages';
+  static const String vendorAddPackage = '/vendor/packages/add';
+  static const String vendorEditPackage = '/vendor/packages/:id/edit';
+  static const String vendorProfile = '/vendor/profile';
 }
 
 /// Global Navigator Key
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _vendorShellNavigatorKey = GlobalKey<NavigatorState>();
 
 /// App Router Configuration
 final GoRouter appRouter = GoRouter(
@@ -144,8 +175,11 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: AppRoutes.tasks,
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: _PlaceholderPage(title: 'Tasks'),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: BlocProvider(
+              create: (_) => getIt<TaskBloc>(),
+              child: const TasksPage(),
+            ),
           ),
         ),
         GoRoute(
@@ -356,6 +390,41 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
+    // Task Detail
+    GoRoute(
+      path: '/tasks/:id',
+      builder: (context, state) {
+        final taskId = state.pathParameters['id']!;
+        return BlocProvider(
+          create: (_) => getIt<TaskBloc>(),
+          child: TaskDetailPage(taskId: taskId),
+        );
+      },
+    ),
+
+    // Add Task
+    GoRoute(
+      path: '/tasks/add',
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<TaskBloc>(),
+          child: const AddEditTaskPage(),
+        );
+      },
+    ),
+
+    // Edit Task
+    GoRoute(
+      path: '/tasks/edit/:id',
+      builder: (context, state) {
+        final taskId = state.pathParameters['id']!;
+        return BlocProvider(
+          create: (_) => getIt<TaskBloc>(),
+          child: AddEditTaskPage(task: null), // Task loaded from bloc
+        );
+      },
+    ),
+
     // Invitations
     GoRoute(
       path: AppRoutes.invitations,
@@ -387,6 +456,109 @@ final GoRouter appRouter = GoRouter(
         return BlocProvider.value(
           value: getIt<ChatBloc>(),
           child: ChatPage(conversationId: conversationId),
+        );
+      },
+    ),
+
+    // Vendor App Shell with Bottom Navigation
+    ShellRoute(
+      navigatorKey: _vendorShellNavigatorKey,
+      builder: (context, state, child) => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => getIt<VendorDashboardBloc>()),
+          BlocProvider(create: (_) => getIt<VendorBookingsBloc>()),
+          BlocProvider(create: (_) => getIt<VendorPackagesBloc>()),
+        ],
+        child: VendorScaffold(child: child),
+      ),
+      routes: [
+        GoRoute(
+          path: AppRoutes.vendorHome,
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: VendorHomePage(),
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.vendorBookings,
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: VendorBookingsPage(),
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.vendorAvailability,
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: AvailabilityPage(),
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.vendorProfile,
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: VendorProfilePage(),
+          ),
+        ),
+      ],
+    ),
+
+    // Vendor pages outside shell (with navigation)
+    GoRoute(
+      path: AppRoutes.vendorBookingRequests,
+      builder: (context, state) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => getIt<VendorDashboardBloc>()),
+            BlocProvider(create: (_) => getIt<VendorBookingsBloc>()),
+          ],
+          child: const BookingRequestsPage(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/vendor/bookings/:id',
+      builder: (context, state) {
+        final bookingId = state.pathParameters['id']!;
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => getIt<VendorDashboardBloc>()),
+            BlocProvider(create: (_) => getIt<VendorBookingsBloc>()),
+          ],
+          child: VendorBookingDetailPage(bookingId: bookingId),
+        );
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.vendorEarnings,
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<VendorDashboardBloc>(),
+          child: const EarningsPage(),
+        );
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.vendorPackages,
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<VendorPackagesBloc>(),
+          child: const PackagesPage(),
+        );
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.vendorAddPackage,
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<VendorPackagesBloc>(),
+          child: const AddEditPackagePage(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/vendor/packages/:id/edit',
+      builder: (context, state) {
+        final package = state.extra as VendorPackage?;
+        return BlocProvider(
+          create: (_) => getIt<VendorPackagesBloc>(),
+          child: AddEditPackagePage(package: package),
         );
       },
     ),

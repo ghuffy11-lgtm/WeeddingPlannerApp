@@ -122,15 +122,15 @@
 ### Vendor App (Mobile)
 | ID | Task | Assigned To | Status | Notes |
 |----|------|-------------|--------|-------|
-| P1-060 | Vendor registration flow | - | [ ] | - |
-| P1-061 | Document upload | - | [ ] | - |
-| P1-062 | Vendor dashboard | - | [ ] | - |
-| P1-063 | Booking requests list | - | [ ] | - |
-| P1-064 | Accept/decline booking | - | [ ] | - |
-| P1-065 | Earnings view | - | [ ] | - |
-| P1-066 | Availability calendar | - | [ ] | - |
-| P1-067 | Package management | - | [ ] | - |
-| P1-068 | Vendor profile edit | - | [ ] | - |
+| P1-060 | Vendor registration flow | Claude | [x] | Already exists (auth flow with userType) |
+| P1-061 | Document upload | - | [ ] | Skipped - backend not ready |
+| P1-062 | Vendor dashboard | Claude | [x] | Completed Feb 8 - VendorHomePage with stats |
+| P1-063 | Booking requests list | Claude | [x] | Completed Feb 8 - BookingRequestsPage |
+| P1-064 | Accept/decline booking | Claude | [x] | Completed Feb 8 - VendorBookingDetailPage |
+| P1-065 | Earnings view | Claude | [x] | Completed Feb 8 - EarningsPage |
+| P1-066 | Availability calendar | Claude | [x] | Completed Feb 8 - AvailabilityPage (UI only) |
+| P1-067 | Package management | Claude | [x] | Completed Feb 8 - PackagesPage + AddEditPackagePage |
+| P1-068 | Vendor profile edit | Claude | [x] | Completed Feb 8 - VendorProfilePage |
 
 ### Chat System (Mobile)
 | ID | Task | Assigned To | Status | Notes |
@@ -167,6 +167,17 @@
 | P1-094 | Expense detail view | Claude | [x] | Completed Feb 8 - ExpenseDetailPage |
 | P1-095 | Payment status update | Claude | [x] | Completed Feb 8 - In detail page |
 | P1-096 | Budget BLoC | Claude | [x] | Completed Feb 8 - Full state management |
+
+### Task Management (Mobile)
+| ID | Task | Assigned To | Status | Notes |
+|----|------|-------------|--------|-------|
+| P1-097 | Task list screen | Claude | [x] | Completed Feb 8 - TasksPage with search/filters |
+| P1-098 | Add task form | Claude | [x] | Completed Feb 8 - AddEditTaskPage with subtasks |
+| P1-099 | Task categories | Claude | [x] | Completed Feb 8 - 14 wedding categories |
+| P1-099a | Task detail view | Claude | [x] | Completed Feb 8 - TaskDetailPage |
+| P1-099b | Status update | Claude | [x] | Completed Feb 8 - Status change + subtask toggle |
+| P1-099c | Bulk operations | Claude | [x] | Completed Feb 8 - Selection mode in list |
+| P1-099d | Task BLoC | Claude | [x] | Completed Feb 8 - Full state management |
 
 ### Invitations (Mobile)
 | ID | Task | Assigned To | Status | Notes |
@@ -272,7 +283,7 @@
 | Phase | Total Tasks | Completed | Progress |
 |-------|-------------|-----------|----------|
 | Phase 0 | 30 | 30 | 100% |
-| Phase 1 | 80+ | 37 | 46% |
+| Phase 1 | 80+ | 52 | 65% |
 | Phase 2 | 9 | 0 | 0% |
 | Phase 2.5 | 6 | 0 | 0% |
 | Phase 3 | 6 | 0 | 0% |
@@ -283,8 +294,8 @@
 
 | ID | Task | Component |
 |----|------|-----------|
-| P0-032 | Setup Firebase project | Backend |
-| P1-050 | Package selection screen | Flutter |
-| P1-051 | Date selection calendar | Flutter |
-| P1-052 | Booking request form | Flutter |
-| P1-070 | Conversations list | Flutter |
+| P1-100 | Template gallery | Flutter (Invitations) |
+| P1-101 | Invitation editor | Flutter (Invitations) |
+| P1-110 | Admin login | Web (Admin Panel) |
+| P1-120 | Support login | Web (Support Panel) |
+| P1-130 | Invitation view page | Web (Guest Page) |

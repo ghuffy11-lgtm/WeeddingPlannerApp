@@ -33,6 +33,16 @@ import '../features/budget/data/datasources/budget_remote_datasource.dart';
 import '../features/budget/data/repositories/budget_repository_impl.dart';
 import '../features/budget/domain/repositories/budget_repository.dart';
 import '../features/budget/presentation/bloc/budget_bloc.dart';
+import '../features/tasks/data/datasources/task_remote_datasource.dart';
+import '../features/tasks/data/repositories/task_repository_impl.dart';
+import '../features/tasks/domain/repositories/task_repository.dart';
+import '../features/tasks/presentation/bloc/task_bloc.dart';
+import '../features/vendor_app/data/datasources/vendor_app_remote_datasource.dart';
+import '../features/vendor_app/data/repositories/vendor_app_repository_impl.dart';
+import '../features/vendor_app/domain/repositories/vendor_app_repository.dart';
+import '../features/vendor_app/presentation/bloc/vendor_dashboard_bloc.dart';
+import '../features/vendor_app/presentation/bloc/vendor_bookings_bloc.dart';
+import '../features/vendor_app/presentation/bloc/vendor_packages_bloc.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -155,6 +165,16 @@ void _registerDataSources() {
   getIt.registerLazySingleton<BudgetRemoteDataSource>(
     () => BudgetRemoteDataSourceImpl(dio: getIt<Dio>()),
   );
+
+  // Task Data Sources
+  getIt.registerLazySingleton<TaskRemoteDataSource>(
+    () => TaskRemoteDataSourceImpl(dio: getIt<Dio>()),
+  );
+
+  // Vendor App Data Sources
+  getIt.registerLazySingleton<VendorAppRemoteDataSource>(
+    () => VendorAppRemoteDataSourceImpl(dio: getIt<Dio>()),
+  );
 }
 
 void _registerRepositories() {
@@ -208,6 +228,20 @@ void _registerRepositories() {
       remoteDataSource: getIt<BudgetRemoteDataSource>(),
     ),
   );
+
+  // Task Repository
+  getIt.registerLazySingleton<TaskRepository>(
+    () => TaskRepositoryImpl(
+      remoteDataSource: getIt<TaskRemoteDataSource>(),
+    ),
+  );
+
+  // Vendor App Repository
+  getIt.registerLazySingleton<VendorAppRepository>(
+    () => VendorAppRepositoryImpl(
+      remoteDataSource: getIt<VendorAppRemoteDataSource>(),
+    ),
+  );
 }
 
 void _registerUseCases() {
@@ -253,6 +287,24 @@ void _registerBlocs() {
   // Budget BLoC - Factory so each navigation creates fresh state
   getIt.registerFactory<BudgetBloc>(
     () => BudgetBloc(repository: getIt<BudgetRepository>()),
+  );
+
+  // Task BLoC - Factory so each navigation creates fresh state
+  getIt.registerFactory<TaskBloc>(
+    () => TaskBloc(repository: getIt<TaskRepository>()),
+  );
+
+  // Vendor App BLoCs - Factory so each navigation creates fresh state
+  getIt.registerFactory<VendorDashboardBloc>(
+    () => VendorDashboardBloc(repository: getIt<VendorAppRepository>()),
+  );
+
+  getIt.registerFactory<VendorBookingsBloc>(
+    () => VendorBookingsBloc(repository: getIt<VendorAppRepository>()),
+  );
+
+  getIt.registerFactory<VendorPackagesBloc>(
+    () => VendorPackagesBloc(repository: getIt<VendorAppRepository>()),
   );
 }
 

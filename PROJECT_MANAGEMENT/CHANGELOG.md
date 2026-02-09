@@ -5,6 +5,72 @@
 
 ---
 
+## February 8, 2026 (Session 6 - Task Management Complete)
+
+### Added
+
+- **Task Feature** (`lib/features/tasks/`) - P1-097+ COMPLETE
+  - **Domain Layer**
+    - `Task` and `TaskSummary` entities with computed properties (isOverdue, isDueSoon, subtaskProgress)
+    - `TaskPriority` enum (low, medium, high) with display names and icons
+    - `TaskStatus` enum (pending, inProgress, completed, cancelled) with icons
+    - `TaskCategory` enum with 14 wedding categories:
+      - venue, catering, photography, music, flowers, attire
+      - invitations, guests, ceremony, reception, honeymoon
+      - legal, budget, other
+    - `TaskRequest` for create/update operations
+    - `TaskStats` for statistics overview with category/priority breakdowns
+    - `TaskFilter` for filtering by status, category, priority, search
+    - `PaginatedTasks` for pagination support
+    - `TaskRepository` interface with CRUD, filtering, bulk operations
+
+  - **Data Layer**
+    - `TaskModel`, `TaskSummaryModel`, `TaskStatsModel` with JSON serialization
+    - Support for both camelCase and snake_case field names
+    - `TaskRemoteDataSource` for API calls with proper type casting
+    - `TaskRepositoryImpl` with error handling using dartz Either
+    - Fixed dartz `Task` naming conflict with `hide Task` import
+
+  - **Presentation Layer**
+    - `TaskBloc` with events for CRUD, filtering, selection, bulk actions
+    - `TaskState` with status tracking, pagination, selection mode
+    - `TasksPage` - Main list with search, stats, filters, selection mode
+    - `AddEditTaskPage` - Form with category picker, subtasks, due date
+    - `TaskDetailPage` - Full details with status update, subtask toggle
+    - `TaskStatsCard` - Progress overview widget
+    - `TaskCard` - List item with status, priority, due date, subtasks
+    - `CategoryFilterChip` - Category selection widget
+    - `StatusFilterTab` - Status filter tabs
+    - `EmptyTasksState` - Empty state UI
+    - `SubtaskItem` - Subtask row with toggle
+
+### Modified
+
+- **Dependency Injection** (`lib/config/injection.dart`)
+  - Added TaskRemoteDataSource, TaskRepository, TaskBloc registrations
+
+- **Routes** (`lib/config/routes.dart`)
+  - Added /tasks route (in bottom nav shell) for task list
+  - Added /tasks/:id route for task details
+  - Added /tasks/add route for creating tasks
+  - Added /tasks/edit/:id route for editing tasks
+
+### Technical Notes
+
+- 14 wedding-specific task categories with icons
+- Priority levels with colored badges (green/orange/red)
+- Status tracking with visual indicators
+- Subtask management with toggle completion
+- Due date tracking with overdue/upcoming alerts
+- Search functionality with debounce
+- Selection mode for bulk status update/delete
+- Infinite scroll pagination
+- Glassmorphism UI design matching app theme
+- Fixed dartz Task naming conflict using `hide Task`
+- Release APK built successfully (58MB)
+
+---
+
 ## February 8, 2026 (Session 5 - Budget Tracker Complete)
 
 ### Added
