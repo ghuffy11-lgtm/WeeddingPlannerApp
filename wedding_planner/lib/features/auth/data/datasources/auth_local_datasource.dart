@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,9 +36,11 @@ abstract class AuthLocalDataSource {
 }
 
 /// Implementation using SharedPreferences and FlutterSecureStorage
+/// On web, uses SharedPreferences for token storage since FlutterSecureStorage
+/// is not supported. This is acceptable for testing/development purposes.
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   final SharedPreferences sharedPreferences;
-  final FlutterSecureStorage secureStorage;
+  final FlutterSecureStorage? secureStorage;
 
   static const String _tokenKey = 'auth_tokens';
   static const String _userKey = 'cached_user';
@@ -49,16 +52,31 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   @override
   Future<void> saveTokens(AuthTokens tokens) async {
-    // Store tokens securely
-    await secureStorage.write(
-      key: _tokenKey,
-      value: jsonEncode(tokens.toJson()),
-    );
+    final tokenJson = jsonEncode(tokens.toJson());
+    if (kIsWeb || secureStorage == null) {
+      // On web, use SharedPreferences (not secure, but suitable for testing)
+      await sharedPreferences.setString(_tokenKey, tokenJson);
+    } else {
+      // On mobile, use secure storage
+      await secureStorage!.write(
+        key: _tokenKey,
+        value: tokenJson,
+      );
+    }
   }
 
   @override
   Future<AuthTokens?> getTokens() async {
-    final tokensJson = await secureStorage.read(key: _tokenKey);
+    String? tokensJson;
+
+    if (kIsWeb || secureStorage == null) {
+      // On web, use SharedPreferences
+      tokensJson = sharedPreferences.getString(_tokenKey);
+    } else {
+      // On mobile, use secure storage
+      tokensJson = await secureStorage!.read(key: _tokenKey);
+    }
+
     if (tokensJson == null) return null;
 
     try {
@@ -71,7 +89,13 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   @override
   Future<void> deleteTokens() async {
-    await secureStorage.delete(key: _tokenKey);
+    if (kIsWeb || secureStorage == null) {
+      // On web, use SharedPreferences
+      await sharedPreferences.remove(_tokenKey);
+    } else {
+      // On mobile, use secure storage
+      await secureStorage!.delete(key: _tokenKey);
+    }
   }
 
   @override

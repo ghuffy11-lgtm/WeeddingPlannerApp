@@ -14,6 +14,11 @@ app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:8081',
     process.env.ADMIN_URL || 'http://localhost:3001',
+    // Flutter web testing (TODO: Remove before production)
+    'http://localhost:8888',
+    'http://localhost:8889',
+    'http://10.1.13.98:8888',
+    'http://10.1.13.98:8889',
   ],
   credentials: true,
 }));

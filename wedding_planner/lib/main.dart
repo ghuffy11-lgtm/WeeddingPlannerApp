@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -31,27 +32,31 @@ void main() async {
     debugPrint('To enable Firebase, configure your project and update firebase_options.dart');
   }
 
-  // Initialize Hive for local storage
-  await Hive.initFlutter();
+  // Initialize Hive for local storage (not supported on web)
+  if (!kIsWeb) {
+    await Hive.initFlutter();
+  }
 
   // Setup dependency injection
   await configureDependencies();
 
-  // Set preferred orientations
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // Set preferred orientations (not supported on web)
+  if (!kIsWeb) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
-  // Set system UI overlay style for dark theme
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF0A0A0C),
-      systemNavigationBarIconBrightness: Brightness.light,
-    ),
-  );
+    // Set system UI overlay style for dark theme
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Color(0xFF0A0A0C),
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+  }
 
   runApp(const WeddingPlannerApp());
 }

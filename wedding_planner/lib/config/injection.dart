@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -72,23 +73,30 @@ Future<void> _registerExternalDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
 
-  // Secure Storage
-  const secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
-  );
-  getIt.registerSingleton<FlutterSecureStorage>(secureStorage);
+  // Secure Storage (not supported on web - use SharedPreferences fallback)
+  if (!kIsWeb) {
+    const secureStorage = FlutterSecureStorage(
+      aOptions: AndroidOptions(
+        encryptedSharedPreferences: true,
+      ),
+    );
+    getIt.registerSingleton<FlutterSecureStorage>(secureStorage);
+  }
 
   // Dio HTTP Client
+  // Both web and mobile use the same server IP
+  const apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://10.1.13.98:3000/api/v1',
+  );
+
+  // Debug: Print API URL being used
+  // ignore: avoid_print
+  print('🌐 [DEBUG] kIsWeb: $kIsWeb, API URL: $apiBaseUrl');
+
   final dio = Dio(
     BaseOptions(
-      // Use localhost for emulator, or your server IP for physical device
-      // For remote development server, update this to your server address
-      baseUrl: const String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: 'http://10.1.13.98:3000/api/v1', // Server IP for physical device
-      ),
+      baseUrl: apiBaseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -122,7 +130,7 @@ void _registerDataSources() {
   getIt.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(
       sharedPreferences: getIt<SharedPreferences>(),
-      secureStorage: getIt<FlutterSecureStorage>(),
+      secureStorage: kIsWeb ? null : getIt<FlutterSecureStorage>(),
     ),
   );
 

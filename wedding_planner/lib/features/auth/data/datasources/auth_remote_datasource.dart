@@ -81,6 +81,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String email,
     required String password,
   }) async {
+    // ignore: avoid_print
+    print('🔐 [DEBUG] Login attempt for: $email to ${dio.options.baseUrl}');
     try {
       final response = await dio.post(
         '/auth/login',
@@ -89,6 +91,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'password': password,
         },
       );
+      // ignore: avoid_print
+      print('✅ [DEBUG] Login response: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
       final data = responseData['data'] as Map<String, dynamic>? ?? responseData;
@@ -101,6 +105,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         tokens: AuthTokens.fromJson(tokensData),
       );
     } on DioException catch (e) {
+      // ignore: avoid_print
+      print('❌ [DEBUG] Login DioException: ${e.type} - ${e.message}');
+      // ignore: avoid_print
+      print('❌ [DEBUG] Error details: ${e.error}');
       throw _handleDioError(e);
     }
   }

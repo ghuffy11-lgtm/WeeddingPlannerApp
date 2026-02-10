@@ -107,11 +107,31 @@ services:
     volumes:
       - ./wedding_planner:/app
       - flutter_pub_cache:/root/.pub-cache
+    ports:
+      # TODO: Remove web testing port before production
+      - "8888:8888"
     networks:
       - wedding_network
     tty: true
     stdin_open: true
     command: tail -f /dev/null
+
+  # Flutter Web Testing Server (TEMPORARY - Remove before production)
+  # Serves the Flutter web build for browser testing
+  flutter-web:
+    image: nginx:alpine
+    container_name: wedding_planner_web_test
+    restart: unless-stopped
+    ports:
+      - "8889:80"
+    volumes:
+      - ./wedding_planner/build/web:/usr/share/nginx/html:ro
+    networks:
+      - wedding_network
+    profiles:
+      - web-testing
+    depends_on:
+      - flutter
 
 networks:
   wedding_network:
