@@ -1,5 +1,17 @@
 # AI Builder Quick Start Guide
 
+## IMPORTANT: Check SKILLS.md First!
+
+Before troubleshooting ANY issue, check [SKILLS.md](./SKILLS.md) - it contains solutions to common problems.
+
+After fixing ANY issue, ADD it to SKILLS.md with:
+- Problem description
+- Root cause
+- Solution code
+- Files modified
+
+---
+
 ## TL;DR - Build Flutter components matching this spec
 
 ---
@@ -523,3 +535,10 @@ BlocBuilder<FeatureBloc, FeatureState>(
 - [ ] Has pull-to-refresh for lists
 - [ ] Has proper form validation
 - [ ] Uses `context.go/push/pop` for navigation
+
+## Checklist After Fixing Issues
+
+- [ ] **Added fix to SKILLS.md** with problem, cause, solution
+- [ ] Used SKILL-XXX numbering format
+- [ ] Included code snippet
+- [ ] Listed files modified

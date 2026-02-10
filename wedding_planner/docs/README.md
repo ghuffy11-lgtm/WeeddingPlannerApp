@@ -4,9 +4,11 @@
 
 | Document | Description |
 |----------|-------------|
+| [**SKILLS.md**](./SKILLS.md) | **CHECK FIRST!** Troubleshooting solutions & fixes |
 | [Design System](./FLUTTER_DESIGN_SYSTEM.md) | Colors, typography, components, patterns |
 | [API Integration](./API_INTEGRATION.md) | Backend endpoints, request/response formats |
 | [Features Checklist](./FEATURES_CHECKLIST.md) | Feature status, priorities, entity definitions |
+| [AI Builder Quickstart](./AI_BUILDER_QUICKSTART.md) | Compact reference for building components |
 
 ---
 
@@ -113,3 +115,40 @@ context.pop();            // Back
 5. **Always follow BLoC pattern** - Separate event/state/bloc files
 6. **Always use repository pattern** - Never call API directly from BLoC
 7. **Always add bottom padding** - 100px for bottom nav overlap
+
+---
+
+## CRITICAL: Maintaining SKILLS.md
+
+**Every time you fix a bug or troubleshoot an issue, you MUST add it to [SKILLS.md](./SKILLS.md).**
+
+### When to Add a Skill Entry:
+- Fixed a bug
+- Solved a routing issue
+- Fixed a state management problem
+- Resolved an API error
+- Found a workaround for a Flutter limitation
+- Discovered a pattern that works
+
+### Skill Entry Format:
+```markdown
+### SKILL-XXX: Short Title
+**Problem:** What was broken or not working
+
+**Root Cause:** Why it happened
+
+**Solution:**
+\`\`\`dart
+// Code that fixes it
+\`\`\`
+
+**Files Modified:**
+- `path/to/file.dart`
+```
+
+### Before Investigating Any Issue:
+1. **CHECK SKILLS.md FIRST** - The solution may already exist
+2. Use the "Quick Lookup by Symptom" table
+3. Search for keywords related to your issue
+
+This saves time and prevents solving the same problem twice!
