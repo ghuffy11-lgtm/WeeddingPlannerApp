@@ -439,6 +439,26 @@ builder: (context, state) => MultiBlocProvider(
 
 ---
 
+## Project Structure
+
+### SKILL-016: Document Location Convention
+**Problem:** Documentation placed in wrong folder (`wedding_planner/docs/` instead of `/docs/`).
+
+**Correct Structure:**
+```
+/mnt/repo/WeeddingPlannerApp/
+├── docs/                    # Technical docs (architecture, setup, API, design system, SKILLS)
+├── PROJECT_MANAGEMENT/      # Project management (changelog, status, tasks, specs)
+├── backend/                 # Node.js backend code
+└── wedding_planner/         # Flutter app code ONLY (no docs here)
+```
+
+**Rule:** Never put documentation inside `wedding_planner/`. All docs go in root `/docs/` or `/PROJECT_MANAGEMENT/`.
+
+**Files Affected:** All new documentation files.
+
+---
+
 ## How to Add New Skills
 
 When fixing a problem:
@@ -471,3 +491,4 @@ When fixing a problem:
 | Navigator errors | SKILL-013 |
 | setState after dispose | SKILL-014 |
 | BlocProvider not found | SKILL-015 |
+| Docs in wrong folder | SKILL-016 |
