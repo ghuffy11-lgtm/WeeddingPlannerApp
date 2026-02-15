@@ -734,3 +734,126 @@ export const deleteTask = async (
     next(error);
   }
 };
+
+// Task management for /me routes
+
+export const createMyTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const taskData = req.body;
+
+    // Find user's wedding
+    const wedding = await prisma.weddings.findFirst({
+      where: { user_id: userId },
+    });
+
+    if (!wedding) {
+      throw ApiError.notFound('Wedding not found. Please create one first.');
+    }
+
+    const task = await prisma.tasks.create({
+      data: {
+        wedding_id: wedding.id,
+        title: taskData.title,
+        description: taskData.description,
+        due_date: taskData.dueDate ? new Date(taskData.dueDate) : null,
+        priority: taskData.priority || 'medium',
+        category: taskData.category,
+        linked_vendor_id: taskData.vendorId,
+        is_custom: true,
+      },
+    });
+
+    sendSuccess(res, task, 201, 'Task created successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateMyTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const { taskId } = req.params;
+    const updates = req.body;
+
+    // Find user's wedding
+    const wedding = await prisma.weddings.findFirst({
+      where: { user_id: userId },
+    });
+
+    if (!wedding) {
+      throw ApiError.notFound('Wedding not found. Please create one first.');
+    }
+
+    // Verify task belongs to user's wedding
+    const existingTask = await prisma.tasks.findFirst({
+      where: { id: taskId, wedding_id: wedding.id },
+    });
+
+    if (!existingTask) {
+      throw ApiError.notFound('Task not found');
+    }
+
+    const task = await prisma.tasks.update({
+      where: { id: taskId },
+      data: {
+        title: updates.title,
+        description: updates.description,
+        due_date: updates.dueDate ? new Date(updates.dueDate) : undefined,
+        is_completed: updates.isCompleted,
+        completed_at: updates.isCompleted ? new Date() : null,
+        priority: updates.priority,
+        category: updates.category,
+      },
+    });
+
+    sendSuccess(res, task, 200, 'Task updated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteMyTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const { taskId } = req.params;
+
+    // Find user's wedding
+    const wedding = await prisma.weddings.findFirst({
+      where: { user_id: userId },
+    });
+
+    if (!wedding) {
+      throw ApiError.notFound('Wedding not found. Please create one first.');
+    }
+
+    // Verify task belongs to user's wedding
+    const existingTask = await prisma.tasks.findFirst({
+      where: { id: taskId, wedding_id: wedding.id },
+    });
+
+    if (!existingTask) {
+      throw ApiError.notFound('Task not found');
+    }
+
+    await prisma.tasks.delete({
+      where: { id: taskId },
+    });
+
+    sendSuccess(res, null, 200, 'Task deleted successfully');
+  } catch (error) {
+    next(error);
+  }
+};

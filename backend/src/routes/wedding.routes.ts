@@ -16,6 +16,15 @@ router.get('/me/tasks', requireUserType('couple'), weddingController.getMyTasks)
 // GET /api/v1/weddings/me/tasks/stats - get task statistics for current user's wedding
 router.get('/me/tasks/stats', requireUserType('couple'), weddingController.getMyTaskStats);
 
+// POST /api/v1/weddings/me/tasks - create task for current user's wedding
+router.post('/me/tasks', requireUserType('couple'), weddingController.createMyTask);
+
+// PUT /api/v1/weddings/me/tasks/:taskId - update task for current user's wedding
+router.put('/me/tasks/:taskId', requireUserType('couple'), weddingController.updateMyTask);
+
+// DELETE /api/v1/weddings/me/tasks/:taskId - delete task for current user's wedding
+router.delete('/me/tasks/:taskId', requireUserType('couple'), weddingController.deleteMyTask);
+
 // GET /api/v1/weddings/me/budget/summary - get budget summary for current user's wedding
 router.get('/me/budget/summary', requireUserType('couple'), weddingController.getMyBudgetSummary);
 

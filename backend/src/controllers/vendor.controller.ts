@@ -229,6 +229,15 @@ export const registerAsVendor = async (
       throw ApiError.conflict('User is already registered as a vendor');
     }
 
+    // Map frontend values to database constraint values
+    const priceRangeMap: Record<string, string> = {
+      'budget': '$',
+      'moderate': '$$',
+      'premium': '$$$',
+      'luxury': '$$$$',
+    };
+    const mappedPriceRange = priceRange ? (priceRangeMap[priceRange] || '$$') : '$$';
+
     // Create vendor profile
     const vendor = await prisma.vendors.create({
       data: {
@@ -238,7 +247,7 @@ export const registerAsVendor = async (
         description,
         location_city: city,
         location_country: country,
-        price_range: priceRange,
+        price_range: mappedPriceRange,
         status: 'pending', // Requires admin approval
       },
     });
