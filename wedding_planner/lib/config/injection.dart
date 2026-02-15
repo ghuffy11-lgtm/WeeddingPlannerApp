@@ -87,7 +87,7 @@ Future<void> _registerExternalDependencies() async {
   // Both web and mobile use the same server IP
   const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.1.13.98:3000/api/v1',
+    defaultValue: 'http://10.1.13.98:3010/api/v1',
   );
 
   // Debug: Print API URL being used

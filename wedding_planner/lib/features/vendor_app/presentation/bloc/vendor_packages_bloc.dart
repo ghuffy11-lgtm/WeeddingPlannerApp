@@ -15,6 +15,7 @@ class VendorPackagesBloc
     on<DeleteVendorPackage>(_onDeletePackage);
     on<LoadVendorProfile>(_onLoadProfile);
     on<UpdateVendorProfile>(_onUpdateProfile);
+    on<RegisterVendorProfile>(_onRegisterProfile);
     on<ClearPackageAction>(_onClearAction);
   }
 
@@ -158,6 +159,27 @@ class VendorPackagesBloc
       (profile) => emit(state.copyWith(
         actionStatus: PackageActionStatus.success,
         actionSuccessMessage: 'Profile updated',
+        profile: profile,
+      )),
+    );
+  }
+
+  Future<void> _onRegisterProfile(
+    RegisterVendorProfile event,
+    Emitter<VendorPackagesState> emit,
+  ) async {
+    emit(state.copyWith(actionStatus: PackageActionStatus.loading));
+
+    final result = await repository.registerVendor(event.request);
+
+    result.fold(
+      (failure) => emit(state.copyWith(
+        actionStatus: PackageActionStatus.error,
+        actionError: failure.message,
+      )),
+      (profile) => emit(state.copyWith(
+        actionStatus: PackageActionStatus.success,
+        actionSuccessMessage: 'Vendor registered successfully',
         profile: profile,
       )),
     );

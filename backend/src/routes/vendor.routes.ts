@@ -8,6 +8,9 @@ const router = Router();
 // GET /api/v1/vendors
 router.get('/', vendorController.listVendors);
 
+// GET /api/v1/vendors/search - alias for list with search/filter params
+router.get('/search', vendorController.listVendors);
+
 // GET /api/v1/vendors/:id
 router.get('/:id', vendorController.getVendor);
 

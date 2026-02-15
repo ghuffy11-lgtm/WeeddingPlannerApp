@@ -5,6 +5,13 @@ abstract class GuestEvent {
   const GuestEvent();
 }
 
+/// Initialize with wedding ID - must be called before any other operations
+class InitializeGuests extends GuestEvent {
+  final String weddingId;
+
+  const InitializeGuests(this.weddingId);
+}
+
 /// Load guests with filter
 class LoadGuests extends GuestEvent {
   final GuestFilter filter;

@@ -202,6 +202,24 @@ export const registerAsVendor = async (
     const userId = req.user!.userId;
     const { businessName, categoryId, description, city, country, priceRange } = req.body;
 
+    // Validate required fields
+    if (!businessName || typeof businessName !== 'string' || businessName.trim().length === 0) {
+      throw ApiError.badRequest('Business name is required');
+    }
+
+    if (!categoryId || typeof categoryId !== 'string') {
+      throw ApiError.badRequest('Category is required');
+    }
+
+    // Validate categoryId exists in database
+    const category = await prisma.categories.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      throw ApiError.badRequest('Invalid category. Please select a valid category.');
+    }
+
     // Check if user is already a vendor
     const existingVendor = await prisma.vendors.findFirst({
       where: { user_id: userId },

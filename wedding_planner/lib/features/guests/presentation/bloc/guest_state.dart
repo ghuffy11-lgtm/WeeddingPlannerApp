@@ -8,6 +8,9 @@ enum GuestDetailStatus { initial, loading, loaded, error }
 enum GuestActionStatus { initial, loading, success, error }
 
 class GuestState {
+  // Wedding ID - required for all API calls
+  final String? weddingId;
+
   // List state
   final GuestListStatus listStatus;
   final List<GuestSummary> guests;
@@ -37,6 +40,7 @@ class GuestState {
   final bool isSelectionMode;
 
   const GuestState({
+    this.weddingId,
     this.listStatus = GuestListStatus.initial,
     this.guests = const [],
     this.filter = const GuestFilter(),
@@ -57,7 +61,11 @@ class GuestState {
     this.isSelectionMode = false,
   });
 
+  /// Check if wedding ID is set
+  bool get hasWeddingId => weddingId != null && weddingId!.isNotEmpty;
+
   GuestState copyWith({
+    String? weddingId,
     GuestListStatus? listStatus,
     List<GuestSummary>? guests,
     GuestFilter? filter,
@@ -83,6 +91,7 @@ class GuestState {
     bool? isSelectionMode,
   }) {
     return GuestState(
+      weddingId: weddingId ?? this.weddingId,
       listStatus: listStatus ?? this.listStatus,
       guests: guests ?? this.guests,
       filter: filter ?? this.filter,

@@ -96,6 +96,14 @@ class NotFoundFailure extends Failure {
   });
 }
 
+/// Conflict failure (409) - resource already exists
+class ConflictFailure extends Failure {
+  const ConflictFailure({
+    super.message = 'Resource already exists',
+    super.code = 409,
+  });
+}
+
 /// Timeout failure
 class TimeoutFailure extends Failure {
   const TimeoutFailure({

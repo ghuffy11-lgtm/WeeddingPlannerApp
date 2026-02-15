@@ -11,6 +11,9 @@ abstract class HomeRemoteDataSource {
   /// Get current user's wedding
   Future<WeddingModel?> getWedding();
 
+  /// Create a new wedding (during onboarding)
+  Future<WeddingModel> createWedding(Map<String, dynamic> data);
+
   /// Get upcoming tasks
   Future<List<WeddingTaskModel>> getUpcomingTasks({int limit = 5});
 
@@ -35,6 +38,27 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final Dio dio;
 
   HomeRemoteDataSourceImpl({required this.dio});
+
+  @override
+  Future<WeddingModel> createWedding(Map<String, dynamic> data) async {
+    try {
+      final response = await dio.post<Map<String, dynamic>>('/weddings', data: data);
+
+      if (response.statusCode == 201 && response.data != null) {
+        return WeddingModel.fromJson(response.data!['data'] as Map<String, dynamic>);
+      }
+      throw ServerException(
+        message: 'Failed to create wedding',
+        statusCode: response.statusCode,
+      );
+    } on DioException catch (e) {
+      final errorData = e.response?.data as Map<String, dynamic>?;
+      throw ServerException(
+        message: errorData?['message'] as String? ?? 'Failed to create wedding',
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
 
   @override
   Future<WeddingModel?> getWedding() async {
@@ -82,8 +106,11 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       }
       return [];
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        return []; // No tasks found
+      // Handle 400/403/404 as "no data" - user may not have wedding or proper access yet
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 403 ||
+          e.response?.statusCode == 404) {
+        return [];
       }
       final errorData = e.response?.data as Map<String, dynamic>?;
       throw ServerException(
@@ -104,7 +131,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       }
       return [];
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
+      // Handle 400/403/404 as "no data" - user may not have wedding or proper access yet
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 403 ||
+          e.response?.statusCode == 404) {
         return [];
       }
       final errorData = e.response?.data as Map<String, dynamic>?;
@@ -135,7 +165,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       }
       return [];
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
+      // Handle 400/403/404 as "no data" - user may not have wedding or proper access yet
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 403 ||
+          e.response?.statusCode == 404) {
         return [];
       }
       final errorData = e.response?.data as Map<String, dynamic>?;
@@ -162,7 +195,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       }
       return const TaskStats(total: 0, completed: 0, pending: 0, overdue: 0);
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
+      // Handle 400/403/404 as "no data" - user may not have wedding or proper access yet
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 403 ||
+          e.response?.statusCode == 404) {
         return const TaskStats(total: 0, completed: 0, pending: 0, overdue: 0);
       }
       final errorData = e.response?.data as Map<String, dynamic>?;

@@ -67,39 +67,89 @@ class PaginatedGuests {
   });
 }
 
+/// Guest request for creating/updating guests
+class GuestRequest {
+  final String firstName;
+  final String lastName;
+  final String? email;
+  final String? phone;
+  final GuestCategory category;
+  final GuestSide side;
+  final int plusOnes;
+  final String? dietaryRestrictions;
+  final MealPreference? mealPreference;
+  final String? tableAssignment;
+  final String? notes;
+
+  const GuestRequest({
+    required this.firstName,
+    required this.lastName,
+    this.email,
+    this.phone,
+    required this.category,
+    required this.side,
+    this.plusOnes = 0,
+    this.dietaryRestrictions,
+    this.mealPreference,
+    this.tableAssignment,
+    this.notes,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'firstName': firstName,
+        'lastName': lastName,
+        if (email != null) 'email': email,
+        if (phone != null) 'phone': phone,
+        'category': category.name,
+        'side': side.name,
+        'plusOnes': plusOnes,
+        if (dietaryRestrictions != null)
+          'dietaryRestrictions': dietaryRestrictions,
+        if (mealPreference != null) 'mealPreference': mealPreference!.name,
+        if (tableAssignment != null) 'tableAssignment': tableAssignment,
+        if (notes != null) 'notes': notes,
+      };
+}
+
 /// Guest repository interface
 abstract class GuestRepository {
   /// Get wedding's guests with optional filter
-  Future<Either<Failure, PaginatedGuests>> getGuests(GuestFilter filter);
+  /// [weddingId] is required - get from HomeRepository.getWedding()
+  Future<Either<Failure, PaginatedGuests>> getGuests(
+      String weddingId, GuestFilter filter);
 
   /// Get single guest details
-  Future<Either<Failure, Guest>> getGuest(String id);
+  Future<Either<Failure, Guest>> getGuest(String weddingId, String id);
 
   /// Create a new guest
-  Future<Either<Failure, Guest>> createGuest(GuestRequest request);
+  Future<Either<Failure, Guest>> createGuest(
+      String weddingId, GuestRequest request);
 
   /// Update a guest
-  Future<Either<Failure, Guest>> updateGuest(String id, GuestRequest request);
+  Future<Either<Failure, Guest>> updateGuest(
+      String weddingId, String id, GuestRequest request);
 
   /// Delete a guest
-  Future<Either<Failure, void>> deleteGuest(String id);
+  Future<Either<Failure, void>> deleteGuest(String weddingId, String id);
 
   /// Update guest RSVP status
   Future<Either<Failure, Guest>> updateRsvpStatus(
-      String id, RsvpStatus status);
+      String weddingId, String id, RsvpStatus status);
 
   /// Send invitation to guest
-  Future<Either<Failure, void>> sendInvitation(String id);
+  Future<Either<Failure, void>> sendInvitation(String weddingId, String id);
 
   /// Send invitation to multiple guests
-  Future<Either<Failure, void>> sendBulkInvitations(List<String> guestIds);
+  Future<Either<Failure, void>> sendBulkInvitations(
+      String weddingId, List<String> guestIds);
 
   /// Get guest statistics
-  Future<Either<Failure, GuestStats>> getGuestStats();
+  Future<Either<Failure, GuestStats>> getGuestStats(String weddingId);
 
   /// Import guests from CSV
-  Future<Either<Failure, List<Guest>>> importGuests(String csvData);
+  Future<Either<Failure, List<Guest>>> importGuests(
+      String weddingId, String csvData);
 
   /// Export guests to CSV
-  Future<Either<Failure, String>> exportGuests();
+  Future<Either<Failure, String>> exportGuests(String weddingId);
 }

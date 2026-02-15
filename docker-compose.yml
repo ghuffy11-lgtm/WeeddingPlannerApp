@@ -72,10 +72,10 @@ services:
     container_name: wedding_planner_api
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3010:3010"
     environment:
       NODE_ENV: development
-      PORT: 3000
+      PORT: 3010
       DATABASE_URL: postgresql://wedding_admin:wedding_secret_123@postgres:5432/wedding_planner
       REDIS_URL: redis://redis:6379
       JWT_SECRET: dev_jwt_secret_change_in_production_123456789
@@ -93,7 +93,7 @@ services:
     networks:
       - wedding_network
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3010/health"]
       interval: 30s
       timeout: 10s
       retries: 3

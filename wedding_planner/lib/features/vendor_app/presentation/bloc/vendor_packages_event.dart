@@ -62,6 +62,16 @@ class UpdateVendorProfile extends VendorPackagesEvent {
   List<Object?> get props => [request];
 }
 
+/// Register vendor profile (during onboarding)
+class RegisterVendorProfile extends VendorPackagesEvent {
+  final RegisterVendorRequest request;
+
+  const RegisterVendorProfile(this.request);
+
+  @override
+  List<Object?> get props => [request];
+}
+
 /// Clear action status
 class ClearPackageAction extends VendorPackagesEvent {
   const ClearPackageAction();

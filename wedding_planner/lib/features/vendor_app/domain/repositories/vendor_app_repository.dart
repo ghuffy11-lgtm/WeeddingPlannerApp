@@ -142,6 +142,34 @@ class UpdateVendorProfileRequest {
       };
 }
 
+/// Request model for registering vendor profile (during onboarding)
+class RegisterVendorRequest {
+  final String businessName;
+  final String categoryId;
+  final String? description;
+  final String? city;
+  final String? country;
+  final String? priceRange;
+
+  const RegisterVendorRequest({
+    required this.businessName,
+    required this.categoryId,
+    this.description,
+    this.city,
+    this.country,
+    this.priceRange,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'businessName': businessName,
+        'categoryId': categoryId,
+        if (description != null) 'description': description,
+        if (city != null) 'city': city,
+        if (country != null) 'country': country,
+        if (priceRange != null) 'priceRange': priceRange,
+      };
+}
+
 /// Vendor App Repository Interface
 abstract class VendorAppRepository {
   /// Get vendor dashboard with stats
@@ -202,6 +230,11 @@ abstract class VendorAppRepository {
   /// Update vendor profile
   Future<Either<Failure, Vendor>> updateProfile(
     UpdateVendorProfileRequest request,
+  );
+
+  /// Register vendor profile (during onboarding)
+  Future<Either<Failure, Vendor>> registerVendor(
+    RegisterVendorRequest request,
   );
 
   /// Get vendor's booked dates (for availability calendar)

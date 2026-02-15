@@ -11,9 +11,10 @@ class GuestRepositoryImpl implements GuestRepository {
   GuestRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, PaginatedGuests>> getGuests(GuestFilter filter) async {
+  Future<Either<Failure, PaginatedGuests>> getGuests(
+      String weddingId, GuestFilter filter) async {
     try {
-      final result = await remoteDataSource.getGuests(filter);
+      final result = await remoteDataSource.getGuests(weddingId, filter);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
@@ -23,9 +24,9 @@ class GuestRepositoryImpl implements GuestRepository {
   }
 
   @override
-  Future<Either<Failure, Guest>> getGuest(String id) async {
+  Future<Either<Failure, Guest>> getGuest(String weddingId, String id) async {
     try {
-      final result = await remoteDataSource.getGuest(id);
+      final result = await remoteDataSource.getGuest(weddingId, id);
       return Right(result);
     } on NotFoundException catch (e) {
       return Left(NotFoundFailure(message: e.message));
@@ -37,9 +38,10 @@ class GuestRepositoryImpl implements GuestRepository {
   }
 
   @override
-  Future<Either<Failure, Guest>> createGuest(GuestRequest request) async {
+  Future<Either<Failure, Guest>> createGuest(
+      String weddingId, GuestRequest request) async {
     try {
-      final result = await remoteDataSource.createGuest(request);
+      final result = await remoteDataSource.createGuest(weddingId, request);
       return Right(result);
     } on ValidationException catch (e) {
       return Left(ValidationFailure(message: e.message));
@@ -52,9 +54,10 @@ class GuestRepositoryImpl implements GuestRepository {
 
   @override
   Future<Either<Failure, Guest>> updateGuest(
-      String id, GuestRequest request) async {
+      String weddingId, String id, GuestRequest request) async {
     try {
-      final result = await remoteDataSource.updateGuest(id, request);
+      final result =
+          await remoteDataSource.updateGuest(weddingId, id, request);
       return Right(result);
     } on NotFoundException catch (e) {
       return Left(NotFoundFailure(message: e.message));
@@ -68,9 +71,10 @@ class GuestRepositoryImpl implements GuestRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteGuest(String id) async {
+  Future<Either<Failure, void>> deleteGuest(
+      String weddingId, String id) async {
     try {
-      await remoteDataSource.deleteGuest(id);
+      await remoteDataSource.deleteGuest(weddingId, id);
       return const Right(null);
     } on NotFoundException catch (e) {
       return Left(NotFoundFailure(message: e.message));
@@ -83,9 +87,10 @@ class GuestRepositoryImpl implements GuestRepository {
 
   @override
   Future<Either<Failure, Guest>> updateRsvpStatus(
-      String id, RsvpStatus status) async {
+      String weddingId, String id, RsvpStatus status) async {
     try {
-      final result = await remoteDataSource.updateRsvpStatus(id, status);
+      final result =
+          await remoteDataSource.updateRsvpStatus(weddingId, id, status);
       return Right(result);
     } on NotFoundException catch (e) {
       return Left(NotFoundFailure(message: e.message));
@@ -97,9 +102,10 @@ class GuestRepositoryImpl implements GuestRepository {
   }
 
   @override
-  Future<Either<Failure, void>> sendInvitation(String id) async {
+  Future<Either<Failure, void>> sendInvitation(
+      String weddingId, String id) async {
     try {
-      await remoteDataSource.sendInvitation(id);
+      await remoteDataSource.sendInvitation(weddingId, id);
       return const Right(null);
     } on NotFoundException catch (e) {
       return Left(NotFoundFailure(message: e.message));
@@ -112,9 +118,9 @@ class GuestRepositoryImpl implements GuestRepository {
 
   @override
   Future<Either<Failure, void>> sendBulkInvitations(
-      List<String> guestIds) async {
+      String weddingId, List<String> guestIds) async {
     try {
-      await remoteDataSource.sendBulkInvitations(guestIds);
+      await remoteDataSource.sendBulkInvitations(weddingId, guestIds);
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
@@ -124,9 +130,9 @@ class GuestRepositoryImpl implements GuestRepository {
   }
 
   @override
-  Future<Either<Failure, GuestStats>> getGuestStats() async {
+  Future<Either<Failure, GuestStats>> getGuestStats(String weddingId) async {
     try {
-      final result = await remoteDataSource.getGuestStats();
+      final result = await remoteDataSource.getGuestStats(weddingId);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
@@ -136,9 +142,10 @@ class GuestRepositoryImpl implements GuestRepository {
   }
 
   @override
-  Future<Either<Failure, List<Guest>>> importGuests(String csvData) async {
+  Future<Either<Failure, List<Guest>>> importGuests(
+      String weddingId, String csvData) async {
     try {
-      final result = await remoteDataSource.importGuests(csvData);
+      final result = await remoteDataSource.importGuests(weddingId, csvData);
       return Right(result);
     } on ValidationException catch (e) {
       return Left(ValidationFailure(message: e.message));
@@ -150,9 +157,9 @@ class GuestRepositoryImpl implements GuestRepository {
   }
 
   @override
-  Future<Either<Failure, String>> exportGuests() async {
+  Future<Either<Failure, String>> exportGuests(String weddingId) async {
     try {
-      final result = await remoteDataSource.exportGuests();
+      final result = await remoteDataSource.exportGuests(weddingId);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));

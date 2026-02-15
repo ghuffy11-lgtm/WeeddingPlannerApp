@@ -180,6 +180,20 @@ class TaskStatsModel extends TaskStats {
     required super.byPriority,
   });
 
+  /// Returns empty stats (used when user has no wedding yet)
+  factory TaskStatsModel.empty() {
+    return const TaskStatsModel(
+      totalTasks: 0,
+      completedTasks: 0,
+      pendingTasks: 0,
+      inProgressTasks: 0,
+      overdueTasks: 0,
+      dueSoonTasks: 0,
+      byCategory: {},
+      byPriority: {},
+    );
+  }
+
   factory TaskStatsModel.fromJson(Map<String, dynamic> json) {
     // Parse category counts
     final byCategoryJson =

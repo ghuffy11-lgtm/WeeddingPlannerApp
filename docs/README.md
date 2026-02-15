@@ -1,10 +1,33 @@
 # Wedding Planner App - Documentation
 
+---
+
+## MANDATORY: Read Before Making Changes
+
+> **STOP!** Before modifying ANY code, read these documents:
+
+| Priority | Document | Purpose |
+|----------|----------|---------|
+| 1 | [**AGENT_WORKFLOW.md**](./AGENT_WORKFLOW.md) | Required pre/post-change checklists |
+| 2 | [**ERROR_TRACKER.md**](./ERROR_TRACKER.md) | Active errors with root causes and status |
+| 3 | [**API_ENDPOINT_MAPPING.md**](./API_ENDPOINT_MAPPING.md) | Correct API URLs (Flutter often uses wrong ones!) |
+| 4 | [**SKILLS.md**](./SKILLS.md) | Past fixes and troubleshooting patterns |
+
+**Why?** Issues marked as "FIXED" keep reappearing because:
+- Changes made without reading existing documentation
+- No verification after "fixing" issues
+- Flutter calling wrong API URLs
+
+---
+
 ## Quick Links
 
 | Document | Description |
 |----------|-------------|
-| [**SKILLS.md**](./SKILLS.md) | **CHECK FIRST!** Troubleshooting solutions & fixes |
+| [**AGENT_WORKFLOW.md**](./AGENT_WORKFLOW.md) | **REQUIRED!** Pre/post-change checklists |
+| [**ERROR_TRACKER.md**](./ERROR_TRACKER.md) | **CHECK FIRST!** Active errors with status |
+| [**API_ENDPOINT_MAPPING.md**](./API_ENDPOINT_MAPPING.md) | Correct API URLs reference |
+| [**SKILLS.md**](./SKILLS.md) | Troubleshooting solutions & fix patterns |
 | [Design System](./FLUTTER_DESIGN_SYSTEM.md) | Colors, typography, components, patterns |
 | [API Integration](./API_INTEGRATION.md) | Backend endpoints, request/response formats |
 | [Features Checklist](./FEATURES_CHECKLIST.md) | Feature status, priorities, entity definitions |
@@ -152,3 +175,33 @@ context.pop();            // Back
 3. Search for keywords related to your issue
 
 This saves time and prevents solving the same problem twice!
+
+---
+
+## Known Issues & Blockers (Feb 2026)
+
+> **See [ERROR_TRACKER.md](./ERROR_TRACKER.md) for detailed error tracking with root causes and fix status.**
+
+### Active Errors Summary
+
+| Error ID | Issue | Status |
+|----------|-------|--------|
+| ERR-001 | Wedding creation 409 | OPEN |
+| ERR-002 | Vendor registration 500 | OPEN |
+| ERR-003 | Tasks endpoint 400 | OPEN |
+| ERR-004 | Wrong API URLs in Flutter | OPEN (Critical) |
+| ERR-005 | Missing backend endpoints | OPEN |
+| ERR-006 | 404 on existing endpoints | OPEN |
+
+### Web Platform Warnings (Non-Blocking)
+| Issue | Skill | Impact |
+|-------|-------|--------|
+| Service Worker unavailable | SKILL-019 | PWA features disabled (OK for dev) |
+| Firebase OAuth domain | SKILL-020 | Social login won't work until domain added |
+
+### Development URLs
+| Service | URL |
+|---------|-----|
+| Flutter Web | `http://10.1.13.98:8889` |
+| Backend API | `http://10.1.13.98:3010/api/v1` |
+| API Health | `http://10.1.13.98:3010/health`

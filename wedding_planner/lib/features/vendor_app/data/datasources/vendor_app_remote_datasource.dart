@@ -22,6 +22,7 @@ abstract class VendorAppRemoteDataSource {
   Future<void> deletePackage(String id);
   Future<VendorModel> getMyProfile();
   Future<VendorModel> updateProfile(UpdateVendorProfileRequest request);
+  Future<VendorModel> registerVendor(RegisterVendorRequest request);
   Future<List<DateTime>> getBookedDates({DateTime? fromDate, DateTime? toDate});
 }
 
@@ -268,6 +269,31 @@ class VendorAppRemoteDataSourceImpl implements VendorAppRemoteDataSource {
         );
       }
       throw _handleDioError(e, 'Failed to update profile');
+    }
+  }
+
+  @override
+  Future<VendorModel> registerVendor(RegisterVendorRequest request) async {
+    try {
+      final response = await dio.post(
+        '/vendors/register',
+        data: request.toJson(),
+      );
+      return VendorModel.fromJson(response.data['data']);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        throw ValidationException(
+          message: (e.response?.data?['message'] ?? 'Invalid vendor data') as String,
+          errors: e.response?.data?['errors'] as Map<String, dynamic>?,
+        );
+      }
+      if (e.response?.statusCode == 409) {
+        throw ServerException(
+          message: 'Vendor profile already exists',
+          statusCode: 409,
+        );
+      }
+      throw _handleDioError(e, 'Failed to register vendor');
     }
   }
 

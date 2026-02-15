@@ -18,12 +18,15 @@ class OnboardingState extends Equatable {
   final OnboardingData data;
   final bool isSubmitting;
   final String? errorMessage;
+  /// True if wedding already existed (409 Conflict was handled)
+  final bool weddingAlreadyExists;
 
   const OnboardingState({
     this.currentStep = OnboardingStep.weddingDate,
     this.data = const OnboardingData(),
     this.isSubmitting = false,
     this.errorMessage,
+    this.weddingAlreadyExists = false,
   });
 
   /// Get step index (0-based)
@@ -49,15 +52,23 @@ class OnboardingState extends Equatable {
     OnboardingData? data,
     bool? isSubmitting,
     String? errorMessage,
+    bool? weddingAlreadyExists,
   }) {
     return OnboardingState(
       currentStep: currentStep ?? this.currentStep,
       data: data ?? this.data,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       errorMessage: errorMessage,
+      weddingAlreadyExists: weddingAlreadyExists ?? this.weddingAlreadyExists,
     );
   }
 
   @override
-  List<Object?> get props => [currentStep, data, isSubmitting, errorMessage];
+  List<Object?> get props => [
+        currentStep,
+        data,
+        isSubmitting,
+        errorMessage,
+        weddingAlreadyExists,
+      ];
 }

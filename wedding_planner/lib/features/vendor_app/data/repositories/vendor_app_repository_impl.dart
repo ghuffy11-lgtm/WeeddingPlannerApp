@@ -252,6 +252,24 @@ class VendorAppRepositoryImpl implements VendorAppRepository {
   }
 
   @override
+  Future<Either<Failure, Vendor>> registerVendor(
+    RegisterVendorRequest request,
+  ) async {
+    try {
+      final vendor = await remoteDataSource.registerVendor(request);
+      return Right(vendor);
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<DateTime>>> getBookedDates({
     DateTime? fromDate,
     DateTime? toDate,

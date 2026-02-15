@@ -86,17 +86,29 @@ class _VendorOnboardingPageState extends State<VendorOnboardingPage> {
   }
 
   void _submitOnboarding() {
+    if (_selectedCategoryIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select at least one category'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
+    // Use the first selected category for registration
+    // (backend currently only supports single category)
+    final primaryCategoryId = _selectedCategoryIds.first;
+
     context.read<VendorPackagesBloc>().add(
-          UpdateVendorProfile(
-            UpdateVendorProfileRequest(
+          RegisterVendorProfile(
+            RegisterVendorRequest(
               businessName: _businessNameController.text.trim(),
+              categoryId: primaryCategoryId,
               description: _descriptionController.text.trim().isNotEmpty
                   ? _descriptionController.text.trim()
-                  : null,
-              phone: _phoneController.text.trim().isNotEmpty
-                  ? _phoneController.text.trim()
                   : null,
               priceRange: _selectedPriceRange,
             ),

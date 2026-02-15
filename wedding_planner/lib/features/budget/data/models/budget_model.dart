@@ -13,6 +13,20 @@ class BudgetModel extends Budget {
     super.updatedAt,
   });
 
+  /// Returns an empty budget model (for when no budget exists yet)
+  factory BudgetModel.empty() {
+    return BudgetModel(
+      id: '',
+      weddingId: '',
+      totalBudget: 0.0,
+      totalSpent: 0.0,
+      totalPaid: 0.0,
+      currency: 'USD',
+      categories: const [],
+      createdAt: DateTime.now(),
+    );
+  }
+
   factory BudgetModel.fromJson(Map<String, dynamic> json) {
     final categoriesJson = json['categories'] as List? ?? [];
     return BudgetModel(
@@ -206,6 +220,22 @@ class BudgetStatsModel extends BudgetStats {
     required super.topCategories,
     required super.upcomingPayments,
   });
+
+  /// Returns an empty stats model (for when no budget exists yet)
+  factory BudgetStatsModel.empty() {
+    return const BudgetStatsModel(
+      totalBudget: 0.0,
+      totalSpent: 0.0,
+      totalPaid: 0.0,
+      totalUnpaid: 0.0,
+      totalExpenses: 0,
+      paidExpenses: 0,
+      pendingExpenses: 0,
+      overdueExpenses: 0,
+      topCategories: [],
+      upcomingPayments: [],
+    );
+  }
 
   factory BudgetStatsModel.fromJson(Map<String, dynamic> json) {
     final categoriesJson = json['topCategories'] ?? json['top_categories'] ?? [];

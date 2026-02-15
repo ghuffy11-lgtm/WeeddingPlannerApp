@@ -267,9 +267,22 @@ Phase 3 Development  [----------]   0%
 
 ## Blockers & Issues
 
-| Issue | Impact | Status |
-|-------|--------|--------|
-| None currently | - | - |
+| Issue | Impact | Status | Skill Ref |
+|-------|--------|--------|-----------|
+| Backend API incomplete | Vendor profile, packages, search fail | **Blocking** | SKILL-021,022,023 |
+| Wedding endpoints missing | Home page errors, date not saved | **Blocking** | SKILL-024,026 |
+| Budget/Task endpoints missing | Features non-functional | **Blocking** | SKILL-026 |
+| Double /api/v1 in tasks URL | Tasks page 404 error | ✅ Fixed | SKILL-025 |
+| Firebase OAuth domain | Social login unavailable | Minor | SKILL-020 |
+| Service Worker (HTTP) | PWA disabled in dev | Non-blocking | SKILL-019 |
+
+### Backend Endpoints Needed (Priority Order)
+1. `GET/POST /api/v1/weddings/me` - Wedding CRUD
+2. `PUT /api/v1/vendors/profile` - Vendor profile update
+3. `POST/GET/PUT/DELETE /api/v1/vendors/packages` - Package CRUD
+4. `GET /api/v1/vendors/search` - Vendor search with filters
+5. `GET /api/v1/weddings/me/budget/summary` - Budget summary
+6. `GET /api/v1/weddings/me/tasks` - Task list
 
 ---
 

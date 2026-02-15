@@ -11,6 +11,16 @@ abstract class HomeRepository {
   /// Get current user's wedding
   Future<Either<Failure, Wedding?>> getWedding();
 
+  /// Create a new wedding (during onboarding)
+  Future<Either<Failure, Wedding>> createWedding({
+    DateTime? weddingDate,
+    double? budget,
+    String? currency,
+    int? guestCount,
+    List<String>? styles,
+    List<String>? traditions,
+  });
+
   /// Get upcoming tasks (limited count)
   Future<Either<Failure, List<WeddingTask>>> getUpcomingTasks({int limit = 5});
 

@@ -5,17 +5,17 @@ import '../../domain/repositories/guest_repository.dart';
 import '../models/guest_model.dart';
 
 abstract class GuestRemoteDataSource {
-  Future<PaginatedGuests> getGuests(GuestFilter filter);
-  Future<GuestModel> getGuest(String id);
-  Future<GuestModel> createGuest(GuestRequest request);
-  Future<GuestModel> updateGuest(String id, GuestRequest request);
-  Future<void> deleteGuest(String id);
-  Future<GuestModel> updateRsvpStatus(String id, RsvpStatus status);
-  Future<void> sendInvitation(String id);
-  Future<void> sendBulkInvitations(List<String> guestIds);
-  Future<GuestStatsModel> getGuestStats();
-  Future<List<GuestModel>> importGuests(String csvData);
-  Future<String> exportGuests();
+  Future<PaginatedGuests> getGuests(String weddingId, GuestFilter filter);
+  Future<GuestModel> getGuest(String weddingId, String id);
+  Future<GuestModel> createGuest(String weddingId, GuestRequest request);
+  Future<GuestModel> updateGuest(String weddingId, String id, GuestRequest request);
+  Future<void> deleteGuest(String weddingId, String id);
+  Future<GuestModel> updateRsvpStatus(String weddingId, String id, RsvpStatus status);
+  Future<void> sendInvitation(String weddingId, String id);
+  Future<void> sendBulkInvitations(String weddingId, List<String> guestIds);
+  Future<GuestStatsModel> getGuestStats(String weddingId);
+  Future<List<GuestModel>> importGuests(String weddingId, String csvData);
+  Future<String> exportGuests(String weddingId);
 }
 
 class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
@@ -24,7 +24,7 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   GuestRemoteDataSourceImpl({required this.dio});
 
   @override
-  Future<PaginatedGuests> getGuests(GuestFilter filter) async {
+  Future<PaginatedGuests> getGuests(String weddingId, GuestFilter filter) async {
     try {
       final queryParams = <String, dynamic>{
         'page': filter.page,
@@ -45,7 +45,7 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
       }
 
       final response = await dio.get(
-        '/guests',
+        '/weddings/$weddingId/guests',
         queryParameters: queryParams,
       );
 
@@ -70,9 +70,9 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<GuestModel> getGuest(String id) async {
+  Future<GuestModel> getGuest(String weddingId, String id) async {
     try {
-      final response = await dio.get('/guests/$id');
+      final response = await dio.get('/weddings/$weddingId/guests/$id');
       return GuestModel.fromJson(response.data['data']);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
@@ -86,10 +86,10 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<GuestModel> createGuest(GuestRequest request) async {
+  Future<GuestModel> createGuest(String weddingId, GuestRequest request) async {
     try {
       final response = await dio.post(
-        '/guests',
+        '/weddings/$weddingId/guests',
         data: request.toJson(),
       );
       return GuestModel.fromJson(response.data['data']);
@@ -108,10 +108,10 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<GuestModel> updateGuest(String id, GuestRequest request) async {
+  Future<GuestModel> updateGuest(String weddingId, String id, GuestRequest request) async {
     try {
       final response = await dio.put(
-        '/guests/$id',
+        '/weddings/$weddingId/guests/$id',
         data: request.toJson(),
       );
       return GuestModel.fromJson(response.data['data']);
@@ -133,9 +133,9 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<void> deleteGuest(String id) async {
+  Future<void> deleteGuest(String weddingId, String id) async {
     try {
-      await dio.delete('/guests/$id');
+      await dio.delete('/weddings/$weddingId/guests/$id');
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
         throw NotFoundException(message: 'Guest not found');
@@ -148,10 +148,10 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<GuestModel> updateRsvpStatus(String id, RsvpStatus status) async {
+  Future<GuestModel> updateRsvpStatus(String weddingId, String id, RsvpStatus status) async {
     try {
       final response = await dio.patch(
-        '/guests/$id/rsvp',
+        '/weddings/$weddingId/guests/$id/rsvp',
         data: {'rsvpStatus': status.name},
       );
       return GuestModel.fromJson(response.data['data']);
@@ -167,9 +167,9 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<void> sendInvitation(String id) async {
+  Future<void> sendInvitation(String weddingId, String id) async {
     try {
-      await dio.post('/guests/$id/invite');
+      await dio.post('/weddings/$weddingId/guests/$id/invite');
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
         throw NotFoundException(message: 'Guest not found');
@@ -182,10 +182,10 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<void> sendBulkInvitations(List<String> guestIds) async {
+  Future<void> sendBulkInvitations(String weddingId, List<String> guestIds) async {
     try {
       await dio.post(
-        '/guests/invite-bulk',
+        '/weddings/$weddingId/guests/invite-bulk',
         data: {'guestIds': guestIds},
       );
     } on DioException catch (e) {
@@ -197,11 +197,15 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<GuestStatsModel> getGuestStats() async {
+  Future<GuestStatsModel> getGuestStats(String weddingId) async {
     try {
-      final response = await dio.get('/guests/stats');
+      final response = await dio.get('/weddings/$weddingId/guests/stats');
       return GuestStatsModel.fromJson(response.data['data']);
     } on DioException catch (e) {
+      // If 404, return empty stats instead of throwing
+      if (e.response?.statusCode == 404) {
+        return GuestStatsModel.empty();
+      }
       throw ServerException(
         message: (e.response?.data?['message'] ?? 'Failed to load guest stats') as String,
         statusCode: e.response?.statusCode,
@@ -210,10 +214,10 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<List<GuestModel>> importGuests(String csvData) async {
+  Future<List<GuestModel>> importGuests(String weddingId, String csvData) async {
     try {
       final response = await dio.post(
-        '/guests/import',
+        '/weddings/$weddingId/guests/import',
         data: {'csvData': csvData},
       );
       final data = response.data['data'] as List;
@@ -233,9 +237,9 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
   }
 
   @override
-  Future<String> exportGuests() async {
+  Future<String> exportGuests(String weddingId) async {
     try {
-      final response = await dio.get('/guests/export');
+      final response = await dio.get('/weddings/$weddingId/guests/export');
       return response.data['data'] as String;
     } on DioException catch (e) {
       throw ServerException(

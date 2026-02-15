@@ -9,6 +9,7 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
   GuestBloc({required GuestRepository repository})
       : _repository = repository,
         super(const GuestState()) {
+    on<InitializeGuests>(_onInitializeGuests);
     on<LoadGuests>(_onLoadGuests);
     on<LoadMoreGuests>(_onLoadMoreGuests);
     on<RefreshGuests>(_onRefreshGuests);
@@ -29,16 +30,34 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     on<ClearGuestError>(_onClearGuestError);
   }
 
+  void _onInitializeGuests(
+    InitializeGuests event,
+    Emitter<GuestState> emit,
+  ) {
+    emit(state.copyWith(weddingId: event.weddingId));
+    // Auto-load guests after initialization
+    add(const LoadGuests());
+  }
+
   Future<void> _onLoadGuests(
     LoadGuests event,
     Emitter<GuestState> emit,
   ) async {
+    if (!state.hasWeddingId) {
+      emit(state.copyWith(
+        listStatus: GuestListStatus.error,
+        listError: 'Wedding not initialized. Please create a wedding first.',
+      ));
+      return;
+    }
+
     emit(state.copyWith(
       listStatus: GuestListStatus.loading,
       filter: event.filter,
     ));
 
-    final result = await _repository.getGuests(event.filter);
+    final result =
+        await _repository.getGuests(state.weddingId!, event.filter);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -60,14 +79,16 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     LoadMoreGuests event,
     Emitter<GuestState> emit,
   ) async {
-    if (!state.hasMore || state.listStatus == GuestListStatus.loadingMore) {
+    if (!state.hasWeddingId ||
+        !state.hasMore ||
+        state.listStatus == GuestListStatus.loadingMore) {
       return;
     }
 
     emit(state.copyWith(listStatus: GuestListStatus.loadingMore));
 
     final nextFilter = state.filter.copyWith(page: state.currentPage + 1);
-    final result = await _repository.getGuests(nextFilter);
+    final result = await _repository.getGuests(state.weddingId!, nextFilter);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -97,9 +118,12 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     LoadGuestDetail event,
     Emitter<GuestState> emit,
   ) async {
+    if (!state.hasWeddingId) return;
+
     emit(state.copyWith(detailStatus: GuestDetailStatus.loading));
 
-    final result = await _repository.getGuest(event.guestId);
+    final result =
+        await _repository.getGuest(state.weddingId!, event.guestId);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -117,9 +141,18 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     CreateGuest event,
     Emitter<GuestState> emit,
   ) async {
+    if (!state.hasWeddingId) {
+      emit(state.copyWith(
+        actionStatus: GuestActionStatus.error,
+        actionError: 'Wedding not initialized',
+      ));
+      return;
+    }
+
     emit(state.copyWith(actionStatus: GuestActionStatus.loading));
 
-    final result = await _repository.createGuest(event.request);
+    final result =
+        await _repository.createGuest(state.weddingId!, event.request);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -142,9 +175,12 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     UpdateGuest event,
     Emitter<GuestState> emit,
   ) async {
+    if (!state.hasWeddingId) return;
+
     emit(state.copyWith(actionStatus: GuestActionStatus.loading));
 
-    final result = await _repository.updateGuest(event.guestId, event.request);
+    final result = await _repository.updateGuest(
+        state.weddingId!, event.guestId, event.request);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -167,9 +203,12 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     DeleteGuest event,
     Emitter<GuestState> emit,
   ) async {
+    if (!state.hasWeddingId) return;
+
     emit(state.copyWith(actionStatus: GuestActionStatus.loading));
 
-    final result = await _repository.deleteGuest(event.guestId);
+    final result =
+        await _repository.deleteGuest(state.weddingId!, event.guestId);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -199,10 +238,12 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     UpdateRsvpStatus event,
     Emitter<GuestState> emit,
   ) async {
+    if (!state.hasWeddingId) return;
+
     emit(state.copyWith(actionStatus: GuestActionStatus.loading));
 
-    final result =
-        await _repository.updateRsvpStatus(event.guestId, event.status);
+    final result = await _repository.updateRsvpStatus(
+        state.weddingId!, event.guestId, event.status);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -232,9 +273,12 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     SendInvitation event,
     Emitter<GuestState> emit,
   ) async {
+    if (!state.hasWeddingId) return;
+
     emit(state.copyWith(actionStatus: GuestActionStatus.loading));
 
-    final result = await _repository.sendInvitation(event.guestId);
+    final result =
+        await _repository.sendInvitation(state.weddingId!, event.guestId);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -256,9 +300,12 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     SendBulkInvitations event,
     Emitter<GuestState> emit,
   ) async {
+    if (!state.hasWeddingId) return;
+
     emit(state.copyWith(actionStatus: GuestActionStatus.loading));
 
-    final result = await _repository.sendBulkInvitations(event.guestIds);
+    final result = await _repository.sendBulkInvitations(
+        state.weddingId!, event.guestIds);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -282,9 +329,11 @@ class GuestBloc extends Bloc<GuestEvent, GuestState> {
     LoadGuestStats event,
     Emitter<GuestState> emit,
   ) async {
+    if (!state.hasWeddingId) return;
+
     emit(state.copyWith(statsLoading: true));
 
-    final result = await _repository.getGuestStats();
+    final result = await _repository.getGuestStats(state.weddingId!);
 
     result.fold(
       (failure) => emit(state.copyWith(statsLoading: false)),

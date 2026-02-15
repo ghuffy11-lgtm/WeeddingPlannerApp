@@ -183,6 +183,21 @@ class GuestStatsModel extends GuestStats {
     required super.byMealPreference,
   });
 
+  /// Returns an empty stats model (for when no wedding exists yet)
+  factory GuestStatsModel.empty() {
+    return const GuestStatsModel(
+      totalGuests: 0,
+      confirmedGuests: 0,
+      declinedGuests: 0,
+      pendingGuests: 0,
+      maybeGuests: 0,
+      totalAttending: 0,
+      byCategory: {},
+      bySide: {},
+      byMealPreference: {},
+    );
+  }
+
   factory GuestStatsModel.fromJson(Map<String, dynamic> json) {
     return GuestStatsModel(
       totalGuests: (json['totalGuests'] ?? json['total_guests'] ?? 0) as int,

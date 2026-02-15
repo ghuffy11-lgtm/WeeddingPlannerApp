@@ -31,6 +31,39 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
+  Future<Either<Failure, Wedding>> createWedding({
+    DateTime? weddingDate,
+    double? budget,
+    String? currency,
+    int? guestCount,
+    List<String>? styles,
+    List<String>? traditions,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        if (weddingDate != null) 'weddingDate': weddingDate.toIso8601String(),
+        if (budget != null) 'budgetTotal': budget,
+        if (currency != null) 'currency': currency,
+        if (guestCount != null) 'guestCountExpected': guestCount,
+        if (styles != null && styles.isNotEmpty) 'stylePreferences': styles,
+        if (traditions != null && traditions.isNotEmpty) 'culturalTraditions': traditions,
+      };
+      final wedding = await remoteDataSource.createWedding(data);
+      return Right(wedding);
+    } on ServerException catch (e) {
+      // Handle 409 Conflict - wedding already exists
+      if (e.statusCode == 409) {
+        return Left(ConflictFailure(message: e.message));
+      }
+      return Left(ServerFailure(message: e.message, code: e.statusCode));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<WeddingTask>>> getUpcomingTasks({
     int limit = 5,
   }) async {

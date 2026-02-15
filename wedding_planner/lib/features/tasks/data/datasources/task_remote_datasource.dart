@@ -50,7 +50,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
       }
 
       final response = await dio.get(
-        '/api/v1/tasks',
+        '/weddings/me/tasks',
         queryParameters: queryParams,
       );
 
@@ -68,6 +68,18 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
         hasMore: (data['hasMore'] ?? data['has_more'] ?? false) as bool,
       );
     } on DioException catch (e) {
+      // Handle 400/403/404 as "no data" - user may not have wedding or proper access yet
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 403 ||
+          e.response?.statusCode == 404) {
+        return PaginatedTasks(
+          tasks: [],
+          currentPage: filter.page,
+          totalPages: 1,
+          totalItems: 0,
+          hasMore: false,
+        );
+      }
       throw ServerException(
         message: (e.response?.data?['message'] ?? 'Failed to load tasks') as String,
         statusCode: e.response?.statusCode,
@@ -78,7 +90,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   @override
   Future<TaskModel> getTask(String id) async {
     try {
-      final response = await dio.get('/api/v1/tasks/$id');
+      final response = await dio.get('/weddings/me/tasks/$id');
       final data = (response.data['task'] ?? response.data) as Map<String, dynamic>;
       return TaskModel.fromJson(data);
     } on DioException catch (e) {
@@ -96,7 +108,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<TaskModel> createTask(TaskRequest request) async {
     try {
       final response = await dio.post(
-        '/api/v1/tasks',
+        '/weddings/me/tasks',
         data: request.toJson(),
       );
       final data = (response.data['task'] ?? response.data) as Map<String, dynamic>;
@@ -118,7 +130,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<TaskModel> updateTask(String id, TaskRequest request) async {
     try {
       final response = await dio.put(
-        '/api/v1/tasks/$id',
+        '/weddings/me/tasks/$id',
         data: request.toJson(),
       );
       final data = (response.data['task'] ?? response.data) as Map<String, dynamic>;
@@ -142,7 +154,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   @override
   Future<void> deleteTask(String id) async {
     try {
-      await dio.delete('/api/v1/tasks/$id');
+      await dio.delete('/weddings/me/tasks/$id');
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
         throw NotFoundException(message: 'Task not found');
@@ -158,7 +170,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<TaskModel> updateTaskStatus(String id, TaskStatus status) async {
     try {
       final response = await dio.patch(
-        '/api/v1/tasks/$id/status',
+        '/weddings/me/tasks/$id/status',
         data: {'status': status.name},
       );
       final data = (response.data['task'] ?? response.data) as Map<String, dynamic>;
@@ -178,7 +190,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<TaskModel> toggleSubtask(String taskId, int subtaskIndex) async {
     try {
       final response = await dio.patch(
-        '/api/v1/tasks/$taskId/subtasks/$subtaskIndex/toggle',
+        '/weddings/me/tasks/$taskId/subtasks/$subtaskIndex/toggle',
       );
       final data = (response.data['task'] ?? response.data) as Map<String, dynamic>;
       return TaskModel.fromJson(data);
@@ -196,10 +208,16 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   @override
   Future<TaskStatsModel> getTaskStats() async {
     try {
-      final response = await dio.get('/api/v1/tasks/stats');
+      final response = await dio.get('/weddings/me/tasks/stats');
       final data = (response.data['stats'] ?? response.data) as Map<String, dynamic>;
       return TaskStatsModel.fromJson(data);
     } on DioException catch (e) {
+      // Handle 400/403/404 as "no data" - user may not have wedding or proper access yet
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 403 ||
+          e.response?.statusCode == 404) {
+        return TaskStatsModel.empty();
+      }
       throw ServerException(
         message: (e.response?.data?['message'] ?? 'Failed to load task stats') as String,
         statusCode: e.response?.statusCode,
@@ -211,7 +229,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<List<TaskSummaryModel>> getTasksByCategory(TaskCategory category) async {
     try {
       final response = await dio.get(
-        '/api/v1/tasks',
+        '/weddings/me/tasks',
         queryParameters: {'category': category.name},
       );
       final data = response.data as Map<String, dynamic>;
@@ -220,6 +238,12 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
           .map((json) => TaskSummaryModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
+      // Handle 400/403/404 as "no data" - user may not have wedding or proper access yet
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 403 ||
+          e.response?.statusCode == 404) {
+        return [];
+      }
       throw ServerException(
         message: (e.response?.data?['message'] ?? 'Failed to load tasks') as String,
         statusCode: e.response?.statusCode,
@@ -231,7 +255,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<List<TaskSummaryModel>> getOverdueTasks() async {
     try {
       final response = await dio.get(
-        '/api/v1/tasks',
+        '/weddings/me/tasks',
         queryParameters: {'isOverdue': true},
       );
       final data = response.data as Map<String, dynamic>;
@@ -240,6 +264,12 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
           .map((json) => TaskSummaryModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
+      // Handle 400/403/404 as "no data" - user may not have wedding or proper access yet
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 403 ||
+          e.response?.statusCode == 404) {
+        return [];
+      }
       throw ServerException(
         message: (e.response?.data?['message'] ?? 'Failed to load overdue tasks') as String,
         statusCode: e.response?.statusCode,
@@ -251,7 +281,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<List<TaskSummaryModel>> getTasksDueSoon({int days = 7}) async {
     try {
       final response = await dio.get(
-        '/api/v1/tasks',
+        '/weddings/me/tasks',
         queryParameters: {'dueSoon': days},
       );
       final data = response.data as Map<String, dynamic>;
@@ -260,6 +290,12 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
           .map((json) => TaskSummaryModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
+      // Handle 400/403/404 as "no data" - user may not have wedding or proper access yet
+      if (e.response?.statusCode == 400 ||
+          e.response?.statusCode == 403 ||
+          e.response?.statusCode == 404) {
+        return [];
+      }
       throw ServerException(
         message: (e.response?.data?['message'] ?? 'Failed to load tasks') as String,
         statusCode: e.response?.statusCode,
@@ -271,7 +307,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<void> bulkUpdateStatus(List<String> taskIds, TaskStatus status) async {
     try {
       await dio.patch(
-        '/api/v1/tasks/bulk-status',
+        '/weddings/me/tasks/bulk-status',
         data: {
           'taskIds': taskIds,
           'status': status.name,

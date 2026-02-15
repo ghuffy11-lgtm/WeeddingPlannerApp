@@ -4,6 +4,26 @@
 
 ---
 
+## MANDATORY: Before Making Changes
+
+**READ THESE DOCUMENTS FIRST:**
+1. `/docs/AGENT_WORKFLOW.md` - Required review process
+2. `/docs/ERROR_TRACKER.md` - Active errors and their status
+3. `/docs/API_ENDPOINT_MAPPING.md` - Correct API URLs
+
+---
+
+## Verification Status Legend
+
+| Status | Meaning |
+|--------|---------|
+| FIXED | Legacy status (pre-Feb 13, 2026) |
+| FIXED_UNVERIFIED | Code changed but not tested |
+| FIXED_VERIFIED | Tested and confirmed working |
+| REOPENED | Previously fixed, issue returned |
+
+---
+
 ## Table of Contents
 1. [Authentication & Routing](#authentication--routing)
 2. [Navigation Issues](#navigation-issues)
@@ -11,6 +31,8 @@
 4. [State Management](#state-management)
 5. [API Integration](#api-integration)
 6. [Common Errors](#common-errors)
+7. [Web Platform Issues](#web-platform-issues)
+8. [Known API Gaps](#known-api-gaps)
 
 ---
 
@@ -459,6 +481,81 @@ builder: (context, state) => MultiBlocProvider(
 
 ---
 
+### SKILL-017: Flutter Web Server Port
+**Problem:** Port 8888 doesn't work for serving Flutter web app.
+
+**Root Cause:** Port 8888 may be blocked or in use by other services.
+
+**Solution:** Use port 8889 with Docker nginx container:
+
+```bash
+# Build web app
+cd /mnt/repo/WeeddingPlannerApp/wedding_planner
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -w /app ghcr.io/cirruslabs/flutter:latest flutter build web --release
+
+# Serve with nginx on port 8889
+docker run -d --name wedding_planner_web_test \
+  -v /mnt/repo/WeeddingPlannerApp/wedding_planner/build/web:/usr/share/nginx/html:ro \
+  -p 8889:80 \
+  nginx:alpine
+```
+
+**Access:** `http://<server-ip>:8889`
+
+**To update after new build:**
+```bash
+docker restart wedding_planner_web_test
+```
+
+---
+
+### SKILL-018: Flutter Web "No Internet Connection" Error
+**Problem:** Flutter web app shows "No internet connection" when trying to login or make API calls.
+
+**Root Cause:**
+1. The backend API is not running, OR
+2. The API URL is wrong (port conflict with other services), OR
+3. The web app was built without the correct `--dart-define=API_BASE_URL`
+
+**Solution:**
+
+1. **Check if backend is running:**
+```bash
+curl http://10.1.13.98:3010/health
+# Should return {"status":"ok",...}
+```
+
+2. **If not running, start the backend:**
+```bash
+cd /mnt/repo/WeeddingPlannerApp
+docker compose up -d postgres redis api
+```
+
+3. **Note:** Default port 3000 conflicts with other apps. Wedding Planner API uses port **3010**.
+
+4. **Rebuild web app with correct API URL:**
+```bash
+cd /mnt/repo/WeeddingPlannerApp/wedding_planner
+docker run --rm -v "$(pwd)":/app -v "flutter_pub_cache:/root/.pub-cache" -w /app \
+  ghcr.io/cirruslabs/flutter:latest \
+  flutter build web --release --dart-define=API_BASE_URL=http://10.1.13.98:3010/api/v1
+```
+
+5. **Restart web server:**
+```bash
+docker restart wedding_planner_web_test
+```
+
+**Files Modified:**
+- `docker-compose.yml` (changed API port from 3000 to 3010)
+- `lib/config/injection.dart` (default API URL)
+
+**Important URLs:**
+- Backend API: `http://10.1.13.98:3010/api/v1`
+- Flutter Web: `http://10.1.13.98:8889`
+
+---
+
 ## How to Add New Skills
 
 When fixing a problem:
@@ -492,3 +589,465 @@ When fixing a problem:
 | setState after dispose | SKILL-014 |
 | BlocProvider not found | SKILL-015 |
 | Docs in wrong folder | SKILL-016 |
+| Web server port issue | SKILL-017 |
+| Web app "No internet connection" | SKILL-018 |
+| Service Worker API unavailable | SKILL-019 |
+| Firebase OAuth domain not authorized | SKILL-020 |
+| Vendor "Failed to update profile" | SKILL-021 |
+| Vendor "Failed to create package" | SKILL-022 |
+| "Failed to load vendors" on themes | SKILL-023 |
+| Wedding date not saved after registration | SKILL-024 |
+| Double /api/v1 in URL | SKILL-025 |
+| API endpoints returning 404 | SKILL-026 |
+| Couple onboarding not saving to API | SKILL-027 |
+| Vendor onboarding not creating profile | SKILL-028 |
+| 404 errors on guests/budget/tasks | SKILL-029 |
+| Wrong API URLs in Flutter | SKILL-029 |
+| 409 Conflict on wedding creation | SKILL-030 |
+| Wedding already exists error | SKILL-030 |
+
+---
+
+## Web Platform Issues
+
+### SKILL-019: Service Worker API Unavailable
+**Problem:** Console shows "Service Worker API unavailable. The current context is NOT secure."
+
+**Root Cause:** Flutter web service workers require HTTPS. When running on HTTP (not secure context), service workers are disabled.
+
+**Impact:**
+- No offline caching
+- No PWA features
+- Warning in console (not blocking)
+
+**Solution:**
+- For **development**: Ignore this warning - app still works
+- For **production**: Deploy with HTTPS (SSL certificate required)
+
+**Workaround:** None needed for development. The app functions without service workers.
+
+---
+
+### SKILL-020: Firebase OAuth Domain Not Authorized
+**Problem:** Console shows "The current domain is not authorized for OAuth operations"
+
+**Root Cause:** Firebase requires domains to be whitelisted for OAuth (Google Sign-In, etc.)
+
+**Impact:**
+- `signInWithPopup`, `signInWithRedirect` won't work
+- Email/password auth still works
+
+**Solution:**
+1. Go to Firebase Console → Authentication → Settings
+2. Click "Authorized domains" tab
+3. Add your domain: `10.1.13.98` (or your server IP/domain)
+4. For production, add your actual domain
+
+**Files:** Firebase Console (external)
+
+---
+
+## Known API Gaps
+
+> **Status:** These API endpoints are NOT YET IMPLEMENTED in the backend. The Flutter app expects them but they return 404/400.
+
+### SKILL-021: Vendor "Failed to Update Profile" Error
+**Problem:** Vendor onboarding fails with "Failed to update profile" on completing setup or editing profile.
+
+**Root Cause:** Backend API endpoint not implemented or returning error.
+
+**API Endpoints Needed:**
+```
+PUT /api/v1/vendors/profile
+POST /api/v1/vendors/onboarding/complete
+```
+
+**Temporary Workaround:** Skip onboarding (data won't be saved)
+
+**Status:** Backend implementation required
+
+---
+
+### SKILL-022: Vendor "Failed to Create Package" Error
+**Problem:** Adding a new vendor package fails with "Failed to create package"
+
+**Root Cause:** Backend API endpoint not implemented.
+
+**API Endpoint Needed:**
+```
+POST /api/v1/vendors/packages
+GET /api/v1/vendors/packages
+PUT /api/v1/vendors/packages/:id
+DELETE /api/v1/vendors/packages/:id
+```
+
+**Status:** Backend implementation required
+
+---
+
+### SKILL-023: "Failed to Load Vendors" on Trending Themes
+**Problem:** Clicking trending themes on home page shows "Failed to load vendors"
+
+**Console Errors:**
+```
+GET /api/v1/vendors/search 400 (Bad Request)
+GET /api/v1/vendors/search/reviews 400 (Bad Request)
+```
+
+**Root Cause:** Search endpoint expects query parameters but receiving invalid format.
+
+**API Endpoints to Fix:**
+```
+GET /api/v1/vendors/search?theme=:theme&category=:category
+GET /api/v1/vendors/search/reviews
+```
+
+**Status:** Backend fix required - validate query parameters
+
+---
+
+### SKILL-024: Wedding Date Not Saved After Registration
+**Problem:** After couple registration with wedding date selected, home page still shows "Select Wedding Date" card.
+
+**Root Cause:** Wedding data from onboarding not being persisted or retrieved.
+
+**Console Errors:**
+```
+GET /api/v1/weddings/me 404 (Not Found)
+```
+
+**API Endpoints Needed:**
+```
+POST /api/v1/weddings (create wedding during onboarding)
+GET /api/v1/weddings/me (get current user's wedding)
+PUT /api/v1/weddings/me (update wedding details)
+```
+
+**Status:** Backend implementation required
+
+---
+
+### SKILL-025: Double /api/v1 in Tasks URL
+**Problem:** Tasks page makes request to `/api/v1/api/v1/tasks/stats` (double prefix)
+
+**Console Error:**
+```
+GET http://10.1.13.98:3010/api/v1/api/v1/tasks/stats 404
+```
+
+**Root Cause:** Bug in Flutter code - base URL already includes `/api/v1` but endpoint also adds it.
+
+**Solution:** Fix in `task_remote_datasource.dart`:
+```dart
+// WRONG
+final response = await dio.get('/api/v1/tasks/stats');
+
+// CORRECT
+final response = await dio.get('/tasks/stats');
+```
+
+**Files Modified:**
+- `lib/features/tasks/data/datasources/task_remote_datasource.dart`
+
+**Status:** ✅ FIXED (Feb 10, 2026)
+
+---
+
+### SKILL-026: Multiple API Endpoints Returning 404
+**Problem:** Home page and other features fail because backend endpoints don't exist.
+
+**Missing Endpoints (404):**
+```
+GET /api/v1/weddings/me
+GET /api/v1/weddings/me/budget/summary
+GET /api/v1/weddings/me/tasks/stats
+GET /api/v1/weddings/me/tasks
+GET /api/v1/bookings
+```
+
+**Missing Endpoints (400 - Bad Request):**
+```
+GET /api/v1/vendors/search
+GET /api/v1/vendors/search/reviews
+```
+
+**Impact:**
+- Home dashboard shows errors/empty states
+- Budget tracker non-functional
+- Task management non-functional
+- Vendor search non-functional
+
+**Status:** Backend implementation required (Phase 1 incomplete)
+
+**Priority Order:**
+1. `GET /api/v1/weddings/me` - Critical for home page
+2. `POST/GET /api/v1/vendors/packages` - Critical for vendor app
+3. `GET /api/v1/vendors/search` - Critical for vendor discovery
+4. Budget and Task endpoints - Medium priority
+
+---
+
+### SKILL-027: Couple Onboarding Not Saving to API
+**Problem:** Couple onboarding flow collects data but doesn't save it to the backend API.
+
+**Root Cause:** `onboarding_bloc.dart` had a TODO comment simulating success instead of calling the API.
+
+**Solution:**
+1. Added `createWedding` method to `HomeRemoteDataSource`:
+```dart
+Future<WeddingModel> createWedding(Map<String, dynamic> data) async {
+  final response = await dio.post<Map<String, dynamic>>('/weddings', data: data);
+  if (response.statusCode == 201 && response.data != null) {
+    return WeddingModel.fromJson(response.data!['data'] as Map<String, dynamic>);
+  }
+  throw ServerException(message: 'Failed to create wedding', statusCode: response.statusCode);
+}
+```
+
+2. Added `createWedding` to `HomeRepository` interface and implementation
+
+3. Updated `OnboardingBloc` to inject `HomeRepository` and call API:
+```dart
+class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
+  final HomeRepository _homeRepository;
+
+  OnboardingBloc({required HomeRepository homeRepository})
+      : _homeRepository = homeRepository,
+        super(const OnboardingState()) {
+    // ... handlers
+  }
+
+  Future<void> _onSubmitted(...) async {
+    final result = await _homeRepository.createWedding(
+      weddingDate: state.data.hasWeddingDate ? state.data.weddingDate : null,
+      budget: state.data.budget,
+      currency: state.data.currency,
+      guestCount: state.data.guestCount,
+      styles: state.data.styles.map((s) => s.name).toList(),
+      traditions: state.data.traditions.map((t) => t.name).toList(),
+    );
+    // Handle result
+  }
+}
+```
+
+4. Updated `OnboardingPage` to inject repository:
+```dart
+return BlocProvider(
+  create: (_) => OnboardingBloc(homeRepository: getIt<HomeRepository>()),
+  child: const _OnboardingView(),
+);
+```
+
+**Files Modified:**
+- `lib/features/home/data/datasources/home_remote_datasource.dart`
+- `lib/features/home/domain/repositories/home_repository.dart`
+- `lib/features/home/data/repositories/home_repository_impl.dart`
+- `lib/features/onboarding/presentation/bloc/onboarding_bloc.dart`
+- `lib/features/onboarding/presentation/pages/onboarding_page.dart`
+
+**Status:** FIXED_UNVERIFIED (Feb 11, 2026) - Needs end-to-end testing
+
+**Verification Needed:**
+- [ ] Register new couple account
+- [ ] Complete onboarding flow
+- [ ] Check network tab - POST /weddings should succeed
+- [ ] Verify wedding appears on home page
+
+**Related Error:** See ERROR_TRACKER.md ERR-001 for 409 handling
+
+---
+
+### SKILL-028: Vendor Onboarding Not Creating Profile
+**Problem:** Vendor onboarding tries to update profile that doesn't exist yet.
+
+**Root Cause:**
+- When a user registers as a vendor, only a user record is created (with `user_type: 'vendor'`)
+- The vendor profile (vendors table) is NOT automatically created
+- Vendor onboarding called `PUT /vendors/me` which requires an existing profile
+
+**Solution:**
+1. Added `RegisterVendorRequest` class to repository:
+```dart
+class RegisterVendorRequest {
+  final String businessName;
+  final String categoryId;
+  final String? description;
+  final String? city;
+  final String? country;
+  final String? priceRange;
+
+  Map<String, dynamic> toJson() => {
+    'businessName': businessName,
+    'categoryId': categoryId,
+    // ... optional fields
+  };
+}
+```
+
+2. Added `registerVendor` method to `VendorAppRepository` and datasource:
+```dart
+Future<VendorModel> registerVendor(RegisterVendorRequest request) async {
+  final response = await dio.post('/vendors/register', data: request.toJson());
+  return VendorModel.fromJson(response.data['data']);
+}
+```
+
+3. Added `RegisterVendorProfile` event and handler to BLoC
+
+4. Updated `VendorOnboardingPage` to use registration instead of update:
+```dart
+context.read<VendorPackagesBloc>().add(
+  RegisterVendorProfile(
+    RegisterVendorRequest(
+      businessName: _businessNameController.text.trim(),
+      categoryId: _selectedCategoryIds.first, // Backend requires single category
+      description: _descriptionController.text.trim(),
+      priceRange: _selectedPriceRange,
+    ),
+  ),
+);
+```
+
+**Files Modified:**
+- `lib/features/vendor_app/domain/repositories/vendor_app_repository.dart`
+- `lib/features/vendor_app/data/repositories/vendor_app_repository_impl.dart`
+- `lib/features/vendor_app/data/datasources/vendor_app_remote_datasource.dart`
+- `lib/features/vendor_app/presentation/bloc/vendor_packages_event.dart`
+- `lib/features/vendor_app/presentation/bloc/vendor_packages_bloc.dart`
+- `lib/features/vendor_app/presentation/pages/vendor_onboarding_page.dart`
+
+**Note:** Backend `registerAsVendor` endpoint only accepts a single `categoryId`, so if multiple categories are selected, only the first is used for registration.
+
+**Status:** FIXED_UNVERIFIED (Feb 11, 2026) - Needs end-to-end testing
+
+**Verification Needed:**
+- [ ] Register new vendor account
+- [ ] Complete vendor onboarding flow
+- [ ] Check network tab - POST /vendors/register should succeed
+- [ ] Verify vendor dashboard loads
+
+**Related Error:** See ERROR_TRACKER.md ERR-002 for 500 error if categoryId is invalid
+
+---
+
+### SKILL-029: Flutter Datasources Using Wrong API URL Patterns
+**Problem:** Flutter datasources were calling top-level URLs (`/guests`, `/budget`, `/tasks`) instead of wedding-scoped URLs (`/weddings/{id}/guests`, `/weddings/me/tasks`, etc.), causing 404 errors.
+
+**Root Cause:** Backend uses wedding-scoped routes but Flutter datasources weren't updated to match.
+
+**Solution:**
+
+1. **For Tasks** - Use `/weddings/me/tasks` pattern (backend resolves wedding from auth token):
+```dart
+// In task_remote_datasource.dart
+final response = await dio.get('/weddings/me/tasks', queryParameters: queryParams);
+final response = await dio.get('/weddings/me/tasks/stats');
+```
+
+2. **For Guests/Budget** - Add weddingId parameter to all methods:
+```dart
+// In guest_remote_datasource.dart
+Future<PaginatedGuests> getGuests(String weddingId, GuestFilter filter) async {
+  final response = await dio.get('/weddings/$weddingId/guests', ...);
+}
+
+// In budget_remote_datasource.dart
+Future<BudgetModel> getBudget(String weddingId) async {
+  final response = await dio.get('/weddings/$weddingId/budget');
+}
+```
+
+3. **Update Repository interfaces** - Add weddingId to method signatures
+4. **Update BLoCs** - Store weddingId in state, add initialization event
+
+**Usage in BLoC:**
+```dart
+// Initialize with wedding ID before loading data
+context.read<GuestBloc>().add(InitializeGuests(weddingId));
+
+// Get wedding ID from HomeRepository
+final wedding = await homeRepository.getWedding();
+if (wedding != null) {
+  context.read<GuestBloc>().add(InitializeGuests(wedding.id));
+}
+```
+
+**Files Modified:**
+- `lib/features/tasks/data/datasources/task_remote_datasource.dart`
+- `lib/features/guests/data/datasources/guest_remote_datasource.dart`
+- `lib/features/guests/domain/repositories/guest_repository.dart`
+- `lib/features/guests/data/repositories/guest_repository_impl.dart`
+- `lib/features/guests/presentation/bloc/guest_bloc.dart`
+- `lib/features/guests/presentation/bloc/guest_state.dart`
+- `lib/features/guests/presentation/bloc/guest_event.dart`
+- `lib/features/budget/data/datasources/budget_remote_datasource.dart`
+- `lib/features/budget/domain/repositories/budget_repository.dart`
+- `lib/features/budget/data/repositories/budget_repository_impl.dart`
+
+**Status:** FIXED_UNVERIFIED (Feb 13, 2026)
+
+**Related Error:** See ERROR_TRACKER.md ERR-004
+
+---
+
+### SKILL-030: Handling 409 Conflict in Wedding Creation
+**Problem:** When user tries to create a wedding but already has one (e.g., page refresh during onboarding, navigating back and resubmitting), the API returns 409 Conflict which was shown as an error.
+
+**Root Cause:** Backend correctly returns 409 when user already has a wedding, but Flutter treated this as an error instead of recognizing the wedding exists.
+
+**Solution:**
+
+1. **Add ConflictFailure class** (`lib/core/errors/failures.dart`):
+```dart
+/// Conflict failure (409) - resource already exists
+class ConflictFailure extends Failure {
+  const ConflictFailure({
+    super.message = 'Resource already exists',
+    super.code = 409,
+  });
+}
+```
+
+2. **Handle 409 in repository** (`home_repository_impl.dart`):
+```dart
+on ServerException catch (e) {
+  // Handle 409 Conflict - wedding already exists
+  if (e.statusCode == 409) {
+    return Left(ConflictFailure(message: e.message));
+  }
+  return Left(ServerFailure(message: e.message, code: e.statusCode));
+}
+```
+
+3. **Treat 409 as success in BLoC** (`onboarding_bloc.dart`):
+```dart
+result.fold(
+  (failure) {
+    // Handle 409 Conflict as success - wedding already exists
+    if (failure is ConflictFailure) {
+      emit(state.copyWith(
+        currentStep: OnboardingStep.complete,
+        isSubmitting: false,
+        weddingAlreadyExists: true,
+      ));
+    } else {
+      emit(state.copyWith(
+        isSubmitting: false,
+        errorMessage: failure.message,
+      ));
+    }
+  },
+  (wedding) { /* success */ },
+);
+```
+
+**Files Modified:**
+- `lib/core/errors/failures.dart` - Added ConflictFailure
+- `lib/features/home/data/repositories/home_repository_impl.dart` - Handle 409
+- `lib/features/onboarding/presentation/bloc/onboarding_bloc.dart` - Treat 409 as success
+- `lib/features/onboarding/presentation/bloc/onboarding_state.dart` - Added weddingAlreadyExists
+
+**Status:** FIXED_UNVERIFIED (Feb 13, 2026)
+
+**Related Error:** See ERROR_TRACKER.md ERR-001
