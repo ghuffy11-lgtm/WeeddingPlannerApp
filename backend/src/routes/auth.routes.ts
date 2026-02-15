@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as authController from '../controllers/auth.controller';
 import { validate } from '../middleware/validate';
 import { registerSchema, loginSchema, refreshTokenSchema } from '../validators/auth.validator';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
@@ -22,5 +23,11 @@ router.post('/reset-password', authController.resetPassword);
 
 // POST /api/v1/auth/verify-email
 router.post('/verify-email', authController.verifyEmail);
+
+// POST /api/v1/auth/logout - Logout (requires authentication)
+router.post('/logout', authenticate, authController.logout);
+
+// GET /api/v1/auth/me - Get current user (requires authentication)
+router.get('/me', authenticate, authController.getCurrentUser);
 
 export default router;

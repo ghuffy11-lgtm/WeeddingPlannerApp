@@ -21,14 +21,31 @@ export const errorHandler = (
   // Handle Prisma errors
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     switch (err.code) {
+      case 'P2000':
+        return sendError(res, 400, 'Value too long for field', 'VALIDATION_ERROR');
       case 'P2002':
         return sendError(res, 409, 'A record with this value already exists', 'DUPLICATE_ENTRY');
+      case 'P2003':
+        return sendError(res, 400, 'Invalid reference. Check that related records exist.', 'INVALID_REFERENCE');
+      case 'P2014':
+        return sendError(res, 400, 'The change would violate a required relation', 'RELATION_VIOLATION');
+      case 'P2015':
+        return sendError(res, 404, 'Related record not found', 'NOT_FOUND');
+      case 'P2016':
+        return sendError(res, 400, 'Query interpretation error', 'QUERY_ERROR');
+      case 'P2017':
+        return sendError(res, 400, 'Records for relation not connected', 'RELATION_ERROR');
+      case 'P2018':
+        return sendError(res, 404, 'Required connected records not found', 'NOT_FOUND');
+      case 'P2021':
+        return sendError(res, 400, 'Table does not exist', 'DATABASE_ERROR');
+      case 'P2022':
+        return sendError(res, 400, 'Column does not exist', 'DATABASE_ERROR');
       case 'P2025':
         return sendError(res, 404, 'Record not found', 'NOT_FOUND');
-      case 'P2003':
-        return sendError(res, 400, 'Invalid reference', 'INVALID_REFERENCE');
       default:
-        return sendError(res, 400, 'Database error', 'DATABASE_ERROR');
+        logger.error(`Unhandled Prisma error: ${err.code}`, err);
+        return sendError(res, 400, `Database error: ${err.message}`, 'DATABASE_ERROR');
     }
   }
 

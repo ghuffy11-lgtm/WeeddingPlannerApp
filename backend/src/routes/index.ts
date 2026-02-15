@@ -5,6 +5,9 @@ import vendorRoutes from './vendor.routes';
 import weddingRoutes from './wedding.routes';
 import bookingRoutes from './booking.routes';
 import categoryRoutes from './category.routes';
+import taskRoutes from './task.routes';
+import guestRoutes from './guest.routes';
+import budgetRoutes from './budget.routes';
 
 const router = Router();
 
@@ -17,5 +20,10 @@ router.use('/vendors', vendorRoutes);
 router.use('/users', userRoutes);
 router.use('/weddings', weddingRoutes);
 router.use('/bookings', bookingRoutes);
+
+// Root-level protected routes (as per API documentation)
+router.use('/tasks', taskRoutes);
+router.use('/guests', guestRoutes);
+router.use('/budget', budgetRoutes);
 
 export default router;

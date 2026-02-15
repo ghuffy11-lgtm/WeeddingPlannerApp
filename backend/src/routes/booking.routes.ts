@@ -33,13 +33,13 @@ router.get('/vendor/requests', requireUserType('vendor'), bookingController.getV
 // GET /api/v1/bookings/vendor/all
 router.get('/vendor/all', requireUserType('vendor'), bookingController.getVendorBookings);
 
-// PUT /api/v1/bookings/:id/accept
-router.put('/:id/accept', requireUserType('vendor'), bookingController.acceptBooking);
+// POST /api/v1/bookings/:id/accept - Accept booking (changed from PUT to POST per API docs)
+router.post('/:id/accept', requireUserType('vendor'), bookingController.acceptBooking);
 
-// PUT /api/v1/bookings/:id/decline
-router.put('/:id/decline', requireUserType('vendor'), bookingController.declineBooking);
+// POST /api/v1/bookings/:id/decline - Decline booking (changed from PUT to POST per API docs)
+router.post('/:id/decline', requireUserType('vendor'), bookingController.declineBooking);
 
-// PUT /api/v1/bookings/:id/complete
-router.put('/:id/complete', requireUserType('vendor'), bookingController.completeBooking);
+// POST /api/v1/bookings/:id/complete - Complete booking (changed from PUT to POST per API docs)
+router.post('/:id/complete', requireUserType('vendor'), bookingController.completeBooking);
 
 export default router;

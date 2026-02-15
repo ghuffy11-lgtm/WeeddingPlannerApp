@@ -278,3 +278,97 @@ export const verifyEmail = async (
     next(error);
   }
 };
+
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { refreshToken } = req.body;
+
+    // If refresh token provided, blacklist it
+    if (refreshToken) {
+      try {
+        const decoded = jwt.verify(
+          refreshToken,
+          jwtConfig.refreshToken.secret
+        ) as { tokenId?: string };
+
+        if (decoded.tokenId) {
+          // Blacklist the token for its remaining lifetime (7 days max)
+          await cache.set(`blacklist:${decoded.tokenId}`, 'true', 7 * 24 * 60 * 60);
+        }
+      } catch {
+        // Token is already invalid, ignore
+      }
+    }
+
+    sendSuccess(res, null, 200, 'Logged out successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCurrentUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        user_type: true,
+        email_verified: true,
+        is_active: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
+
+    if (!user) {
+      throw ApiError.notFound('User not found');
+    }
+
+    // Get additional profile data based on user type
+    let profile = null;
+    if (user.user_type === 'couple') {
+      profile = await prisma.weddings.findFirst({
+        where: { user_id: userId },
+        select: {
+          id: true,
+          partner1_name: true,
+          partner2_name: true,
+          wedding_date: true,
+          region: true,
+          currency: true,
+        },
+      });
+    } else if (user.user_type === 'vendor') {
+      profile = await prisma.vendors.findFirst({
+        where: { user_id: userId },
+        select: {
+          id: true,
+          business_name: true,
+          status: true,
+          category: {
+            select: { id: true, name: true },
+          },
+        },
+      });
+    }
+
+    sendSuccess(res, {
+      ...user,
+      profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
