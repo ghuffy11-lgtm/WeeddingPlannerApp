@@ -33,9 +33,20 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-      body: BlocBuilder<HomeBloc, HomeState>(
+      body: BlocConsumer<HomeBloc, HomeState>(
+        listener: (context, state) {
+          // Redirect to onboarding if user has no wedding
+          if (state.isLoaded && !state.hasWedding) {
+            context.go(AppRoutes.onboarding);
+          }
+        },
         builder: (context, state) {
           if (state.isLoading) {
+            return const _LoadingState();
+          }
+
+          // Show loading while redirecting to onboarding
+          if (state.isLoaded && !state.hasWedding) {
             return const _LoadingState();
           }
 

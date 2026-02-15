@@ -452,6 +452,17 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
+    // Add Task - MUST come before /tasks/:id to match literal path first
+    GoRoute(
+      path: '/tasks/add',
+      builder: (context, state) {
+        return BlocProvider(
+          create: (_) => getIt<TaskBloc>(),
+          child: const AddEditTaskPage(),
+        );
+      },
+    ),
+
     // Task Detail
     GoRoute(
       path: '/tasks/:id',
@@ -460,17 +471,6 @@ final GoRouter appRouter = GoRouter(
         return BlocProvider(
           create: (_) => getIt<TaskBloc>(),
           child: TaskDetailPage(taskId: taskId),
-        );
-      },
-    ),
-
-    // Add Task
-    GoRoute(
-      path: '/tasks/add',
-      builder: (context, state) {
-        return BlocProvider(
-          create: (_) => getIt<TaskBloc>(),
-          child: const AddEditTaskPage(),
         );
       },
     ),

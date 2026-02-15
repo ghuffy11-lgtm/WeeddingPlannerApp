@@ -1,5 +1,13 @@
 import '../../domain/entities/wedding.dart';
 
+/// Helper to parse double from either String or num
+double? _parseDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
+}
+
 /// Wedding Model for API serialization
 class WeddingModel extends Wedding {
   const WeddingModel({
@@ -37,10 +45,12 @@ class WeddingModel extends Wedding {
       venueAddress: json['venue_address'] as String?,
       estimatedGuests: json['estimated_guests'] as int? ?? 0,
       guestCountExpected: json['guest_count_expected'] as int?,
-      totalBudget: (json['budget_total'] as num?)?.toDouble() ??
-          (json['total_budget'] as num?)?.toDouble() ??
+      totalBudget: _parseDouble(json['budget_total']) ??
+          _parseDouble(json['total_budget']) ??
           0,
-      spentAmount: (json['spent_amount'] as num?)?.toDouble() ?? 0,
+      spentAmount: _parseDouble(json['spent_amount']) ??
+          _parseDouble(json['budget_spent']) ??
+          0,
       currency: json['currency'] as String? ?? 'USD',
       theme: json['theme'] as String?,
       primaryColor: json['primary_color'] as String?,

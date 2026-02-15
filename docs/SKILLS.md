@@ -1051,3 +1051,172 @@ result.fold(
 **Status:** FIXED_UNVERIFIED (Feb 13, 2026)
 
 **Related Error:** See ERROR_TRACKER.md ERR-001
+
+---
+
+### SKILL-031: Go Router Route Ordering - Literal Before Parameter
+
+**Problem:** Navigating to `/tasks/add` triggers a 404 error (`GET /api/v1/weddings/me/tasks/add`).
+
+**Root Cause:** In `go_router`, routes are matched in the order they're defined. When `/tasks/:id` is defined BEFORE `/tasks/add`, navigating to `/tasks/add` matches the parameterized route with `id = "add"`. This loads `TaskDetailPage(taskId: "add")` which tries to fetch a task with ID "add" from the API.
+
+**Symptoms:**
+- Browser console shows: `GET /api/v1/weddings/me/tasks/add 404`
+- Add Task button shows loading/error state instead of form
+- Same pattern affects any route with both `/path/add` and `/path/:id`
+
+**Solution:** Always define literal path routes BEFORE parameterized routes:
+
+```dart
+// In routes.dart - CORRECT ORDER
+
+// Add Task - MUST come before /tasks/:id
+GoRoute(
+  path: '/tasks/add',
+  builder: (context, state) {
+    return BlocProvider(
+      create: (_) => getIt<TaskBloc>(),
+      child: const AddEditTaskPage(),
+    );
+  },
+),
+
+// Task Detail - comes AFTER literal paths
+GoRoute(
+  path: '/tasks/:id',
+  builder: (context, state) {
+    final taskId = state.pathParameters['id']!;
+    return BlocProvider(
+      create: (_) => getIt<TaskBloc>(),
+      child: TaskDetailPage(taskId: taskId),
+    );
+  },
+),
+```
+
+**Files Modified:**
+- `lib/config/routes.dart` - Reordered `/tasks/add` before `/tasks/:id`
+
+**Verification:**
+- [x] Navigate to Tasks page
+- [x] Click "Add Task" button
+- [x] Add Task form appears (not loading/error state)
+- [x] No 404 error in browser console
+
+**Status:** FIXED_VERIFIED (Feb 15, 2026)
+
+**Related Error:** See ERROR_TRACKER.md ERR-007
+
+---
+
+### SKILL-032: Redirect Users Without Wedding to Onboarding
+
+**Problem:** Users who log in (not register) and have no wedding see a broken home page or error state instead of being redirected to onboarding.
+
+**Root Cause:** The `register_page.dart` correctly routes to `/onboarding` after registration, but `splash_page.dart` routes authenticated couples directly to `/home`. The home page didn't check if a wedding exists.
+
+**Symptoms:**
+- User logs in → goes to home page
+- Home page tries to load wedding data → gets 404 (no wedding)
+- Shows "Failed to load data" error or broken UI
+- User has no way to complete onboarding
+
+**Solution:** Add BlocConsumer to home page that redirects to onboarding when no wedding exists:
+
+```dart
+// In home_page.dart
+
+body: BlocConsumer<HomeBloc, HomeState>(
+  listener: (context, state) {
+    // Redirect to onboarding if user has no wedding
+    if (state.isLoaded && !state.hasWedding) {
+      context.go(AppRoutes.onboarding);
+    }
+  },
+  builder: (context, state) {
+    if (state.isLoading) {
+      return const _LoadingState();
+    }
+
+    // Show loading while redirecting to onboarding
+    if (state.isLoaded && !state.hasWedding) {
+      return const _LoadingState();
+    }
+
+    // ... rest of builder
+  },
+),
+```
+
+**Files Modified:**
+- `lib/features/home/presentation/pages/home_page.dart` - Added BlocConsumer with redirect logic
+
+**Verification:**
+- [x] Create new user via API (without wedding)
+- [x] Log in with that user
+- [x] User is automatically redirected to onboarding
+- [x] Complete onboarding → wedding created → home page shows data
+
+**Status:** FIXED_VERIFIED (Feb 15, 2026)
+
+**Related Error:** See ERROR_TRACKER.md ERR-008
+
+---
+
+### SKILL-033: Parse API Decimal Fields as String or Number
+
+**Problem:** Completing onboarding throws `TypeError: type 'String' is not a subtype of type 'num'`.
+
+**Root Cause:** PostgreSQL DECIMAL fields (like `budget_total`) are serialized as strings by Prisma (e.g., `"40000"` instead of `40000`). The Flutter model tried to cast directly to `num` which fails on strings.
+
+**Symptoms:**
+- Error: `type 'String' is not a subtype of type 'num'`
+- Happens when parsing wedding data from API
+- Onboarding completes on backend but Flutter crashes parsing response
+
+**Solution:** Create a helper function that handles both string and number types:
+
+```dart
+// In wedding_model.dart
+
+/// Helper to parse double from either String or num
+double? _parseDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
+}
+
+// Usage in fromJson:
+factory WeddingModel.fromJson(Map<String, dynamic> json) {
+  return WeddingModel(
+    // ...
+    totalBudget: _parseDouble(json['budget_total']) ??
+        _parseDouble(json['total_budget']) ??
+        0,
+    spentAmount: _parseDouble(json['spent_amount']) ??
+        _parseDouble(json['budget_spent']) ??
+        0,
+    // ...
+  );
+}
+```
+
+**Common Fields Affected:**
+- `budget_total` / `total_budget`
+- `budget_spent` / `spent_amount`
+- `estimated_amount` / `actual_amount` (in budget items)
+- Any PostgreSQL DECIMAL/NUMERIC field
+
+**Files Modified:**
+- `lib/features/home/data/models/wedding_model.dart` - Added `_parseDouble` helper
+
+**Verification:**
+- [x] Register new user
+- [x] Complete onboarding with budget value
+- [x] No TypeError thrown
+- [x] Wedding data displays correctly on home page
+
+**Status:** FIXED_VERIFIED (Feb 15, 2026)
+
+**Related Error:** See ERROR_TRACKER.md ERR-009

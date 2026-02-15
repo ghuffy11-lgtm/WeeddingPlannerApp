@@ -2,7 +2,7 @@
 
 > **Purpose:** Track all active errors with root causes, reproduction steps, and fix status.
 >
-> **Last Updated:** Feb 13, 2026 (ERR-001 verified working)
+> **Last Updated:** Feb 15, 2026 (ERR-007, ERR-008, ERR-009 verified working)
 
 ---
 
@@ -192,6 +192,97 @@ All datasources now handle 400/403/404 errors gracefully:
 
 > Move errors here after reaching `FIXED_VERIFIED` status.
 
+### ERR-009: TypeError Parsing Budget Fields from API
+
+| Field | Value |
+|-------|-------|
+| **Status** | FIXED_VERIFIED |
+| **Fixed Date** | Feb 15, 2026 |
+| **Verified Date** | Feb 15, 2026 |
+| **Error** | TypeError: type 'String' is not a subtype of type 'num' |
+| **Severity** | High |
+
+**Reproduction:**
+1. Register new couple
+2. Complete onboarding with budget value
+3. App crashes parsing wedding response
+
+**Root Cause:** PostgreSQL DECIMAL fields are serialized as strings by Prisma (e.g., `"40000"` instead of `40000`). Flutter model tried to cast directly to `num`.
+
+**Solution Implemented:**
+Added `_parseDouble` helper function that handles both String and num types:
+```dart
+double? _parseDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
+}
+```
+
+**Files Modified:**
+- `lib/features/home/data/models/wedding_model.dart`
+
+**Skill Reference:** SKILL-033
+
+---
+
+### ERR-008: Users Without Wedding Not Redirected to Onboarding
+
+| Field | Value |
+|-------|-------|
+| **Status** | FIXED_VERIFIED |
+| **Fixed Date** | Feb 15, 2026 |
+| **Verified Date** | Feb 15, 2026 |
+| **Issue** | Logged-in users without wedding see broken home page |
+| **Severity** | High |
+
+**Reproduction:**
+1. Create user via API (or login with existing user who has no wedding)
+2. Log in through the app
+3. Home page shows error or broken state
+
+**Root Cause:** `splash_page.dart` routes authenticated couples directly to `/home`. Home page didn't check if wedding exists and redirect to onboarding.
+
+**Solution Implemented:**
+Changed `BlocBuilder` to `BlocConsumer` in home page with listener that redirects to onboarding when `state.isLoaded && !state.hasWedding`.
+
+**Files Modified:**
+- `lib/features/home/presentation/pages/home_page.dart`
+
+**Skill Reference:** SKILL-032
+
+---
+
+### ERR-007: Tasks Add Route Returns 404
+
+| Field | Value |
+|-------|-------|
+| **Status** | FIXED_VERIFIED |
+| **Fixed Date** | Feb 15, 2026 |
+| **Verified Date** | Feb 15, 2026 |
+| **Endpoint** | GET /api/v1/weddings/me/tasks/add (incorrect) |
+| **Error** | 404 Not Found |
+| **Severity** | Medium |
+
+**Reproduction:**
+1. Navigate to Tasks page
+2. Click "Add Task" button
+3. See loading/error state instead of form
+4. Browser console shows 404 for `/tasks/add`
+
+**Root Cause:** Go Router route ordering bug. `/tasks/:id` was defined before `/tasks/add`, so navigating to `/tasks/add` matched the parameterized route with `id = "add"`.
+
+**Solution Implemented:**
+Moved `/tasks/add` route BEFORE `/tasks/:id` in routes.dart so literal path matches first.
+
+**Files Modified:**
+- `lib/config/routes.dart`
+
+**Skill Reference:** SKILL-031
+
+---
+
 ### ERR-001: Wedding Creation Returns 409 Conflict
 
 | Field | Value |
@@ -296,7 +387,7 @@ All datasources now handle 400/403/404 errors gracefully:
 | OPEN | 0 |
 | IN_PROGRESS | 0 |
 | FIXED_UNVERIFIED | 5 |
-| FIXED_VERIFIED | 2 |
+| FIXED_VERIFIED | 5 |
 | **Total Active** | **0** |
 
 ---
