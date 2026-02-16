@@ -3,6 +3,21 @@ import { prisma } from '../config/database';
 import { ApiError } from '../utils/ApiError';
 import { sendSuccess, sendPaginated } from '../utils/response';
 
+// Helper function to recalculate and update wedding.budget_spent
+export const updateBudgetSpent = async (weddingId: string): Promise<void> => {
+  const budgetItems = await prisma.budget_items.findMany({
+    where: { wedding_id: weddingId },
+  });
+  const totalSpent = budgetItems.reduce(
+    (sum, item) => sum + (Number(item.actual_amount) || 0),
+    0
+  );
+  await prisma.weddings.update({
+    where: { id: weddingId },
+    data: { budget_spent: totalSpent },
+  });
+};
+
 export const getMyWedding = async (
   req: Request,
   res: Response,
@@ -522,6 +537,9 @@ export const addBudgetItem = async (
       },
     });
 
+    // Update wedding.budget_spent
+    await updateBudgetSpent(id);
+
     sendSuccess(res, item, 201, 'Budget item added successfully');
   } catch (error) {
     next(error);
@@ -560,6 +578,9 @@ export const updateBudgetItem = async (
       },
     });
 
+    // Update wedding.budget_spent
+    await updateBudgetSpent(id);
+
     sendSuccess(res, item, 200, 'Budget item updated successfully');
   } catch (error) {
     next(error);
@@ -587,6 +608,9 @@ export const deleteBudgetItem = async (
     await prisma.budget_items.delete({
       where: { id: itemId },
     });
+
+    // Update wedding.budget_spent
+    await updateBudgetSpent(id);
 
     sendSuccess(res, null, 200, 'Budget item deleted successfully');
   } catch (error) {
@@ -650,6 +674,10 @@ export const addTask = async (
       throw ApiError.notFound('Wedding not found');
     }
 
+    // Determine status and is_completed
+    const status = taskData.status || 'pending';
+    const isCompleted = taskData.isCompleted ?? status === 'completed';
+
     const task = await prisma.tasks.create({
       data: {
         wedding_id: id,
@@ -658,6 +686,9 @@ export const addTask = async (
         due_date: taskData.dueDate ? new Date(taskData.dueDate) : null,
         priority: taskData.priority || 'medium',
         category: taskData.category,
+        status: status,
+        is_completed: isCompleted,
+        completed_at: isCompleted ? new Date() : null,
         linked_vendor_id: taskData.vendorId,
         is_custom: true,
       },
@@ -688,14 +719,25 @@ export const updateTask = async (
       throw ApiError.notFound('Wedding not found');
     }
 
+    // Determine status and is_completed
+    let status = updates.status;
+    let isCompleted = updates.isCompleted;
+
+    if (status !== undefined) {
+      isCompleted = status === 'completed';
+    } else if (isCompleted !== undefined) {
+      status = isCompleted ? 'completed' : 'pending';
+    }
+
     const task = await prisma.tasks.update({
       where: { id: taskId },
       data: {
         title: updates.title,
         description: updates.description,
         due_date: updates.dueDate ? new Date(updates.dueDate) : undefined,
-        is_completed: updates.isCompleted,
-        completed_at: updates.isCompleted ? new Date() : null,
+        is_completed: isCompleted,
+        status: status,
+        completed_at: isCompleted ? new Date() : null,
         priority: updates.priority,
         category: updates.category,
       },
@@ -737,6 +779,39 @@ export const deleteTask = async (
 
 // Task management for /me routes
 
+export const getMyTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const { taskId } = req.params;
+
+    // Find user's wedding
+    const wedding = await prisma.weddings.findFirst({
+      where: { user_id: userId },
+    });
+
+    if (!wedding) {
+      throw ApiError.notFound('Wedding not found. Please create one first.');
+    }
+
+    // Find task that belongs to user's wedding
+    const task = await prisma.tasks.findFirst({
+      where: { id: taskId, wedding_id: wedding.id },
+    });
+
+    if (!task) {
+      throw ApiError.notFound('Task not found');
+    }
+
+    sendSuccess(res, task);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createMyTask = async (
   req: Request,
   res: Response,
@@ -755,6 +830,10 @@ export const createMyTask = async (
       throw ApiError.notFound('Wedding not found. Please create one first.');
     }
 
+    // Determine status and is_completed
+    const status = taskData.status || 'pending';
+    const isCompleted = taskData.isCompleted ?? status === 'completed';
+
     const task = await prisma.tasks.create({
       data: {
         wedding_id: wedding.id,
@@ -763,6 +842,9 @@ export const createMyTask = async (
         due_date: taskData.dueDate ? new Date(taskData.dueDate) : null,
         priority: taskData.priority || 'medium',
         category: taskData.category,
+        status: status,
+        is_completed: isCompleted,
+        completed_at: isCompleted ? new Date() : null,
         linked_vendor_id: taskData.vendorId,
         is_custom: true,
       },
@@ -802,14 +884,29 @@ export const updateMyTask = async (
       throw ApiError.notFound('Task not found');
     }
 
+    // Determine status and is_completed
+    // If status is provided, derive is_completed from it
+    // If only isCompleted is provided, derive status from it
+    let status = updates.status;
+    let isCompleted = updates.isCompleted;
+
+    if (status !== undefined) {
+      // Status provided - derive isCompleted from status
+      isCompleted = status === 'completed';
+    } else if (isCompleted !== undefined) {
+      // Only isCompleted provided - derive status from it
+      status = isCompleted ? 'completed' : existingTask.status || 'pending';
+    }
+
     const task = await prisma.tasks.update({
       where: { id: taskId },
       data: {
         title: updates.title,
         description: updates.description,
         due_date: updates.dueDate ? new Date(updates.dueDate) : undefined,
-        is_completed: updates.isCompleted,
-        completed_at: updates.isCompleted ? new Date() : null,
+        is_completed: isCompleted,
+        status: status,
+        completed_at: isCompleted ? new Date() : null,
         priority: updates.priority,
         category: updates.category,
       },

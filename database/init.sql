@@ -222,7 +222,7 @@ CREATE TABLE guests (
     group_name VARCHAR(50),
 
     -- RSVP
-    rsvp_status VARCHAR(20) DEFAULT 'pending' CHECK (rsvp_status IN ('pending', 'accepted', 'declined')),
+    rsvp_status VARCHAR(20) DEFAULT 'pending' CHECK (rsvp_status IN ('pending', 'confirmed', 'declined')),
     plus_one_allowed BOOLEAN DEFAULT false,
     plus_one_name VARCHAR(200),
     plus_one_attending BOOLEAN,

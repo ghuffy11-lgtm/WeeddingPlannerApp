@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import { ApiError } from '../utils/ApiError';
 import { sendSuccess, sendPaginated } from '../utils/response';
+import { updateBudgetSpent } from './wedding.controller';
 
 // Couple endpoints
 
@@ -437,6 +438,35 @@ export const acceptBooking = async (
         updated_at: new Date(),
       },
     });
+
+    // Get booking details with vendor/package info for budget item
+    const bookingWithDetails = await prisma.bookings.findUnique({
+      where: { id },
+      include: {
+        vendor: { select: { business_name: true, category: { select: { name: true } } } },
+        package: { select: { name: true } },
+      },
+    });
+
+    if (bookingWithDetails?.wedding_id) {
+      // Create budget item linked to this booking
+      await prisma.budget_items.create({
+        data: {
+          wedding_id: bookingWithDetails.wedding_id,
+          booking_id: id,
+          vendor_id: vendor.id,
+          category: bookingWithDetails.vendor?.category?.name || 'Vendor Services',
+          description: `${bookingWithDetails.vendor?.business_name} - ${bookingWithDetails.package?.name || 'Booking'}`,
+          estimated_amount: bookingWithDetails.total_amount,
+          actual_amount: bookingWithDetails.total_amount,
+          is_paid: false,
+          notes: 'Auto-created from accepted booking',
+        },
+      });
+
+      // Update wedding.budget_spent
+      await updateBudgetSpent(bookingWithDetails.wedding_id);
+    }
 
     // TODO: Send notification to couple
 
