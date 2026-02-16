@@ -4,6 +4,8 @@ import 'services/auth_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/vendor_home_screen.dart';
+import 'screens/vendor_onboarding_screen.dart';
 
 void main() {
   runApp(const WeddingPlannerApp());
@@ -78,6 +80,16 @@ class AuthWrapper extends StatelessWidget {
         if (!auth.isAuthenticated) {
           return const LoginScreen();
         }
+
+        // Handle vendor users
+        if (auth.userType == 'vendor') {
+          if (auth.vendorId == null) {
+            return const VendorOnboardingScreen();
+          }
+          return const VendorHomeScreen();
+        }
+
+        // Handle couple users
         if (auth.weddingId == null) {
           return const OnboardingScreen();
         }

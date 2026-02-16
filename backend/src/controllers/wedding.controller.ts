@@ -366,6 +366,7 @@ export const addGuest = async (
         email: guestData.email,
         phone: guestData.phone,
         group_name: guestData.groupName,
+        rsvp_status: guestData.rsvpStatus || 'pending',
         plus_one_allowed: guestData.plusOneAllowed || false,
         meal_preference: guestData.mealPreference,
         dietary_restrictions: guestData.dietaryRestrictions,
