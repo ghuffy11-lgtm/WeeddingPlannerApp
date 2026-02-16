@@ -133,6 +133,18 @@ services:
     depends_on:
       - flutter
 
+  # API Tester - Web interface for testing backend endpoints
+  api-tester:
+    image: nginx:alpine
+    container_name: wedding_planner_api_tester
+    restart: unless-stopped
+    ports:
+      - "8899:80"
+    volumes:
+      - ./api-tester/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - wedding_network
+
 networks:
   wedding_network:
     name: wedding_planner_network

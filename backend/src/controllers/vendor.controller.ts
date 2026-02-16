@@ -264,6 +264,38 @@ export const registerAsVendor = async (
   }
 };
 
+export const getMyVendorProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+
+    const vendor = await prisma.vendors.findFirst({
+      where: { user_id: userId },
+      include: {
+        category: true,
+        packages: {
+          where: { is_active: true },
+          orderBy: { created_at: 'desc' },
+        },
+        portfolio: {
+          orderBy: { display_order: 'asc' },
+        },
+      },
+    });
+
+    if (!vendor) {
+      throw ApiError.notFound('Vendor profile not found. Please register as a vendor first.');
+    }
+
+    sendSuccess(res, vendor);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getVendorDashboard = async (
   req: Request,
   res: Response,

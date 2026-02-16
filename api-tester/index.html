@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Planner API Tester</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --accent: #e94560;
+            --accent-hover: #ff6b6b;
+            --text-primary: #eee;
+            --text-secondary: #aaa;
+            --success: #4caf50;
+            --error: #f44336;
+            --warning: #ff9800;
+            --info: #2196f3;
+            --border: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .token-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .token-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--error);
+        }
+
+        .token-indicator.valid {
+            background: var(--success);
+        }
+
+        .btn-clear-token {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-clear-token:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--bg-tertiary);
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* Main Layout */
+        .main {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            grid-template-rows: 1fr auto;
+            height: calc(100vh - 110px);
+        }
+
+        /* Left Panel - Actions */
+        .actions-panel {
+            background: var(--bg-secondary);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        .panel-section {
+            margin-bottom: 25px;
+        }
+
+        .panel-section h3 {
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: #1a4a7a;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Response Panel */
+        .response-panel {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .response-header h2 {
+            font-size: 1.1rem;
+        }
+
+        .response-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .status-2xx {
+            background: var(--success);
+        }
+
+        .status-4xx {
+            background: var(--warning);
+            color: #000;
+        }
+
+        .status-5xx {
+            background: var(--error);
+        }
+
+        .response-body {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 15px;
+            overflow: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* JSON Syntax Highlighting */
+        .json-key {
+            color: #9cdcfe;
+        }
+
+        .json-string {
+            color: #ce9178;
+        }
+
+        .json-number {
+            color: #b5cea8;
+        }
+
+        .json-boolean {
+            color: #569cd6;
+        }
+
+        .json-null {
+            color: #569cd6;
+        }
+
+        /* Request Log */
+        .log-panel {
+            grid-column: 1 / -1;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 10px 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-panel h3 {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .log-entry {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.8rem;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+
+        .log-method {
+            font-weight: 600;
+            min-width: 60px;
+        }
+
+        .log-method.GET { color: var(--info); }
+        .log-method.POST { color: var(--success); }
+        .log-method.PUT { color: var(--warning); }
+        .log-method.DELETE { color: var(--error); }
+
+        .log-status {
+            min-width: 40px;
+        }
+
+        .log-status.success { color: var(--success); }
+        .log-status.error { color: var(--error); }
+
+        .log-time {
+            color: var(--text-secondary);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Divider */
+        .divider {
+            border-top: 1px solid var(--border);
+            margin: 15px 0;
+        }
+
+        /* Base URL Input */
+        .base-url-container {
+            background: var(--bg-tertiary);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .base-url-container label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .base-url-container input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: monospace;
+        }
+
+        /* Stored Data */
+        .stored-data {
+            background: var(--bg-tertiary);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+        }
+
+        .stored-data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+        }
+
+        .stored-data-label {
+            color: var(--text-secondary);
+        }
+
+        .stored-data-value {
+            color: var(--accent);
+            font-family: monospace;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Loading State */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--text-secondary);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                max-height: 400px;
+            }
+        }
+
+        /* Copy Button */
+        .btn-copy {
+            background: var(--bg-tertiary);
+            border: none;
+            color: var(--text-secondary);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .btn-copy:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Checkbox */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Wedding Planner API Tester</h1>
+        <div class="token-status">
+            <span>Token:</span>
+            <div class="token-indicator" id="tokenIndicator"></div>
+            <span id="tokenLabel">No Token</span>
+            <button class="btn-clear-token" onclick="clearToken()">Clear</button>
+        </div>
+    </header>
+
+    <div class="base-url-container">
+        <label>Base URL:</label>
+        <input type="text" id="baseUrl" value="http://10.1.13.98:3010/api/v1" />
+    </div>
+
+    <nav class="tabs">
+        <button class="tab active" data-tab="auth">AUTH</button>
+        <button class="tab" data-tab="wedding">WEDDING</button>
+        <button class="tab" data-tab="tasks">TASKS</button>
+        <button class="tab" data-tab="guests">GUESTS</button>
+        <button class="tab" data-tab="budget">BUDGET</button>
+        <button class="tab" data-tab="vendors">VENDORS</button>
+        <button class="tab" data-tab="bookings">BOOKINGS</button>
+        <button class="tab" data-tab="custom">CUSTOM</button>
+    </nav>
+
+    <main class="main">
+        <aside class="actions-panel">
+            <!-- AUTH TAB -->
+            <div id="auth-content" class="tab-content active">
+                <div class="stored-data" id="authStoredData">
+                    <div class="stored-data-item">
+                        <span class="stored-data-label">User ID:</span>
+                        <span class="stored-data-value" id="storedUserId">-</span>
+                    </div>
+                    <div class="stored-data-item">
+                        <span class="stored-data-label">Email:</span>
+                        <span class="stored-data-value" id="storedEmail">-</span>
+                    </div>
+                    <div class="stored-data-item">
+                        <span class="stored-data-label">Role:</span>
+                        <span class="stored-data-value" id="storedRole">-</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Quick Actions</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="getProfile()">Get My Profile</button>
+                        <button class="btn btn-secondary" onclick="refreshToken()">Refresh Token</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Register</h3>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="regEmail" placeholder="test@example.com" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password (min 8 chars, upper+lower+number)</label>
+                        <input type="password" id="regPassword" placeholder="Password1" />
+                    </div>
+                    <div class="form-group">
+                        <label>Phone (optional)</label>
+                        <input type="text" id="regPhone" placeholder="+1234567890" />
+                    </div>
+                    <div class="form-group">
+                        <label>User Type</label>
+                        <select id="regUserType">
+                            <option value="couple">Couple</option>
+                            <option value="vendor">Vendor</option>
+                            <option value="guest">Guest</option>
+                        </select>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="register()">Register</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Login</h3>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" placeholder="test@example.com" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="password123" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="login()">Login</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WEDDING TAB -->
+            <div id="wedding-content" class="tab-content">
+                <div class="stored-data">
+                    <div class="stored-data-item">
+                        <span class="stored-data-label">Wedding ID:</span>
+                        <span class="stored-data-value" id="storedWeddingId">-</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Quick Actions</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="getMyWedding()">Get My Wedding</button>
+                        <button class="btn btn-secondary" onclick="getBudgetSummary()">Get Budget Summary</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Create Wedding</h3>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="weddingTitle" placeholder="Our Wedding" />
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Partner 1 Name</label>
+                            <input type="text" id="partner1Name" placeholder="John" />
+                        </div>
+                        <div class="form-group">
+                            <label>Partner 2 Name</label>
+                            <input type="text" id="partner2Name" placeholder="Jane" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Wedding Date</label>
+                        <input type="date" id="weddingDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Budget</label>
+                        <input type="number" id="weddingBudget" placeholder="50000" />
+                    </div>
+                    <div class="form-group">
+                        <label>Venue</label>
+                        <input type="text" id="weddingVenue" placeholder="Grand Ballroom" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="createWedding()">Create Wedding</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Update Wedding</h3>
+                    <div class="form-group">
+                        <label>Wedding ID (leave empty for /me)</label>
+                        <input type="text" id="updateWeddingId" placeholder="auto-detected" />
+                    </div>
+                    <div class="form-group">
+                        <label>Update Data (JSON)</label>
+                        <textarea id="updateWeddingData" placeholder='{"title": "Updated Title"}'></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="updateWedding()">Update Wedding</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TASKS TAB -->
+            <div id="tasks-content" class="tab-content">
+                <div class="panel-section">
+                    <h3>Quick Actions</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="listTasks()">List All Tasks</button>
+                        <button class="btn btn-secondary" onclick="getTaskStats()">Get Task Stats</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Create Task</h3>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="taskTitle" placeholder="Book photographer" />
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="taskDescription" placeholder="Find and book a wedding photographer"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" id="taskDueDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="taskCategory">
+                            <option value="venue">Venue</option>
+                            <option value="catering">Catering</option>
+                            <option value="photography">Photography</option>
+                            <option value="music">Music</option>
+                            <option value="flowers">Flowers</option>
+                            <option value="attire">Attire</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select id="taskPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="taskStatus">
+                            <option value="pending">Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="createTask()">Create Task</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Get/Update/Delete Task</h3>
+                    <div class="form-group">
+                        <label>Task ID</label>
+                        <input type="text" id="taskId" placeholder="task-uuid" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="getTask()">Get Task</button>
+                        <button class="btn btn-danger" onclick="deleteTask()">Delete Task</button>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>Update Data (JSON)</label>
+                        <textarea id="updateTaskData" placeholder='{"status": "completed"}'></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="updateTask()">Update Task</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GUESTS TAB -->
+            <div id="guests-content" class="tab-content">
+                <div class="panel-section">
+                    <h3>Quick Actions</h3>
+                    <div class="form-group">
+                        <label>Wedding ID (leave empty for stored)</label>
+                        <input type="text" id="guestWeddingId" placeholder="auto-detected" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="listGuests()">List All Guests</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Add Guest</h3>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="guestName" placeholder="John Smith" />
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="guestEmail" placeholder="john@example.com" />
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" id="guestPhone" placeholder="+1234567890" />
+                    </div>
+                    <div class="form-group">
+                        <label>RSVP Status</label>
+                        <select id="guestRsvp">
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="declined">Declined</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Plus Ones</label>
+                        <input type="number" id="guestPlusOnes" value="0" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label>Dietary Requirements</label>
+                        <input type="text" id="guestDietary" placeholder="Vegetarian" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="addGuest()">Add Guest</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Update/Delete Guest</h3>
+                    <div class="form-group">
+                        <label>Guest ID</label>
+                        <input type="text" id="guestId" placeholder="guest-uuid" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="getGuest()">Get Guest</button>
+                        <button class="btn btn-danger" onclick="deleteGuest()">Delete Guest</button>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>Update Data (JSON)</label>
+                        <textarea id="updateGuestData" placeholder='{"rsvpStatus": "confirmed"}'></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="updateGuest()">Update Guest</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BUDGET TAB -->
+            <div id="budget-content" class="tab-content">
+                <div class="panel-section">
+                    <h3>Quick Actions</h3>
+                    <div class="form-group">
+                        <label>Wedding ID (leave empty for stored)</label>
+                        <input type="text" id="budgetWeddingId" placeholder="auto-detected" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="getBudget()">Get Budget</button>
+                        <button class="btn btn-secondary" onclick="getBudgetSummary()">Get Budget Summary</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Add Expense</h3>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input type="text" id="expenseCategory" placeholder="Photography" />
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="expenseDescription" placeholder="Wedding photographer deposit" />
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Estimated Cost</label>
+                            <input type="number" id="expenseEstimated" placeholder="2000" />
+                        </div>
+                        <div class="form-group">
+                            <label>Actual Cost</label>
+                            <input type="number" id="expenseActual" placeholder="1800" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Vendor Name</label>
+                        <input type="text" id="expenseVendor" placeholder="ABC Photography" />
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="expensePaid" />
+                        <label for="expensePaid">Paid</label>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="addExpense()">Add Expense</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Update/Delete Expense</h3>
+                    <div class="form-group">
+                        <label>Budget Item ID</label>
+                        <input type="text" id="budgetItemId" placeholder="budget-item-uuid" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-danger" onclick="deleteExpense()">Delete Expense</button>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>Update Data (JSON)</label>
+                        <textarea id="updateExpenseData" placeholder='{"actualCost": 1900, "paid": true}'></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="updateExpense()">Update Expense</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VENDORS TAB -->
+            <div id="vendors-content" class="tab-content">
+                <div class="panel-section">
+                    <h3>Public Discovery</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="listCategories()">List Categories</button>
+                        <button class="btn btn-secondary" onclick="listVendors()">List All Vendors</button>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>Search Query</label>
+                        <input type="text" id="vendorSearch" placeholder="photographer" />
+                    </div>
+                    <div class="form-group">
+                        <label>Category Filter</label>
+                        <input type="text" id="vendorCategoryFilter" placeholder="category-uuid" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="searchVendors()">Search Vendors</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Vendor Details</h3>
+                    <div class="form-group">
+                        <label>Vendor ID</label>
+                        <input type="text" id="vendorId" placeholder="vendor-uuid" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="getVendor()">Get Vendor Details</button>
+                        <button class="btn btn-secondary" onclick="getVendorPackages()">Get Packages</button>
+                        <button class="btn btn-secondary" onclick="getVendorReviews()">Get Reviews</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Vendor Registration</h3>
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" id="vendorBusinessName" placeholder="ABC Photography" />
+                    </div>
+                    <div class="form-group">
+                        <label>Category ID</label>
+                        <input type="text" id="vendorCategoryId" placeholder="category-uuid" />
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="vendorDescription" placeholder="Professional wedding photography"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Base Price</label>
+                            <input type="number" id="vendorBasePrice" placeholder="1000" />
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="vendorLocation" placeholder="New York" />
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="registerVendor()">Register as Vendor</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Vendor Dashboard (Logged in as Vendor)</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="getVendorDashboard()">Get Dashboard</button>
+                        <button class="btn btn-secondary" onclick="getMyVendorProfile()">Get My Profile</button>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>Update Profile (JSON)</label>
+                        <textarea id="updateVendorProfile" placeholder='{"description": "Updated description"}'></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="updateVendorProfile()">Update Profile</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Package Management (Vendor)</h3>
+                    <div class="form-group">
+                        <label>Package Name</label>
+                        <input type="text" id="packageName" placeholder="Basic Package" />
+                    </div>
+                    <div class="form-group">
+                        <label>Package Description</label>
+                        <textarea id="packageDescription" placeholder="4 hours coverage"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Price</label>
+                        <input type="number" id="packagePrice" placeholder="1500" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="createPackage()">Create Package</button>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>Package ID (for update)</label>
+                        <input type="text" id="packageId" placeholder="package-uuid" />
+                    </div>
+                    <div class="form-group">
+                        <label>Update Data (JSON)</label>
+                        <textarea id="updatePackageData" placeholder='{"price": 1600}'></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="updatePackage()">Update Package</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOOKINGS TAB -->
+            <div id="bookings-content" class="tab-content">
+                <div class="panel-section">
+                    <h3>Quick Actions</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="listMyBookings()">List My Bookings</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Create Booking (Couple)</h3>
+                    <div class="form-group">
+                        <label>Vendor ID</label>
+                        <input type="text" id="bookingVendorId" placeholder="vendor-uuid" />
+                    </div>
+                    <div class="form-group">
+                        <label>Package ID (optional)</label>
+                        <input type="text" id="bookingPackageId" placeholder="package-uuid" />
+                    </div>
+                    <div class="form-group">
+                        <label>Booking Date</label>
+                        <input type="date" id="bookingDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="bookingNotes" placeholder="Special requirements..."></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="createBooking()">Create Booking</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Booking Actions</h3>
+                    <div class="form-group">
+                        <label>Booking ID</label>
+                        <input type="text" id="bookingId" placeholder="booking-uuid" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="getBooking()">Get Details</button>
+                        <button class="btn btn-danger" onclick="cancelBooking()">Cancel Booking</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-section">
+                    <h3>Vendor Booking Actions</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="acceptBooking()">Accept Booking</button>
+                        <button class="btn btn-danger" onclick="declineBooking()">Decline Booking</button>
+                        <button class="btn btn-primary" onclick="completeBooking()">Complete Booking</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOM TAB -->
+            <div id="custom-content" class="tab-content">
+                <div class="panel-section">
+                    <h3>Custom Request</h3>
+                    <div class="form-group">
+                        <label>Method</label>
+                        <select id="customMethod">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="PATCH">PATCH</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Endpoint</label>
+                        <input type="text" id="customEndpoint" placeholder="/auth/me" />
+                    </div>
+                    <div class="form-group">
+                        <label>Request Body (JSON)</label>
+                        <textarea id="customBody" placeholder='{"key": "value"}'></textarea>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="customUseAuth" checked />
+                        <label for="customUseAuth">Include Auth Token</label>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="sendCustomRequest()">Send Request</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="response-panel">
+            <div class="response-header">
+                <h2>Response</h2>
+                <div class="response-meta">
+                    <span class="status-badge" id="responseStatus">-</span>
+                    <span id="responseTime">-</span>
+                    <button class="btn-copy" onclick="copyResponse()">Copy</button>
+                </div>
+            </div>
+            <pre class="response-body" id="responseBody">Send a request to see the response here...</pre>
+        </section>
+
+        <div class="log-panel">
+            <h3>Request Log</h3>
+            <div id="requestLog"></div>
+        </div>
+    </main>
+
+    <script>
+        // State
+        let accessToken = localStorage.getItem('accessToken');
+        let refreshTokenValue = localStorage.getItem('refreshToken');
+        let userId = localStorage.getItem('userId');
+        let userEmail = localStorage.getItem('userEmail');
+        let userRole = localStorage.getItem('userRole');
+        let weddingId = localStorage.getItem('weddingId');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTokenStatus();
+            updateStoredData();
+            initTabs();
+        });
+
+        // Tab Management
+        function initTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab + '-content').classList.add('active');
+                });
+            });
+        }
+
+        // Token Management
+        function updateTokenStatus() {
+            const indicator = document.getElementById('tokenIndicator');
+            const label = document.getElementById('tokenLabel');
+            if (accessToken) {
+                indicator.classList.add('valid');
+                label.textContent = 'Valid';
+            } else {
+                indicator.classList.remove('valid');
+                label.textContent = 'No Token';
+            }
+        }
+
+        function updateStoredData() {
+            document.getElementById('storedUserId').textContent = userId || '-';
+            document.getElementById('storedEmail').textContent = userEmail || '-';
+            document.getElementById('storedRole').textContent = userRole || '-';
+            document.getElementById('storedWeddingId').textContent = weddingId || '-';
+        }
+
+        function clearToken() {
+            accessToken = null;
+            refreshTokenValue = null;
+            userId = null;
+            userEmail = null;
+            userRole = null;
+            weddingId = null;
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('weddingId');
+            updateTokenStatus();
+            updateStoredData();
+        }
+
+        function storeAuthData(data) {
+            if (data.accessToken || data.access_token || data.token) {
+                accessToken = data.accessToken || data.access_token || data.token;
+                localStorage.setItem('accessToken', accessToken);
+            }
+            if (data.refreshToken || data.refresh_token) {
+                refreshTokenValue = data.refreshToken || data.refresh_token;
+                localStorage.setItem('refreshToken', refreshTokenValue);
+            }
+            if (data.user) {
+                userId = data.user.id;
+                userEmail = data.user.email;
+                userRole = data.user.role;
+                localStorage.setItem('userId', userId);
+                localStorage.setItem('userEmail', userEmail);
+                localStorage.setItem('userRole', userRole);
+            }
+            updateTokenStatus();
+            updateStoredData();
+        }
+
+        function storeWeddingId(id) {
+            weddingId = id;
+            localStorage.setItem('weddingId', id);
+            updateStoredData();
+        }
+
+        // API Client
+        async function apiRequest(method, endpoint, data = null, useAuth = true) {
+            const baseUrl = document.getElementById('baseUrl').value;
+            const url = baseUrl + endpoint;
+            const startTime = Date.now();
+
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            if (useAuth && accessToken) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+
+            const options = {
+                method,
+                headers
+            };
+
+            if (data && method !== 'GET') {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const elapsed = Date.now() - startTime;
+                let responseData;
+
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    responseData = await response.json();
+                } else {
+                    responseData = await response.text();
+                }
+
+                displayResponse(response.status, responseData, elapsed);
+                addLogEntry(method, endpoint, response.status, elapsed);
+
+                return { status: response.status, data: responseData };
+            } catch (error) {
+                const elapsed = Date.now() - startTime;
+                displayResponse(0, { error: error.message }, elapsed);
+                addLogEntry(method, endpoint, 'ERR', elapsed);
+                return { status: 0, data: { error: error.message } };
+            }
+        }
+
+        // Display Functions
+        function displayResponse(status, data, time) {
+            const statusBadge = document.getElementById('responseStatus');
+            const responseTime = document.getElementById('responseTime');
+            const responseBody = document.getElementById('responseBody');
+
+            statusBadge.textContent = status || 'Error';
+            statusBadge.className = 'status-badge';
+            if (status >= 200 && status < 300) {
+                statusBadge.classList.add('status-2xx');
+            } else if (status >= 400 && status < 500) {
+                statusBadge.classList.add('status-4xx');
+            } else {
+                statusBadge.classList.add('status-5xx');
+            }
+
+            responseTime.textContent = `${time}ms`;
+
+            if (typeof data === 'object') {
+                responseBody.innerHTML = syntaxHighlight(JSON.stringify(data, null, 2));
+            } else {
+                responseBody.textContent = data;
+            }
+        }
+
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        function addLogEntry(method, endpoint, status, time) {
+            const log = document.getElementById('requestLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+
+            const statusClass = (status >= 200 && status < 300) ? 'success' : 'error';
+
+            entry.innerHTML = `
+                <span class="log-method ${method}">${method}</span>
+                <span>${endpoint}</span>
+                <span class="log-status ${statusClass}">${status}</span>
+                <span class="log-time">(${time}ms)</span>
+            `;
+
+            log.insertBefore(entry, log.firstChild);
+
+            // Keep only last 20 entries
+            while (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        function copyResponse() {
+            const responseBody = document.getElementById('responseBody');
+            navigator.clipboard.writeText(responseBody.textContent);
+        }
+
+        // ============ AUTH ENDPOINTS ============
+        async function register() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const phone = document.getElementById('regPhone').value;
+            const userType = document.getElementById('regUserType').value;
+
+            const data = { email, password, userType };
+            if (phone) data.phone = phone;
+
+            const result = await apiRequest('POST', '/auth/register', data, false);
+
+            if (result.status >= 200 && result.status < 300 && result.data) {
+                storeAuthData(result.data);
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const result = await apiRequest('POST', '/auth/login', {
+                email, password
+            }, false);
+
+            if (result.status >= 200 && result.status < 300 && result.data) {
+                storeAuthData(result.data);
+            }
+        }
+
+        async function getProfile() {
+            const result = await apiRequest('GET', '/auth/me');
+            if (result.status >= 200 && result.status < 300 && result.data) {
+                if (result.data.user) {
+                    userId = result.data.user.id;
+                    userEmail = result.data.user.email;
+                    userRole = result.data.user.role;
+                    localStorage.setItem('userId', userId);
+                    localStorage.setItem('userEmail', userEmail);
+                    localStorage.setItem('userRole', userRole);
+                    updateStoredData();
+                }
+            }
+        }
+
+        async function refreshToken() {
+            const result = await apiRequest('POST', '/auth/refresh', {
+                refreshToken: refreshTokenValue
+            }, false);
+
+            if (result.status >= 200 && result.status < 300 && result.data) {
+                storeAuthData(result.data);
+            }
+        }
+
+        // ============ WEDDING ENDPOINTS ============
+        async function getMyWedding() {
+            const result = await apiRequest('GET', '/weddings/me');
+            if (result.status >= 200 && result.status < 300 && result.data) {
+                const wedding = result.data.wedding || result.data.data || result.data;
+                if (wedding && wedding.id) {
+                    storeWeddingId(wedding.id);
+                }
+            }
+        }
+
+        async function createWedding() {
+            const data = {
+                title: document.getElementById('weddingTitle').value,
+                partner1Name: document.getElementById('partner1Name').value,
+                partner2Name: document.getElementById('partner2Name').value,
+                date: document.getElementById('weddingDate').value,
+                budget: parseFloat(document.getElementById('weddingBudget').value) || 0,
+                venue: document.getElementById('weddingVenue').value
+            };
+
+            const result = await apiRequest('POST', '/weddings', data);
+            if (result.status >= 200 && result.status < 300 && result.data) {
+                const wedding = result.data.wedding || result.data.data || result.data;
+                if (wedding && wedding.id) {
+                    storeWeddingId(wedding.id);
+                }
+            }
+        }
+
+        async function updateWedding() {
+            const id = document.getElementById('updateWeddingId').value || weddingId;
+            if (!id) {
+                alert('No wedding ID available');
+                return;
+            }
+
+            let data;
+            try {
+                data = JSON.parse(document.getElementById('updateWeddingData').value);
+            } catch (e) {
+                alert('Invalid JSON');
+                return;
+            }
+
+            await apiRequest('PUT', `/weddings/${id}`, data);
+        }
+
+        async function getBudgetSummary() {
+            await apiRequest('GET', '/weddings/me/budget/summary');
+        }
+
+        // ============ TASK ENDPOINTS ============
+        async function listTasks() {
+            await apiRequest('GET', '/weddings/me/tasks');
+        }
+
+        async function getTaskStats() {
+            await apiRequest('GET', '/weddings/me/tasks/stats');
+        }
+
+        async function createTask() {
+            const data = {
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                dueDate: document.getElementById('taskDueDate').value,
+                category: document.getElementById('taskCategory').value,
+                priority: document.getElementById('taskPriority').value,
+                status: document.getElementById('taskStatus').value
+            };
+
+            await apiRequest('POST', '/weddings/me/tasks', data);
+        }
+
+        async function getTask() {
+            const taskId = document.getElementById('taskId').value;
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+            await apiRequest('GET', `/weddings/me/tasks/${taskId}`);
+        }
+
+        async function updateTask() {
+            const taskId = document.getElementById('taskId').value;
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+
+            let data;
+            try {
+                data = JSON.parse(document.getElementById('updateTaskData').value);
+            } catch (e) {
+                alert('Invalid JSON');
+                return;
+            }
+
+            await apiRequest('PUT', `/weddings/me/tasks/${taskId}`, data);
+        }
+
+        async function deleteTask() {
+            const taskId = document.getElementById('taskId').value;
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+            await apiRequest('DELETE', `/weddings/me/tasks/${taskId}`);
+        }
+
+        // ============ GUEST ENDPOINTS ============
+        function getGuestWeddingId() {
+            return document.getElementById('guestWeddingId').value || weddingId;
+        }
+
+        async function listGuests() {
+            const id = getGuestWeddingId();
+            if (!id) {
+                alert('No wedding ID available');
+                return;
+            }
+            await apiRequest('GET', `/weddings/${id}/guests`);
+        }
+
+        async function addGuest() {
+            const id = getGuestWeddingId();
+            if (!id) {
+                alert('No wedding ID available');
+                return;
+            }
+
+            const data = {
+                name: document.getElementById('guestName').value,
+                email: document.getElementById('guestEmail').value,
+                phone: document.getElementById('guestPhone').value,
+                rsvpStatus: document.getElementById('guestRsvp').value,
+                plusOnes: parseInt(document.getElementById('guestPlusOnes').value) || 0,
+                dietaryRequirements: document.getElementById('guestDietary').value
+            };
+
+            await apiRequest('POST', `/weddings/${id}/guests`, data);
+        }
+
+        async function getGuest() {
+            const wId = getGuestWeddingId();
+            const gId = document.getElementById('guestId').value;
+            if (!wId || !gId) {
+                alert('Please provide wedding ID and guest ID');
+                return;
+            }
+            await apiRequest('GET', `/weddings/${wId}/guests/${gId}`);
+        }
+
+        async function updateGuest() {
+            const wId = getGuestWeddingId();
+            const gId = document.getElementById('guestId').value;
+            if (!wId || !gId) {
+                alert('Please provide wedding ID and guest ID');
+                return;
+            }
+
+            let data;
+            try {
+                data = JSON.parse(document.getElementById('updateGuestData').value);
+            } catch (e) {
+                alert('Invalid JSON');
+                return;
+            }
+
+            await apiRequest('PUT', `/weddings/${wId}/guests/${gId}`, data);
+        }
+
+        async function deleteGuest() {
+            const wId = getGuestWeddingId();
+            const gId = document.getElementById('guestId').value;
+            if (!wId || !gId) {
+                alert('Please provide wedding ID and guest ID');
+                return;
+            }
+            await apiRequest('DELETE', `/weddings/${wId}/guests/${gId}`);
+        }
+
+        // ============ BUDGET ENDPOINTS ============
+        function getBudgetWeddingId() {
+            return document.getElementById('budgetWeddingId').value || weddingId;
+        }
+
+        async function getBudget() {
+            const id = getBudgetWeddingId();
+            if (!id) {
+                alert('No wedding ID available');
+                return;
+            }
+            await apiRequest('GET', `/weddings/${id}/budget`);
+        }
+
+        async function addExpense() {
+            const id = getBudgetWeddingId();
+            if (!id) {
+                alert('No wedding ID available');
+                return;
+            }
+
+            const data = {
+                category: document.getElementById('expenseCategory').value,
+                description: document.getElementById('expenseDescription').value,
+                estimatedCost: parseFloat(document.getElementById('expenseEstimated').value) || 0,
+                actualCost: parseFloat(document.getElementById('expenseActual').value) || 0,
+                vendorName: document.getElementById('expenseVendor').value,
+                paid: document.getElementById('expensePaid').checked
+            };
+
+            await apiRequest('POST', `/weddings/${id}/budget`, data);
+        }
+
+        async function updateExpense() {
+            const wId = getBudgetWeddingId();
+            const itemId = document.getElementById('budgetItemId').value;
+            if (!wId || !itemId) {
+                alert('Please provide wedding ID and budget item ID');
+                return;
+            }
+
+            let data;
+            try {
+                data = JSON.parse(document.getElementById('updateExpenseData').value);
+            } catch (e) {
+                alert('Invalid JSON');
+                return;
+            }
+
+            await apiRequest('PUT', `/weddings/${wId}/budget/${itemId}`, data);
+        }
+
+        async function deleteExpense() {
+            const wId = getBudgetWeddingId();
+            const itemId = document.getElementById('budgetItemId').value;
+            if (!wId || !itemId) {
+                alert('Please provide wedding ID and budget item ID');
+                return;
+            }
+            await apiRequest('DELETE', `/weddings/${wId}/budget/${itemId}`);
+        }
+
+        // ============ VENDOR ENDPOINTS ============
+        async function listCategories() {
+            await apiRequest('GET', '/categories', null, false);
+        }
+
+        async function listVendors() {
+            await apiRequest('GET', '/vendors', null, false);
+        }
+
+        async function searchVendors() {
+            const search = document.getElementById('vendorSearch').value;
+            const category = document.getElementById('vendorCategoryFilter').value;
+            let query = '/vendors?';
+            if (search) query += `search=${encodeURIComponent(search)}&`;
+            if (category) query += `categoryId=${encodeURIComponent(category)}&`;
+            await apiRequest('GET', query.slice(0, -1), null, false);
+        }
+
+        async function getVendor() {
+            const id = document.getElementById('vendorId').value;
+            if (!id) {
+                alert('Please enter a vendor ID');
+                return;
+            }
+            await apiRequest('GET', `/vendors/${id}`, null, false);
+        }
+
+        async function getVendorPackages() {
+            const id = document.getElementById('vendorId').value;
+            if (!id) {
+                alert('Please enter a vendor ID');
+                return;
+            }
+            await apiRequest('GET', `/vendors/${id}/packages`, null, false);
+        }
+
+        async function getVendorReviews() {
+            const id = document.getElementById('vendorId').value;
+            if (!id) {
+                alert('Please enter a vendor ID');
+                return;
+            }
+            await apiRequest('GET', `/vendors/${id}/reviews`, null, false);
+        }
+
+        async function registerVendor() {
+            const data = {
+                businessName: document.getElementById('vendorBusinessName').value,
+                categoryId: document.getElementById('vendorCategoryId').value,
+                description: document.getElementById('vendorDescription').value,
+                basePrice: parseFloat(document.getElementById('vendorBasePrice').value) || 0,
+                location: document.getElementById('vendorLocation').value
+            };
+
+            await apiRequest('POST', '/vendors/register', data);
+        }
+
+        async function getVendorDashboard() {
+            await apiRequest('GET', '/vendors/me/dashboard');
+        }
+
+        async function getMyVendorProfile() {
+            await apiRequest('GET', '/vendors/me');
+        }
+
+        async function updateVendorProfile() {
+            let data;
+            try {
+                data = JSON.parse(document.getElementById('updateVendorProfile').value);
+            } catch (e) {
+                alert('Invalid JSON');
+                return;
+            }
+            await apiRequest('PUT', '/vendors/me', data);
+        }
+
+        async function createPackage() {
+            const data = {
+                name: document.getElementById('packageName').value,
+                description: document.getElementById('packageDescription').value,
+                price: parseFloat(document.getElementById('packagePrice').value) || 0
+            };
+
+            await apiRequest('POST', '/vendors/me/packages', data);
+        }
+
+        async function updatePackage() {
+            const pkgId = document.getElementById('packageId').value;
+            if (!pkgId) {
+                alert('Please enter a package ID');
+                return;
+            }
+
+            let data;
+            try {
+                data = JSON.parse(document.getElementById('updatePackageData').value);
+            } catch (e) {
+                alert('Invalid JSON');
+                return;
+            }
+
+            await apiRequest('PUT', `/vendors/me/packages/${pkgId}`, data);
+        }
+
+        // ============ BOOKING ENDPOINTS ============
+        async function listMyBookings() {
+            await apiRequest('GET', '/bookings/my-bookings');
+        }
+
+        async function createBooking() {
+            const data = {
+                vendorId: document.getElementById('bookingVendorId').value,
+                packageId: document.getElementById('bookingPackageId').value || undefined,
+                bookingDate: document.getElementById('bookingDate').value,
+                notes: document.getElementById('bookingNotes').value
+            };
+
+            if (!data.packageId) delete data.packageId;
+
+            await apiRequest('POST', '/bookings', data);
+        }
+
+        async function getBooking() {
+            const id = document.getElementById('bookingId').value;
+            if (!id) {
+                alert('Please enter a booking ID');
+                return;
+            }
+            await apiRequest('GET', `/bookings/${id}`);
+        }
+
+        async function cancelBooking() {
+            const id = document.getElementById('bookingId').value;
+            if (!id) {
+                alert('Please enter a booking ID');
+                return;
+            }
+            await apiRequest('DELETE', `/bookings/${id}`);
+        }
+
+        async function acceptBooking() {
+            const id = document.getElementById('bookingId').value;
+            if (!id) {
+                alert('Please enter a booking ID');
+                return;
+            }
+            await apiRequest('POST', `/bookings/${id}/accept`);
+        }
+
+        async function declineBooking() {
+            const id = document.getElementById('bookingId').value;
+            if (!id) {
+                alert('Please enter a booking ID');
+                return;
+            }
+            await apiRequest('POST', `/bookings/${id}/decline`);
+        }
+
+        async function completeBooking() {
+            const id = document.getElementById('bookingId').value;
+            if (!id) {
+                alert('Please enter a booking ID');
+                return;
+            }
+            await apiRequest('POST', `/bookings/${id}/complete`);
+        }
+
+        // ============ CUSTOM REQUEST ============
+        async function sendCustomRequest() {
+            const method = document.getElementById('customMethod').value;
+            const endpoint = document.getElementById('customEndpoint').value;
+            const useAuth = document.getElementById('customUseAuth').checked;
+
+            let body = null;
+            const bodyText = document.getElementById('customBody').value.trim();
+            if (bodyText && method !== 'GET') {
+                try {
+                    body = JSON.parse(bodyText);
+                } catch (e) {
+                    alert('Invalid JSON in request body');
+                    return;
+                }
+            }
+
+            await apiRequest(method, endpoint, body, useAuth);
+        }
+    </script>
+</body>
+</html>
