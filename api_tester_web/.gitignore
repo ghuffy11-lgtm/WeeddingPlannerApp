@@ -1,0 +1,12 @@
+# Flutter build outputs
+build/
+.dart_tool/
+.packages
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Miscellaneous
+*.log
