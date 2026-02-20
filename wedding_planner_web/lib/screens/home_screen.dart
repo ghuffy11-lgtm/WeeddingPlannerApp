@@ -11,10 +11,8 @@ import 'bookings_screen.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  // Global key to access state from anywhere
   static final GlobalKey<_HomeScreenState> homeKey = GlobalKey<_HomeScreenState>();
 
-  // Static method to set tab index from other screens
   static void setTabIndex(BuildContext context, int index) {
     homeKey.currentState?.setTabIndex(index);
   }
@@ -26,94 +24,121 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  // Method to set tab index from external calls
   void setTabIndex(int index) {
-    if (mounted) {
+    if (mounted && index >= 0 && index < _destinations.length) {
       setState(() => _selectedIndex = index);
     }
   }
 
-  final List<NavigationItem> _items = [
-    NavigationItem(icon: Icons.dashboard, label: 'Dashboard'),
-    NavigationItem(icon: Icons.task_alt, label: 'Tasks'),
-    NavigationItem(icon: Icons.people, label: 'Guests'),
-    NavigationItem(icon: Icons.account_balance_wallet, label: 'Budget'),
-    NavigationItem(icon: Icons.store, label: 'Vendors'),
-    NavigationItem(icon: Icons.calendar_month, label: 'Bookings'),
+  static const List<_NavDestination> _destinations = [
+    _NavDestination(icon: Icons.dashboard, label: 'Dashboard'),
+    _NavDestination(icon: Icons.task_alt, label: 'Tasks'),
+    _NavDestination(icon: Icons.people, label: 'Guests'),
+    _NavDestination(icon: Icons.account_balance_wallet, label: 'Budget'),
+    _NavDestination(icon: Icons.store, label: 'Vendors'),
+    _NavDestination(icon: Icons.calendar_month, label: 'Bookings'),
   ];
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final isWide = MediaQuery.of(context).size.width > 800;
+    final wedding = auth.wedding;
+    final partnerNames = wedding != null
+        ? '${wedding['partner1_name'] ?? ''} & ${wedding['partner2_name'] ?? ''}'
+        : null;
 
     return Scaffold(
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.favorite, color: Theme.of(context).primaryColor),
+            Icon(Icons.favorite, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 8),
             const Text('Wedding Planner'),
           ],
         ),
         actions: [
-          if (auth.wedding != null)
+          if (partnerNames != null && isWide)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
-                  '${auth.wedding!['partner1_name'] ?? ''} & ${auth.wedding!['partner2_name'] ?? ''}',
-                  style: Theme.of(context).textTheme.titleSmall,
+                  partnerNames,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                 ),
               ),
             ),
           PopupMenuButton<String>(
-            icon: const CircleAvatar(child: Icon(Icons.person)),
+            icon: CircleAvatar(
+              backgroundColor:
+                  Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              child: Icon(
+                Icons.person,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
             onSelected: (value) {
               if (value == 'logout') auth.logout();
             },
             itemBuilder: (context) => [
               PopupMenuItem<String>(
                 enabled: false,
-                child: ListTile(
-                  leading: const Icon(Icons.email),
-                  title: Text(auth.email ?? ''),
-                  contentPadding: EdgeInsets.zero,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      auth.email ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    if (partnerNames != null)
+                      Text(
+                        partnerNames,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                  ],
                 ),
               ),
               const PopupMenuDivider(),
               const PopupMenuItem<String>(
                 value: 'logout',
-                child: ListTile(
-                  leading: Icon(Icons.logout, color: Colors.red),
-                  title: Text('Sign Out', style: TextStyle(color: Colors.red)),
-                  contentPadding: EdgeInsets.zero,
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.red, size: 20),
+                    SizedBox(width: 12),
+                    Text('Sign Out', style: TextStyle(color: Colors.red)),
+                  ],
                 ),
               ),
             ],
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Row(
         children: [
-          // Side Navigation (for wide screens)
-          if (isWide)
+          if (isWide) ...[
             NavigationRail(
               selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+              onDestinationSelected: (index) =>
+                  setState(() => _selectedIndex = index),
               labelType: NavigationRailLabelType.all,
               backgroundColor: Colors.white,
-              destinations: _items
-                  .map((item) => NavigationRailDestination(
-                        icon: Icon(item.icon),
-                        selectedIcon: Icon(item.icon, color: Theme.of(context).primaryColor),
-                        label: Text(item.label),
+              destinations: _destinations
+                  .map((d) => NavigationRailDestination(
+                        icon: Icon(d.icon),
+                        selectedIcon: Icon(
+                          d.icon,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        label: Text(d.label),
                       ))
                   .toList(),
             ),
-          if (isWide) const VerticalDivider(width: 1),
-          // Main Content
+            const VerticalDivider(width: 1),
+          ],
           Expanded(
             child: IndexedStack(
               index: _selectedIndex,
@@ -129,16 +154,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      // Bottom Navigation (for narrow screens)
       bottomNavigationBar: isWide
           ? null
           : NavigationBar(
               selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) => setState(() => _selectedIndex = index),
-              destinations: _items
-                  .map((item) => NavigationDestination(
-                        icon: Icon(item.icon),
-                        label: item.label,
+              onDestinationSelected: (index) =>
+                  setState(() => _selectedIndex = index),
+              destinations: _destinations
+                  .map((d) => NavigationDestination(
+                        icon: Icon(d.icon),
+                        label: d.label,
                       ))
                   .toList(),
             ),
@@ -146,9 +171,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class NavigationItem {
+class _NavDestination {
   final IconData icon;
   final String label;
 
-  NavigationItem({required this.icon, required this.label});
+  const _NavDestination({required this.icon, required this.label});
 }

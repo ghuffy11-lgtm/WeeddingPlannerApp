@@ -1,6 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/snackbar_helper.dart';
+import '../widgets/loading_state.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/vendor_card.dart';
 import 'home_screen.dart';
 
 class VendorsScreen extends StatefulWidget {
@@ -11,11 +16,12 @@ class VendorsScreen extends StatefulWidget {
 }
 
 class _VendorsScreenState extends State<VendorsScreen> {
-  List<dynamic> _vendors = [];
-  List<dynamic> _categories = [];
+  List<Map<String, dynamic>> _vendors = [];
+  List<Map<String, dynamic>> _categories = [];
   bool _isLoading = true;
-  String? _selectedCategory;
+  String? _selectedCategoryId;
   final _searchController = TextEditingController();
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -26,6 +32,7 @@ class _VendorsScreenState extends State<VendorsScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -33,23 +40,32 @@ class _VendorsScreenState extends State<VendorsScreen> {
     setState(() => _isLoading = true);
     final auth = context.read<AuthProvider>();
 
-    final categoriesResponse = await auth.api.getCategories();
-    final vendorsResponse = await auth.api.getVendors(
-      search: _searchController.text.isNotEmpty ? _searchController.text : null,
-      categoryId: _selectedCategory,
-    );
+    final results = await Future.wait([
+      auth.api.getCategories(),
+      auth.api.getVendors(
+        search: _searchController.text.isNotEmpty ? _searchController.text : null,
+        categoryId: _selectedCategoryId,
+      ),
+    ]);
 
     if (mounted) {
       setState(() {
-        if (categoriesResponse.isSuccess) {
-          _categories = categoriesResponse.responseData ?? [];
+        if (results[0].isSuccess) {
+          _categories = List<Map<String, dynamic>>.from(results[0].responseData ?? []);
         }
-        if (vendorsResponse.isSuccess) {
-          _vendors = vendorsResponse.responseData ?? [];
+        if (results[1].isSuccess) {
+          _vendors = List<Map<String, dynamic>>.from(results[1].responseData ?? []);
         }
         _isLoading = false;
       });
     }
+  }
+
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _loadData();
+    });
   }
 
   void _showVendorDetails(Map<String, dynamic> vendor) {
@@ -60,116 +76,6 @@ class _VendorsScreenState extends State<VendorsScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => _VendorDetailsSheet(vendor: vendor),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search vendors...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _loadData();
-                        },
-                      )
-                    : null,
-              ),
-              onSubmitted: (_) => _loadData(),
-            ),
-          ),
-          // Category Chips
-          SizedBox(
-            height: 50,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _categories.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: const Text('All'),
-                      selected: _selectedCategory == null,
-                      onSelected: (_) {
-                        setState(() => _selectedCategory = null);
-                        _loadData();
-                      },
-                    ),
-                  );
-                }
-                final category = _categories[index - 1];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    avatar: Icon(_getCategoryIcon(category['icon']), size: 18),
-                    label: Text(category['name'] ?? ''),
-                    selected: _selectedCategory == category['id'],
-                    onSelected: (_) {
-                      setState(() => _selectedCategory = _selectedCategory == category['id'] ? null : category['id']);
-                      _loadData();
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Vendor Grid
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _vendors.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.store, size: 64, color: Colors.grey[400]),
-                            const SizedBox(height: 16),
-                            Text('No vendors found', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey)),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadData,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final crossAxisCount = constraints.maxWidth > 1200 ? 4 : constraints.maxWidth > 800 ? 3 : 2;
-                            return GridView.builder(
-                              padding: const EdgeInsets.all(16),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossAxisCount,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: 0.85,
-                              ),
-                              itemCount: _vendors.length,
-                              itemBuilder: (context, index) {
-                                final vendor = _vendors[index];
-                                return _VendorCard(
-                                  vendor: vendor,
-                                  onTap: () => _showVendorDetails(vendor),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -192,83 +98,121 @@ class _VendorsScreenState extends State<VendorsScreen> {
       default: return Icons.store;
     }
   }
-}
-
-class _VendorCard extends StatelessWidget {
-  final Map<String, dynamic> vendor;
-  final VoidCallback onTap;
-
-  const _VendorCard({required this.vendor, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final rating = double.tryParse(vendor['rating_avg']?.toString() ?? '0') ?? 0;
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image placeholder
-            Container(
-              height: 120,
-              width: double.infinity,
-              color: Colors.pink[50],
-              child: Center(
-                child: Icon(
-                  Icons.store,
-                  size: 48,
-                  color: Theme.of(context).primaryColor.withOpacity(0.5),
-                ),
-              ),
-            ),
-            Expanded(
+    return Scaffold(
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      vendor['business_name'] ?? '',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    if (vendor['category'] != null)
-                      Text(
-                        vendor['category']['name'] ?? '',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                      ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Icon(Icons.star, size: 16, color: Colors.amber[700]),
-                        const SizedBox(width: 4),
-                        Text(
-                          rating.toStringAsFixed(1),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          ' (${vendor['review_count'] ?? 0})',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                        ),
-                        const Spacer(),
-                        Text(
-                          vendor['price_range'] ?? '',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search vendors...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              _loadData();
+                            },
+                          )
+                        : null,
+                  ),
+                  onChanged: _onSearchChanged,
                 ),
               ),
             ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 50,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _categories.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: const Text('All'),
+                          selected: _selectedCategoryId == null,
+                          onSelected: (_) {
+                            setState(() => _selectedCategoryId = null);
+                            _loadData();
+                          },
+                        ),
+                      );
+                    }
+                    final category = _categories[index - 1];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        avatar: Icon(_getCategoryIcon(category['icon']), size: 18),
+                        label: Text(category['name'] ?? ''),
+                        selected: _selectedCategoryId == category['id'],
+                        onSelected: (_) {
+                          setState(() {
+                            _selectedCategoryId = _selectedCategoryId == category['id']
+                                ? null
+                                : category['id'];
+                          });
+                          _loadData();
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            if (_isLoading)
+              const SliverFillRemaining(child: LoadingState())
+            else if (_vendors.isEmpty)
+              SliverFillRemaining(
+                child: EmptyState(
+                  icon: Icons.store,
+                  title: 'No vendors found',
+                  subtitle: 'Try adjusting your search or filters',
+                ),
+              )
+            else
+              SliverLayoutBuilder(
+                builder: (context, constraints) {
+                  final crossAxisCount = constraints.crossAxisExtent > 1200
+                      ? 4
+                      : constraints.crossAxisExtent > 800
+                          ? 3
+                          : 2;
+                  return SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverGrid(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 0.85,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final vendor = _vendors[index];
+                          return VendorCard(
+                            vendor: vendor,
+                            onTap: () => _showVendorDetails(vendor),
+                          );
+                        },
+                        childCount: _vendors.length,
+                      ),
+                    ),
+                  );
+                },
+              ),
           ],
         ),
       ),
@@ -286,7 +230,7 @@ class _VendorDetailsSheet extends StatefulWidget {
 }
 
 class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
-  List<dynamic> _packages = [];
+  List<Map<String, dynamic>> _packages = [];
   bool _isLoading = true;
 
   @override
@@ -298,25 +242,25 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
   Future<void> _loadPackages() async {
     final auth = context.read<AuthProvider>();
     final response = await auth.api.getVendorPackages(widget.vendor['id']);
-    if (response.isSuccess && mounted) {
+
+    if (mounted) {
       setState(() {
-        _packages = response.responseData ?? [];
+        if (response.isSuccess) {
+          _packages = List<Map<String, dynamic>>.from(response.responseData ?? []);
+        }
         _isLoading = false;
       });
-    } else {
-      setState(() => _isLoading = false);
     }
   }
 
   Future<void> _bookVendor(String? packageId) async {
     final auth = context.read<AuthProvider>();
 
-    // Get wedding date from auth provider (set during onboarding)
     DateTime initialDate = DateTime.now().add(const Duration(days: 30));
     if (auth.wedding?['wedding_date'] != null) {
       final weddingDate = DateTime.tryParse(auth.wedding!['wedding_date'].toString());
       if (weddingDate != null && weddingDate.isAfter(DateTime.now())) {
-        initialDate = weddingDate; // Use wedding date as default
+        initialDate = weddingDate;
       }
     }
 
@@ -327,7 +271,7 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
       lastDate: DateTime.now().add(const Duration(days: 1095)),
     );
 
-    if (date == null) return;
+    if (date == null || !mounted) return;
 
     final response = await auth.api.createBooking({
       'vendorId': widget.vendor['id'],
@@ -336,24 +280,12 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
     });
 
     if (mounted) {
-      Navigator.pop(context); // Close vendor details sheet
+      Navigator.pop(context);
       if (response.isSuccess) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Booking request sent! Check Bookings tab.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        // Navigate to Bookings tab (index 5)
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        SnackBarHelper.showSuccess(context, 'Booking request sent!');
         HomeScreen.setTabIndex(context, 5);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response.errorMessage ?? 'Failed to book'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarHelper.showError(context, response.errorMessage ?? 'Failed to book');
       }
     }
   }
@@ -361,6 +293,8 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
   @override
   Widget build(BuildContext context) {
     final rating = double.tryParse(widget.vendor['rating_avg']?.toString() ?? '0') ?? 0;
+    final category = widget.vendor['category'];
+    final categoryName = category is Map ? category['name'] : category?.toString();
 
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
@@ -373,7 +307,6 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Center(
               child: Container(
                 width: 40,
@@ -387,7 +320,9 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
             ),
             Text(
               widget.vendor['business_name'] ?? '',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Row(
@@ -396,7 +331,9 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
                 const SizedBox(width: 4),
                 Text(
                   rating.toStringAsFixed(1),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 Text(' (${widget.vendor['review_count'] ?? 0} reviews)'),
                 const Spacer(),
@@ -408,9 +345,16 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
                   ),
               ],
             ),
+            if (categoryName != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                categoryName,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ],
             const SizedBox(height: 16),
             if (widget.vendor['description'] != null)
-              Text(widget.vendor['description'], style: Theme.of(context).textTheme.bodyLarge),
+              Text(widget.vendor['description']),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -426,10 +370,11 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
               ],
             ),
             const SizedBox(height: 24),
-            // Packages
             Text(
               'Packages',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 12),
             if (_isLoading)
@@ -451,7 +396,7 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
                 ),
               )
             else
-              ...(_packages.map((pkg) => Card(
+              ..._packages.map((pkg) => Card(
                     margin: const EdgeInsets.only(bottom: 12),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -461,16 +406,20 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                pkg['name'] ?? '',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              Expanded(
+                                child: Text(
+                                  pkg['name'] ?? '',
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
                               ),
                               Text(
                                 '\$${pkg['price'] ?? 0}',
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
                             ],
                           ),
@@ -489,7 +438,7 @@ class _VendorDetailsSheetState extends State<_VendorDetailsSheet> {
                         ],
                       ),
                     ),
-                  ))),
+                  )),
           ],
         ),
       ),

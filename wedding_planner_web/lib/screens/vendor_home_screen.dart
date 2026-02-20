@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/snackbar_helper.dart';
+import '../widgets/loading_state.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/stat_card.dart';
+import '../widgets/status_badge.dart';
+import '../widgets/booking_card.dart';
 
 class VendorHomeScreen extends StatefulWidget {
   const VendorHomeScreen({super.key});
@@ -12,75 +18,111 @@ class VendorHomeScreen extends StatefulWidget {
 class _VendorHomeScreenState extends State<VendorHomeScreen> {
   int _selectedIndex = 0;
 
+  static const List<_NavDestination> _destinations = [
+    _NavDestination(icon: Icons.dashboard, label: 'Dashboard'),
+    _NavDestination(icon: Icons.inbox, label: 'Requests'),
+    _NavDestination(icon: Icons.calendar_month, label: 'Bookings'),
+    _NavDestination(icon: Icons.inventory_2, label: 'Packages'),
+    _NavDestination(icon: Icons.settings, label: 'Profile'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final vendor = auth.vendor;
+    final isWide = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.store, color: Theme.of(context).primaryColor),
+            Icon(Icons.store, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 8),
             const Text('Vendor Dashboard'),
           ],
         ),
         actions: [
-          if (auth.vendor != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                child: Row(
-                  children: [
-                    Text(auth.vendor!['business_name'] ?? ''),
-                    const SizedBox(width: 8),
-                    _StatusBadge(status: auth.vendor!['status'] ?? 'pending'),
-                  ],
-                ),
+          if (vendor != null && isWide) ...[
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    vendor['business_name'] ?? '',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(width: 8),
+                  _VendorStatusBadge(status: vendor['status'] ?? 'pending'),
+                ],
               ),
             ),
+            const SizedBox(width: 16),
+          ],
           PopupMenuButton<String>(
-            icon: const CircleAvatar(child: Icon(Icons.person)),
+            icon: CircleAvatar(
+              backgroundColor:
+                  Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              child: Icon(
+                Icons.person,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
             onSelected: (value) {
               if (value == 'logout') auth.logout();
             },
             itemBuilder: (context) => [
               PopupMenuItem<String>(
                 enabled: false,
-                child: ListTile(
-                  leading: const Icon(Icons.email),
-                  title: Text(auth.email ?? ''),
-                  contentPadding: EdgeInsets.zero,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      auth.email ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    if (vendor != null)
+                      Text(
+                        vendor['business_name'] ?? '',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                  ],
                 ),
               ),
               const PopupMenuDivider(),
               const PopupMenuItem<String>(
                 value: 'logout',
-                child: ListTile(
-                  leading: Icon(Icons.logout, color: Colors.red),
-                  title: Text('Sign Out', style: TextStyle(color: Colors.red)),
-                  contentPadding: EdgeInsets.zero,
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.red, size: 20),
+                    SizedBox(width: 12),
+                    Text('Sign Out', style: TextStyle(color: Colors.red)),
+                  ],
                 ),
               ),
             ],
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Row(
         children: [
           NavigationRail(
             selectedIndex: _selectedIndex,
-            onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+            onDestinationSelected: (index) =>
+                setState(() => _selectedIndex = index),
             labelType: NavigationRailLabelType.all,
             backgroundColor: Colors.white,
-            destinations: const [
-              NavigationRailDestination(icon: Icon(Icons.dashboard), label: Text('Dashboard')),
-              NavigationRailDestination(icon: Icon(Icons.inbox), label: Text('Requests')),
-              NavigationRailDestination(icon: Icon(Icons.calendar_month), label: Text('Bookings')),
-              NavigationRailDestination(icon: Icon(Icons.inventory_2), label: Text('Packages')),
-              NavigationRailDestination(icon: Icon(Icons.settings), label: Text('Profile')),
-            ],
+            destinations: _destinations
+                .map((d) => NavigationRailDestination(
+                      icon: Icon(d.icon),
+                      selectedIcon: Icon(
+                        d.icon,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      label: Text(d.label),
+                    ))
+                .toList(),
           ),
           const VerticalDivider(width: 1),
           Expanded(
@@ -101,10 +143,17 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
+class _NavDestination {
+  final IconData icon;
+  final String label;
+
+  const _NavDestination({required this.icon, required this.label});
+}
+
+class _VendorStatusBadge extends StatelessWidget {
   final String status;
 
-  const _StatusBadge({required this.status});
+  const _VendorStatusBadge({required this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +181,11 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         status.toUpperCase(),
-        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
       ),
     );
   }
@@ -153,22 +206,26 @@ class _VendorDashboardState extends State<_VendorDashboard> {
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    _loadData();
   }
 
-  Future<void> _loadStats() async {
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
     final auth = context.read<AuthProvider>();
-    final requestsResponse = await auth.api.getVendorRequests();
-    final bookingsResponse = await auth.api.getVendorBookings();
+
+    final results = await Future.wait([
+      auth.api.getVendorRequests(),
+      auth.api.getVendorBookings(),
+    ]);
 
     if (mounted) {
       setState(() {
-        if (requestsResponse.isSuccess) {
-          final data = requestsResponse.responseData;
+        if (results[0].isSuccess) {
+          final data = results[0].responseData;
           _pendingRequests = data is List ? data.length : 0;
         }
-        if (bookingsResponse.isSuccess) {
-          final data = bookingsResponse.responseData;
+        if (results[1].isSuccess) {
+          final data = results[1].responseData;
           _activeBookings = data is List ? data.length : (data?['total'] ?? 0);
         }
         _isLoading = false;
@@ -180,9 +237,10 @@ class _VendorDashboardState extends State<_VendorDashboard> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final vendor = auth.vendor;
+    final isApproved = vendor?['status'] == 'approved';
 
     return RefreshIndicator(
-      onRefresh: _loadStats,
+      onRefresh: _loadData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(24),
@@ -191,14 +249,18 @@ class _VendorDashboardState extends State<_VendorDashboard> {
           children: [
             Text(
               'Welcome back!',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             Text(
               vendor?['business_name'] ?? '',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).primaryColor),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
             ),
             const SizedBox(height: 24),
-            if (vendor?['status'] == 'pending')
+            if (!isApproved)
               Card(
                 color: Colors.orange[50],
                 child: Padding(
@@ -211,9 +273,13 @@ class _VendorDashboardState extends State<_VendorDashboard> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Profile Under Review', style: Theme.of(context).textTheme.titleMedium),
                             Text(
-                              'Your business profile is being reviewed by our team. You will be notified once approved.',
+                              'Profile Under Review',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Your business profile is being reviewed. You will be notified once approved.',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ],
@@ -223,76 +289,54 @@ class _VendorDashboardState extends State<_VendorDashboard> {
                   ),
                 ),
               ),
-            if (vendor?['status'] == 'approved') ...[
+            if (isApproved) ...[
               const SizedBox(height: 16),
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : Row(
+              if (_isLoading)
+                const SizedBox(height: 150, child: LoadingState())
+              else
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
+                    return GridView.count(
+                      crossAxisCount: crossAxisCount,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.4,
                       children: [
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.inbox,
-                            label: 'Pending Requests',
-                            value: '$_pendingRequests',
-                            color: Colors.orange,
-                          ),
+                        StatCard(
+                          label: 'Pending Requests',
+                          value: '$_pendingRequests',
+                          icon: Icons.inbox,
+                          color: Colors.orange,
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.calendar_month,
-                            label: 'Active Bookings',
-                            value: '$_activeBookings',
-                            color: Colors.blue,
-                          ),
+                        StatCard(
+                          label: 'Active Bookings',
+                          value: '$_activeBookings',
+                          icon: Icons.calendar_month,
+                          color: Colors.blue,
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.star,
-                            label: 'Rating',
-                            value: '${double.tryParse(vendor?['rating_avg']?.toString() ?? '0')?.toStringAsFixed(1) ?? '0.0'}',
-                            color: Colors.amber,
-                          ),
+                        StatCard(
+                          label: 'Rating',
+                          value: (double.tryParse(
+                                      vendor?['rating_avg']?.toString() ?? '0') ??
+                                  0)
+                              .toStringAsFixed(1),
+                          icon: Icons.star,
+                          color: Colors.amber,
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.check_circle,
-                            label: 'Completed',
-                            value: '${vendor?['weddings_completed'] ?? 0}',
-                            color: Colors.green,
-                          ),
+                        StatCard(
+                          label: 'Completed',
+                          value: '${vendor?['weddings_completed'] ?? 0}',
+                          icon: Icons.check_circle,
+                          color: Colors.green,
                         ),
                       ],
-                    ),
+                    );
+                  },
+                ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatCard({required this.icon, required this.label, required this.value, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 8),
-            Text(value, style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
-            Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600])),
           ],
         ),
       ),
@@ -308,16 +352,16 @@ class _VendorRequests extends StatefulWidget {
 }
 
 class _VendorRequestsState extends State<_VendorRequests> {
-  List<dynamic> _requests = [];
+  List<Map<String, dynamic>> _requests = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadRequests();
+    _loadData();
   }
 
-  Future<void> _loadRequests() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final auth = context.read<AuthProvider>();
     final response = await auth.api.getVendorRequests();
@@ -325,7 +369,7 @@ class _VendorRequestsState extends State<_VendorRequests> {
     if (mounted) {
       setState(() {
         if (response.isSuccess) {
-          _requests = response.responseData ?? [];
+          _requests = List<Map<String, dynamic>>.from(response.responseData ?? []);
         }
         _isLoading = false;
       });
@@ -336,14 +380,11 @@ class _VendorRequestsState extends State<_VendorRequests> {
     final auth = context.read<AuthProvider>();
     final response = await auth.api.acceptBooking(id);
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response.isSuccess ? 'Booking accepted!' : response.errorMessage ?? 'Failed'),
-          backgroundColor: response.isSuccess ? Colors.green : Colors.red,
-        ),
-      );
-      if (response.isSuccess) _loadRequests();
+    if (response.isSuccess) {
+      await _loadData();
+      if (mounted) SnackBarHelper.showSuccess(context, 'Booking accepted!');
+    } else if (mounted) {
+      SnackBarHelper.showError(context, response.errorMessage ?? 'Failed');
     }
   }
 
@@ -351,85 +392,91 @@ class _VendorRequestsState extends State<_VendorRequests> {
     final auth = context.read<AuthProvider>();
     final response = await auth.api.declineBooking(id);
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response.isSuccess ? 'Booking declined' : response.errorMessage ?? 'Failed'),
-          backgroundColor: response.isSuccess ? Colors.orange : Colors.red,
-        ),
-      );
-      if (response.isSuccess) _loadRequests();
+    if (response.isSuccess) {
+      await _loadData();
+      if (mounted) SnackBarHelper.showInfo(context, 'Booking declined');
+    } else if (mounted) {
+      SnackBarHelper.showError(context, response.errorMessage ?? 'Failed');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: _isLoading
+          ? const LoadingState()
           : _requests.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.inbox, size: 64, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text('No pending requests', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey)),
-                    ],
+              ? const SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: SizedBox(
+                    height: 400,
+                    child: EmptyState(
+                      icon: Icons.inbox,
+                      title: 'No pending requests',
+                      subtitle: 'New booking requests will appear here',
+                    ),
                   ),
                 )
-              : RefreshIndicator(
-                  onRefresh: _loadRequests,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _requests.length,
-                    itemBuilder: (context, index) {
-                      final request = _requests[index];
-                      final wedding = request['wedding'];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.favorite, color: Colors.pink),
-                                  const SizedBox(width: 8),
-                                  Text(
+              : ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _requests.length,
+                  itemBuilder: (context, index) {
+                    final request = _requests[index];
+                    final wedding = request['wedding'] as Map<String, dynamic>?;
+                    final package = request['package'] as Map<String, dynamic>?;
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.favorite, color: Colors.pink),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
                                     '${wedding?['partner1_name'] ?? ''} & ${wedding?['partner2_name'] ?? ''}',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              if (request['package'] != null)
-                                Text('Package: ${request['package']['name']} - \$${request['package']['price']}'),
-                              Text('Date: ${request['booking_date']?.toString().split('T')[0] ?? 'TBD'}'),
-                              if (wedding?['wedding_date'] != null)
-                                Text('Wedding Date: ${wedding['wedding_date'].toString().split('T')[0]}'),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  OutlinedButton(
-                                    onPressed: () => _declineRequest(request['id']),
-                                    child: const Text('Decline'),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  ElevatedButton(
-                                    onPressed: () => _acceptRequest(request['id']),
-                                    child: const Text('Accept'),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            if (package != null)
+                              Text('Package: ${package['name']} - \$${package['price']}'),
+                            Text(
+                                'Booking Date: ${request['booking_date']?.toString().split('T')[0] ?? 'TBD'}'),
+                            if (wedding?['wedding_date'] != null)
+                              Text(
+                                  'Wedding Date: ${wedding!['wedding_date'].toString().split('T')[0]}'),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                OutlinedButton(
+                                  onPressed: () => _declineRequest(request['id']),
+                                  child: const Text('Decline'),
+                                ),
+                                const SizedBox(width: 12),
+                                ElevatedButton(
+                                  onPressed: () => _acceptRequest(request['id']),
+                                  child: const Text('Accept'),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
     );
   }
@@ -443,16 +490,16 @@ class _VendorBookings extends StatefulWidget {
 }
 
 class _VendorBookingsState extends State<_VendorBookings> {
-  List<dynamic> _bookings = [];
+  List<Map<String, dynamic>> _bookings = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadBookings();
+    _loadData();
   }
 
-  Future<void> _loadBookings() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final auth = context.read<AuthProvider>();
     final response = await auth.api.getVendorBookings();
@@ -461,7 +508,9 @@ class _VendorBookingsState extends State<_VendorBookings> {
       setState(() {
         if (response.isSuccess) {
           final data = response.responseData;
-          _bookings = data is List ? data : (data?['data'] ?? []);
+          _bookings = data is List
+              ? List<Map<String, dynamic>>.from(data)
+              : List<Map<String, dynamic>>.from(data?['data'] ?? []);
         }
         _isLoading = false;
       });
@@ -470,60 +519,38 @@ class _VendorBookingsState extends State<_VendorBookings> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: _isLoading
+          ? const LoadingState()
           : _bookings.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.calendar_month, size: 64, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text('No bookings yet', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey)),
-                    ],
+              ? const SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: SizedBox(
+                    height: 400,
+                    child: EmptyState(
+                      icon: Icons.calendar_month,
+                      title: 'No bookings yet',
+                      subtitle: 'Confirmed bookings will appear here',
+                    ),
                   ),
                 )
-              : RefreshIndicator(
-                  onRefresh: _loadBookings,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _bookings.length,
-                    itemBuilder: (context, index) {
-                      final booking = _bookings[index];
-                      final wedding = booking['wedding'];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: _getStatusColor(booking['status']).withOpacity(0.1),
-                            child: Icon(Icons.event, color: _getStatusColor(booking['status'])),
-                          ),
-                          title: Text('${wedding?['partner1_name'] ?? ''} & ${wedding?['partner2_name'] ?? ''}'),
-                          subtitle: Text('${booking['booking_date']?.toString().split('T')[0] ?? ''} - ${booking['status']}'),
-                          trailing: Text('\$${booking['total_amount'] ?? 0}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                      );
-                    },
-                  ),
+              : ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _bookings.length,
+                  itemBuilder: (context, index) {
+                    final booking = _bookings[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: BookingCard(
+                        booking: booking,
+                        isVendorView: true,
+                      ),
+                    );
+                  },
                 ),
     );
-  }
-
-  Color _getStatusColor(String? status) {
-    switch (status) {
-      case 'accepted':
-        return Colors.blue;
-      case 'confirmed':
-        return Colors.green;
-      case 'completed':
-        return Colors.green;
-      case 'declined':
-      case 'cancelled':
-        return Colors.red;
-      default:
-        return Colors.orange;
-    }
   }
 }
 
@@ -535,18 +562,19 @@ class _VendorPackages extends StatefulWidget {
 }
 
 class _VendorPackagesState extends State<_VendorPackages> {
-  List<dynamic> _packages = [];
+  List<Map<String, dynamic>> _packages = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadPackages();
+    _loadData();
   }
 
-  Future<void> _loadPackages() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final auth = context.read<AuthProvider>();
+
     if (auth.vendorId == null) {
       setState(() => _isLoading = false);
       return;
@@ -557,38 +585,132 @@ class _VendorPackagesState extends State<_VendorPackages> {
     if (mounted) {
       setState(() {
         if (response.isSuccess) {
-          _packages = response.responseData ?? [];
+          _packages = List<Map<String, dynamic>>.from(response.responseData ?? []);
         }
         _isLoading = false;
       });
     }
   }
 
+  Future<void> _deletePackage(String id) async {
+    final auth = context.read<AuthProvider>();
+    final response = await auth.api.deletePackage(id);
+
+    if (response.isSuccess) {
+      await _loadData();
+      if (mounted) SnackBarHelper.showSuccess(context, 'Package deleted');
+    } else if (mounted) {
+      SnackBarHelper.showError(context, response.errorMessage ?? 'Failed');
+    }
+  }
+
+  void _showPackageDialog([Map<String, dynamic>? existing]) {
+    final isEdit = existing != null;
+    final nameController = TextEditingController(text: existing?['name']);
+    final descController = TextEditingController(text: existing?['description']);
+    final priceController =
+        TextEditingController(text: existing?['price']?.toString() ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(isEdit ? 'Edit Package' : 'Add Package'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Package Name',
+                  prefixIcon: Icon(Icons.inventory_2),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  prefixIcon: Icon(Icons.description),
+                ),
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: priceController,
+                decoration: const InputDecoration(
+                  labelText: 'Price',
+                  prefixIcon: Icon(Icons.attach_money),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameController.text.isEmpty) return;
+              Navigator.pop(ctx);
+
+              final auth = context.read<AuthProvider>();
+              final data = {
+                'name': nameController.text,
+                'description': descController.text,
+                'price': double.tryParse(priceController.text) ?? 0,
+              };
+
+              final response = isEdit
+                  ? await auth.api.updatePackage(existing['id'], data)
+                  : await auth.api.createPackage(data);
+
+              if (response.isSuccess) {
+                await _loadData();
+                if (mounted) {
+                  SnackBarHelper.showSuccess(
+                      context, isEdit ? 'Package updated' : 'Package created');
+                }
+              } else if (mounted) {
+                SnackBarHelper.showError(
+                    context, response.errorMessage ?? 'Failed');
+              }
+            },
+            child: Text(isEdit ? 'Save' : 'Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _packages.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.inventory_2, size: 64, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text('No packages yet', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey)),
-                      const SizedBox(height: 8),
-                      ElevatedButton.icon(
-                        onPressed: () {}, // TODO: Add package dialog
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Package'),
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        child: _isLoading
+            ? const LoadingState()
+            : _packages.isEmpty
+                ? SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: SizedBox(
+                      height: 400,
+                      child: EmptyState(
+                        icon: Icons.inventory_2,
+                        title: 'No packages yet',
+                        subtitle: 'Create packages for couples to book',
+                        actionLabel: 'Add Package',
+                        onAction: () => _showPackageDialog(),
                       ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadPackages,
-                  child: ListView.builder(
+                    ),
+                  )
+                : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),
                     itemCount: _packages.length,
                     itemBuilder: (context, index) {
@@ -596,16 +718,72 @@ class _VendorPackagesState extends State<_VendorPackages> {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         child: ListTile(
-                          title: Text(pkg['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text(pkg['description'] ?? ''),
-                          trailing: Text('\$${pkg['price'] ?? 0}', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).primaryColor)),
+                          title: Text(
+                            pkg['name'] ?? '',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            pkg['description'] ?? '',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '\$${pkg['price'] ?? 0}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              PopupMenuButton<String>(
+                                onSelected: (value) {
+                                  if (value == 'edit') {
+                                    _showPackageDialog(pkg);
+                                  } else if (value == 'delete') {
+                                    _deletePackage(pkg['id']);
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.edit, size: 20),
+                                        SizedBox(width: 8),
+                                        Text('Edit'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.delete,
+                                            size: 20, color: Colors.red),
+                                        SizedBox(width: 8),
+                                        Text('Delete',
+                                            style: TextStyle(color: Colors.red)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          onTap: () => _showPackageDialog(pkg),
                         ),
                       );
                     },
                   ),
-                ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {}, // TODO: Add package dialog
+        onPressed: () => _showPackageDialog(),
         icon: const Icon(Icons.add),
         label: const Text('Add Package'),
       ),
@@ -621,31 +799,58 @@ class _VendorProfile extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
     final vendor = auth.vendor;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Business Profile', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 24),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _ProfileRow(label: 'Business Name', value: vendor?['business_name'] ?? ''),
-                  _ProfileRow(label: 'Category', value: vendor?['category']?['name'] ?? ''),
-                  _ProfileRow(label: 'Description', value: vendor?['description'] ?? ''),
-                  _ProfileRow(label: 'Location', value: '${vendor?['location_city'] ?? ''}, ${vendor?['location_country'] ?? ''}'),
-                  _ProfileRow(label: 'Price Range', value: vendor?['price_range'] ?? ''),
-                  _ProfileRow(label: 'Status', value: vendor?['status']?.toString().toUpperCase() ?? ''),
-                  _ProfileRow(label: 'Rating', value: '${vendor?['rating_avg'] ?? 0} (${vendor?['review_count'] ?? 0} reviews)'),
-                ],
+    return RefreshIndicator(
+      onRefresh: () => auth.refreshVendor(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Business Profile',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 24),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    _ProfileRow(
+                        label: 'Business Name',
+                        value: vendor?['business_name'] ?? ''),
+                    _ProfileRow(
+                        label: 'Category',
+                        value: vendor?['category']?['name'] ?? ''),
+                    _ProfileRow(
+                        label: 'Description',
+                        value: vendor?['description'] ?? ''),
+                    _ProfileRow(
+                      label: 'Location',
+                      value:
+                          '${vendor?['location_city'] ?? ''}, ${vendor?['location_country'] ?? ''}',
+                    ),
+                    _ProfileRow(
+                        label: 'Price Range',
+                        value: vendor?['price_range'] ?? ''),
+                    _ProfileRow(
+                      label: 'Status',
+                      value: vendor?['status']?.toString().toUpperCase() ?? '',
+                    ),
+                    _ProfileRow(
+                      label: 'Rating',
+                      value:
+                          '${vendor?['rating_avg'] ?? 0} (${vendor?['review_count'] ?? 0} reviews)',
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -666,9 +871,17 @@ class _ProfileRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 120,
-            child: Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
+            child: Text(
+              label,
+              style: TextStyle(color: Colors.grey[600]),
+            ),
           ),
-          Expanded(child: Text(value, style: Theme.of(context).textTheme.bodyMedium)),
+          Expanded(
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
         ],
       ),
     );

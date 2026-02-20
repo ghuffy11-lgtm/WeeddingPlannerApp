@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/snackbar_helper.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,8 +15,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLogin = true;
+  String _userType = 'couple';
+  bool _isSubmitting = false;
   bool _obscurePassword = true;
-  String _userType = 'couple'; // 'couple' or 'vendor'
 
   @override
   void dispose() {
@@ -27,266 +29,345 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _isSubmitting = true);
+
     final auth = context.read<AuthProvider>();
     bool success;
 
     if (_isLogin) {
-      success = await auth.login(_emailController.text, _passwordController.text);
+      success = await auth.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
     } else {
-      success = await auth.register(_emailController.text, _passwordController.text, _userType);
+      success = await auth.register(
+        _emailController.text.trim(),
+        _passwordController.text,
+        _userType,
+      );
     }
 
+    setState(() => _isSubmitting = false);
+
     if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error ?? 'An error occurred'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      SnackBarHelper.showError(context, auth.error ?? 'An error occurred');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    final size = MediaQuery.of(context).size;
-    final isWide = size.width > 800;
+    final isWide = MediaQuery.of(context).size.width > 800;
 
     return Scaffold(
-      body: Row(
+      body: isWide ? _buildWideLayout() : _buildNarrowLayout(),
+    );
+  }
+
+  Widget _buildWideLayout() {
+    return Row(
+      children: [
+        Expanded(child: _buildBranding()),
+        Expanded(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(48),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: _buildForm(),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNarrowLayout() {
+    return SingleChildScrollView(
+      child: Column(
         children: [
-          // Left side - Image/Branding (only on wide screens)
-          if (isWide)
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFE91E63), Color(0xFFAD1457)],
-                  ),
-                ),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(48),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.favorite, size: 80, color: Colors.white.withOpacity(0.9)),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Wedding Planner',
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Plan your perfect day with ease',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+          Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                ],
               ),
             ),
-          // Right side - Login Form
-          Expanded(
             child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(32),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (!isWide) ...[
-                          Icon(Icons.favorite, size: 64, color: Theme.of(context).primaryColor),
-                          const SizedBox(height: 16),
-                        ],
-                        Text(
-                          _isLogin ? 'Welcome Back' : 'Create Account',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.favorite, size: 48, color: Colors.white),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Wedding Planner',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _isLogin
-                              ? 'Sign in to continue planning your wedding'
-                              : 'Start planning your dream wedding today',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 32),
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: Icon(Icons.email_outlined),
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your email';
-                            }
-                            if (!value.contains('@')) {
-                              return 'Please enter a valid email';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock_outlined),
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                            ),
-                          ),
-                          obscureText: _obscurePassword,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            if (!_isLogin && value.length < 8) {
-                              return 'Password must be at least 8 characters';
-                            }
-                            return null;
-                          },
-                        ),
-                        if (!_isLogin) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Password must contain uppercase, lowercase, and number',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'I am a:',
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _UserTypeCard(
-                                  icon: Icons.favorite,
-                                  label: 'Couple',
-                                  isSelected: _userType == 'couple',
-                                  onTap: () => setState(() => _userType = 'couple'),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _UserTypeCard(
-                                  icon: Icons.store,
-                                  label: 'Vendor',
-                                  isSelected: _userType == 'vendor',
-                                  onTap: () => setState(() => _userType = 'vendor'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: auth.isLoading ? null : _submit,
-                            child: auth.isLoading
-                                ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                  )
-                                : Text(_isLogin ? 'Sign In' : 'Create Account'),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _isLogin ? "Don't have an account?" : 'Already have an account?',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            TextButton(
-                              onPressed: () => setState(() => _isLogin = !_isLogin),
-                              child: Text(_isLogin ? 'Sign Up' : 'Sign In'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
                   ),
-                ),
+                ],
               ),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: _buildForm(),
           ),
         ],
       ),
     );
   }
-}
 
-class _UserTypeCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
+  Widget _buildBranding() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.primary.withOpacity(0.7),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.favorite, size: 80, color: Colors.white),
+            const SizedBox(height: 24),
+            Text(
+              'Wedding Planner',
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Plan your perfect day',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  const _UserTypeCard({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
+  Widget _buildForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            _isLogin ? 'Welcome Back' : 'Create Account',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _isLogin
+                ? 'Sign in to continue planning your wedding'
+                : 'Start planning your perfect wedding today',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 32),
+          TextFormField(
+            controller: _emailController,
+            decoration: const InputDecoration(
+              labelText: 'Email',
+              prefixIcon: Icon(Icons.email_outlined),
+            ),
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              if (!value.contains('@')) {
+                return 'Please enter a valid email';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _passwordController,
+            decoration: InputDecoration(
+              labelText: 'Password',
+              prefixIcon: const Icon(Icons.lock_outlined),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: () {
+                  setState(() => _obscurePassword = !_obscurePassword);
+                },
+              ),
+            ),
+            obscureText: _obscurePassword,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _submit(),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your password';
+              }
+              if (!_isLogin && value.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
+          ),
+          if (!_isLogin) ...[
+            const SizedBox(height: 24),
+            Text(
+              'I am a...',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildUserTypeOption(
+                    'couple',
+                    'Couple',
+                    Icons.favorite,
+                    'Planning our wedding',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildUserTypeOption(
+                    'vendor',
+                    'Vendor',
+                    Icons.store,
+                    'Offering services',
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: _isSubmitting ? null : _submit,
+            child: _isSubmitting
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(_isLogin ? 'Sign In' : 'Create Account'),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _isLogin
+                    ? "Don't have an account? "
+                    : 'Already have an account? ',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _isLogin = !_isLogin;
+                    _userType = 'couple';
+                  });
+                },
+                child: Text(_isLogin ? 'Sign Up' : 'Sign In'),
+              ),
+            ],
+          ),
+          if (_isLogin) ...[
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _isLogin = false;
+                    _userType = 'vendor';
+                  });
+                },
+                icon: const Icon(Icons.store, size: 18),
+                label: const Text('Register as Vendor'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildUserTypeOption(
+    String value,
+    String label,
+    IconData icon,
+    String description,
+  ) {
+    final isSelected = _userType == value;
     return InkWell(
-      onTap: onTap,
+      onTap: () => setState(() => _userType = value),
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300]!,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.grey[300]!,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
-          color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : null,
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.05)
+              : null,
         ),
         child: Column(
           children: [
             Icon(
               icon,
               size: 32,
-              color: isSelected ? Theme.of(context).primaryColor : Colors.grey[600],
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.grey[600],
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Theme.of(context).primaryColor : Colors.grey[600],
+                fontWeight: FontWeight.bold,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[700],
               ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

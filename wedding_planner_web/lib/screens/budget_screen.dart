@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/snackbar_helper.dart';
+import '../widgets/loading_state.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/expense_card.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -10,7 +14,7 @@ class BudgetScreen extends StatefulWidget {
 }
 
 class _BudgetScreenState extends State<BudgetScreen> {
-  List<dynamic> _expenses = [];
+  List<Map<String, dynamic>> _expenses = [];
   bool _isLoading = true;
   double _totalBudget = 0;
   double _totalSpent = 0;
@@ -18,49 +22,81 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   void initState() {
     super.initState();
-    _loadBudget();
+    _loadData();
   }
 
-  Future<void> _loadBudget() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final auth = context.read<AuthProvider>();
+
     if (auth.weddingId == null) {
       setState(() => _isLoading = false);
       return;
     }
 
     final response = await auth.api.getBudget(auth.weddingId!);
-    if (response.isSuccess && mounted) {
-      final data = response.responseData;
+
+    if (mounted) {
       setState(() {
-        _expenses = data?['items'] ?? data ?? [];
-        _totalBudget = double.tryParse(data?['summary']?['budgetTotal']?.toString() ?? '0') ?? 0;
-        _totalSpent = double.tryParse(data?['summary']?['actualTotal']?.toString() ?? '0') ?? 0;
+        if (response.isSuccess) {
+          final data = response.responseData;
+          _expenses = List<Map<String, dynamic>>.from(data?['items'] ?? data ?? []);
+          _totalBudget = double.tryParse(
+                  data?['summary']?['budgetTotal']?.toString() ?? '0') ??
+              0;
+          _totalSpent = double.tryParse(
+                  data?['summary']?['actualTotal']?.toString() ?? '0') ??
+              0;
+        }
         _isLoading = false;
       });
-    } else {
-      setState(() => _isLoading = false);
     }
   }
 
   Future<void> _deleteExpense(String id) async {
     final auth = context.read<AuthProvider>();
-    await auth.api.deleteExpense(auth.weddingId!, id);
-    _loadBudget();
+    final response = await auth.api.deleteExpense(auth.weddingId!, id);
+
+    if (response.isSuccess) {
+      await _loadData();
+      if (mounted) SnackBarHelper.showSuccess(context, 'Expense deleted');
+    } else if (mounted) {
+      SnackBarHelper.showError(context, response.errorMessage ?? 'Failed');
+    }
   }
 
-  void _showAddExpenseDialog() {
-    final categoryController = TextEditingController();
-    final descController = TextEditingController();
-    final estimatedController = TextEditingController();
-    final actualController = TextEditingController();
-    bool paid = false;
+  Future<void> _togglePaid(Map<String, dynamic> expense) async {
+    final auth = context.read<AuthProvider>();
+    final response = await auth.api.updateExpense(
+      auth.weddingId!,
+      expense['id'],
+      {'isPaid': !(expense['is_paid'] ?? false)},
+    );
+
+    if (response.isSuccess) {
+      await _loadData();
+    } else if (mounted) {
+      SnackBarHelper.showError(context, response.errorMessage ?? 'Failed');
+    }
+  }
+
+  void _showExpenseDialog([Map<String, dynamic>? existing]) {
+    final isEdit = existing != null;
+    final categoryController =
+        TextEditingController(text: existing?['category']);
+    final descController =
+        TextEditingController(text: existing?['description']);
+    final estimatedController = TextEditingController(
+        text: existing?['estimated_amount']?.toString() ?? '');
+    final actualController = TextEditingController(
+        text: existing?['actual_amount']?.toString() ?? '');
+    bool isPaid = existing?['is_paid'] ?? false;
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Add Expense'),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(isEdit ? 'Edit Expense' : 'Add Expense'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -70,15 +106,18 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Category',
                     prefixIcon: Icon(Icons.category),
+                    hintText: 'e.g., Venue, Catering, Photography',
                   ),
+                  textCapitalization: TextCapitalization.words,
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: descController,
                   decoration: const InputDecoration(
-                    labelText: 'Description',
+                    labelText: 'Description (optional)',
                     prefixIcon: Icon(Icons.description),
                   ),
+                  textCapitalization: TextCapitalization.sentences,
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -98,11 +137,11 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   ),
                   keyboardType: TextInputType.number,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 CheckboxListTile(
+                  value: isPaid,
+                  onChanged: (v) => setDialogState(() => isPaid = v ?? false),
                   title: const Text('Paid'),
-                  value: paid,
-                  onChanged: (v) => setDialogState(() => paid = v ?? false),
                   contentPadding: EdgeInsets.zero,
                 ),
               ],
@@ -110,26 +149,41 @@ class _BudgetScreenState extends State<BudgetScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
                 if (categoryController.text.isEmpty) return;
+                Navigator.pop(ctx);
+
                 final auth = context.read<AuthProvider>();
-                await auth.api.addExpense(auth.weddingId!, {
+                final data = {
                   'category': categoryController.text,
                   'description': descController.text,
-                  'estimatedAmount': double.tryParse(estimatedController.text) ?? 0,
+                  'estimatedAmount':
+                      double.tryParse(estimatedController.text) ?? 0,
                   'actualAmount': double.tryParse(actualController.text) ?? 0,
-                  'isPaid': paid,
-                });
-                if (mounted) {
-                  Navigator.pop(context);
-                  _loadBudget();
+                  'isPaid': isPaid,
+                };
+
+                final response = isEdit
+                    ? await auth.api
+                        .updateExpense(auth.weddingId!, existing['id'], data)
+                    : await auth.api.addExpense(auth.weddingId!, data);
+
+                if (response.isSuccess) {
+                  await _loadData();
+                  if (mounted) {
+                    SnackBarHelper.showSuccess(
+                        context, isEdit ? 'Expense updated' : 'Expense added');
+                  }
+                } else if (mounted) {
+                  SnackBarHelper.showError(
+                      context, response.errorMessage ?? 'Failed');
                 }
               },
-              child: const Text('Add'),
+              child: Text(isEdit ? 'Save' : 'Add'),
             ),
           ],
         ),
@@ -143,166 +197,149 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final percentUsed = _totalBudget > 0 ? (_totalSpent / _totalBudget) : 0.0;
 
     return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadBudget,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: _buildOverviewCard(context, remaining, percentUsed),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Budget Overview Card
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Total Budget', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
-                                    Text(
-                                      '\$${_totalBudget.toStringAsFixed(0)}',
-                                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text('Remaining', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
-                                    Text(
-                                      '\$${remaining.toStringAsFixed(0)}',
-                                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: remaining >= 0 ? Colors.green : Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: LinearProgressIndicator(
-                                value: percentUsed.clamp(0.0, 1.0),
-                                minHeight: 12,
-                                backgroundColor: Colors.grey[200],
-                                valueColor: AlwaysStoppedAnimation(
-                                  percentUsed > 1 ? Colors.red : percentUsed > 0.8 ? Colors.orange : Colors.green,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '${(percentUsed * 100).toStringAsFixed(1)}% used',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Expenses Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Expenses',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          '${_expenses.length} items',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Expenses List
-                    if (_expenses.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32),
-                          child: Column(
-                            children: [
-                              Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
-                              const SizedBox(height: 16),
-                              Text('No expenses yet', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey)),
-                            ],
+                    Text(
+                      'Expenses',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                      )
-                    else
-                      ...(_expenses.map((expense) => _ExpenseCard(
-                            expense: expense,
-                            onDelete: () => _deleteExpense(expense['id']),
-                          ))),
+                    ),
+                    Text(
+                      '${_expenses.length} items',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
                   ],
                 ),
               ),
             ),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            if (_isLoading)
+              const SliverFillRemaining(child: LoadingState())
+            else if (_expenses.isEmpty)
+              SliverFillRemaining(
+                child: EmptyState(
+                  icon: Icons.receipt_long,
+                  title: 'No expenses yet',
+                  subtitle: 'Track your wedding budget',
+                  actionLabel: 'Add Expense',
+                  onAction: () => _showExpenseDialog(),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final expense = _expenses[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: ExpenseCard(
+                          expense: expense,
+                          onTap: () => _showExpenseDialog(expense),
+                          onTogglePaid: () => _togglePaid(expense),
+                          onDelete: () => _deleteExpense(expense['id']),
+                        ),
+                      );
+                    },
+                    childCount: _expenses.length,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddExpenseDialog,
+        onPressed: () => _showExpenseDialog(),
         icon: const Icon(Icons.add),
         label: const Text('Add Expense'),
       ),
     );
   }
-}
 
-class _ExpenseCard extends StatelessWidget {
-  final Map<String, dynamic> expense;
-  final VoidCallback onDelete;
-
-  const _ExpenseCard({required this.expense, required this.onDelete});
-
-  @override
-  Widget build(BuildContext context) {
-    final estimated = double.tryParse(expense['estimated_amount']?.toString() ?? '0') ?? 0;
-    final actual = double.tryParse(expense['actual_amount']?.toString() ?? '0') ?? 0;
-    final paid = expense['is_paid'] ?? false;
-
+  Widget _buildOverviewCard(
+      BuildContext context, double remaining, double percentUsed) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: paid ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
-          child: Icon(
-            paid ? Icons.check_circle : Icons.schedule,
-            color: paid ? Colors.green : Colors.orange,
-          ),
-        ),
-        title: Text(expense['category'] ?? 'Expense'),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
           children: [
-            if (expense['description'] != null)
-              Text(expense['description'], maxLines: 1, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 4),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Est: \$${estimated.toStringAsFixed(0)}', style: Theme.of(context).textTheme.bodySmall),
-                const SizedBox(width: 16),
-                Text(
-                  'Actual: \$${actual.toStringAsFixed(0)}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: actual > estimated ? Colors.red : Colors.green,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Total Budget',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    Text(
+                      '\$${_totalBudget.toStringAsFixed(0)}',
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Remaining',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    Text(
+                      '\$${remaining.toStringAsFixed(0)}',
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: remaining >= 0 ? Colors.green : Colors.red,
+                              ),
+                    ),
+                  ],
                 ),
               ],
             ),
+            const SizedBox(height: 24),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: percentUsed.clamp(0.0, 1.0),
+                minHeight: 12,
+                backgroundColor: Colors.grey[200],
+                valueColor: AlwaysStoppedAnimation(
+                  percentUsed > 1
+                      ? Colors.red
+                      : percentUsed > 0.8
+                          ? Colors.orange
+                          : Colors.green,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${(percentUsed * 100).toStringAsFixed(1)}% used',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
           ],
-        ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: Colors.red),
-          onPressed: onDelete,
         ),
       ),
     );

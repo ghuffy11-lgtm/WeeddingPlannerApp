@@ -86,6 +86,7 @@ class AuthProvider extends ChangeNotifier {
       _wedding = response.responseData;
       _weddingId = _wedding?['id'];
     }
+    notifyListeners();
   }
 
   Future<void> _fetchVendor() async {
@@ -94,6 +95,7 @@ class AuthProvider extends ChangeNotifier {
       _vendor = response.responseData;
       _vendorId = _vendor?['id'];
     }
+    notifyListeners();
   }
 
   Future<bool> createVendor(Map<String, dynamic> data) async {
